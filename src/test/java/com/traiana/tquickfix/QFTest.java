@@ -5,13 +5,13 @@ import com.traiana.tquickfix.blocks.QFField;
 import com.traiana.tquickfix.blocks.QFTag;
 import com.traiana.tquickfix.builder.QFBuilder;
 import com.traiana.tquickfix.builder.QFBuilderConfig;
-import com.traiana.tquickfix.qf.v50sp2.common.IParties;
-import com.traiana.tquickfix.qf.v50sp2.field.AllocAvgPx;
-import com.traiana.tquickfix.qf.v50sp2.field.AllocCancReplaceReason;
-import com.traiana.tquickfix.qf.v50sp2.field.Concession;
-import com.traiana.tquickfix.qf.v50sp2.message.AllocationInstructionMessage;
-import com.traiana.tquickfix.qf.v50sp2.message.ExecutionReportMessage;
 import org.xml.sax.SAXException;
+import tqf.v50sp2.common.IParties;
+import tqf.v50sp2.field.AllocAvgPx;
+import tqf.v50sp2.field.AllocCancReplaceReason;
+import tqf.v50sp2.field.Concession;
+import tqf.v50sp2.message.AllocationInstructionMessage;
+import tqf.v50sp2.message.ExecutionReportMessage;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
@@ -51,7 +51,7 @@ public class QFTest {
 //        QFBuilder.buildJavaSources("xml/FIX44.xml",     "D:/HLSTools/TQuickFix/src/main/java", "v44");
 //        QFBuilder.buildJavaSources("xml/FIX50.xml",     "D:/HLSTools/TQuickFix/src/main/java", "v50");
 //        QFBuilder.buildJavaSources("xml/FIX50SP1.xml",  "D:/HLSTools/TQuickFix/src/main/java", "v50sp1");
-        QFBuilder.buildJavaSources("xml/FIX50SP2.xml",  "D:/HLSTools/TQuickFix/src/main/java", "v50sp2");
+        QFBuilder.buildJavaSources("xml/FIX50SP2.xml",  "D:/HLSTools/TQuickFix/src/main/java", "tqf.", "v50sp2");
     }
 
     public void testParseMessage(File fixFile) throws IOException {
@@ -90,7 +90,7 @@ public class QFTest {
             List<QFTag> resMsgTagPairs = QFUtils.getTagPairs(msg.toFIXString());   // Parsed tags
 
             if(rawMsgTagPairs.size() == resMsgTagPairs.size()) {
-                List<QFTag> tmp = new ArrayList<QFTag>(rawMsgTagPairs);
+                List<QFTag> tmp = new ArrayList<>(rawMsgTagPairs);
                 rawMsgTagPairs.removeAll(rawMsgTagPairs);
                 if(rawMsgTagPairs.isEmpty()) {
                     resMsgTagPairs.removeAll(tmp);

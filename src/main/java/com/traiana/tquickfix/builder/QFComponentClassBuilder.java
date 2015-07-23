@@ -22,20 +22,20 @@ public class QFComponentClassBuilder {
 
 	public static class ComponentTag {
 		protected String name;
-        protected List<QFComponentClassBuilder.NameReq> fields = new LinkedList<QFComponentClassBuilder.NameReq>();
-        protected List<QFComponentClassBuilder.NameReq> groups = new LinkedList<QFComponentClassBuilder.NameReq>();
-        protected List<QFComponentClassBuilder.NameReq> components = new LinkedList<QFComponentClassBuilder.NameReq>();
-        protected List<ComponentTag> groupTags = new LinkedList<ComponentTag>();
+        protected List<QFComponentClassBuilder.NameReq> fields = new LinkedList<>();
+        protected List<QFComponentClassBuilder.NameReq> groups = new LinkedList<>();
+        protected List<QFComponentClassBuilder.NameReq> components = new LinkedList<>();
+        protected List<ComponentTag> groupTags = new LinkedList<>();
 
         protected enum TagType{FILED, COMPONENT, GROUP}
-        protected List<Pair<TagType, NameReq>> allChildren = new LinkedList<Pair<TagType, NameReq>>();
+        protected List<Pair<TagType, NameReq>> allChildren = new LinkedList<>();
 
         public ComponentTag(Node node) {
 			name =  node.getAttributes().getNamedItem("name").getNodeValue();
 		}
 		public void addField(NameReq nameReq) {
 			fields.add(nameReq);
-            allChildren.add(new ImmutablePair<TagType, NameReq>(TagType.FILED, nameReq));
+            allChildren.add(new ImmutablePair<>(TagType.FILED, nameReq));
 		}
 		public List<QFComponentClassBuilder.NameReq> getFields() {
 			return fields;
@@ -46,7 +46,7 @@ public class QFComponentClassBuilder {
 
 		public void addGroup(NameReq nameReq) {
 			groups.add(nameReq);
-            allChildren.add(new ImmutablePair<TagType, NameReq>(TagType.GROUP, nameReq));
+            allChildren.add(new ImmutablePair<>(TagType.GROUP, nameReq));
 		}
         public boolean hasGroups() {
             return !groups.isEmpty();
@@ -54,7 +54,7 @@ public class QFComponentClassBuilder {
 
 		public void addComponent(NameReq nameReq) {
 			components.add(nameReq);
-            allChildren.add(new ImmutablePair<TagType, NameReq>(TagType.COMPONENT, nameReq));
+            allChildren.add(new ImmutablePair<>(TagType.COMPONENT, nameReq));
 		}
 		public List<QFComponentClassBuilder.NameReq> getComponents() {
 			return components;
@@ -125,7 +125,7 @@ public class QFComponentClassBuilder {
 
 
 	protected CharSequence generatePackage() {
-		return "package com.traiana.tquickfix.qf." + QFBuilder.qfVersion + ".component;\n";
+		return "package " + QFBuilder.getSoucesPackage() + QFBuilder.qfVersion + ".component;\n";
 	}
 
 	protected CharSequence generateImports(ComponentTag componentGroupTag) {
@@ -151,9 +151,9 @@ public class QFComponentClassBuilder {
         }
         res.append("import com.traiana.tquickfix.blocks.QFTag;\n\n");
         if(componentGroupTag.hasComponents()) {
-            res.append("import com.traiana.tquickfix.qf." + QFBuilder.qfVersion + ".component.*;\n");
+            res.append("import ").append(QFBuilder.getSoucesPackage()).append(QFBuilder.qfVersion).append(".component.*;\n");
         }
-        res.append("import com.traiana.tquickfix.qf." + QFBuilder.qfVersion + ".field.*;\n");
+        res.append("import ").append(QFBuilder.getSoucesPackage()).append(QFBuilder.qfVersion).append(".field.*;\n");
 
 //		for(NameReq field : componentGroupTag.fields) {
 //			res.append("import com.traiana.tquickfix.qf.field.").append(field.name).append(';').append("\n"); // import com.traiana.tquickfix.qf.field.QFFieldFld03;

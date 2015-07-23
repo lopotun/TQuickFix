@@ -11,7 +11,9 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.text.ParseException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Parses incoming FIX message.
@@ -29,13 +31,13 @@ public class QFParser {
     private static final Logger LOGGER = Logger.getLogger(QFParser.class);
     private static QFParser INSTANCE = new QFParser();
 
-    private static final Map<String, MessageMapper> MESSAGE_VERSION_TO_MESSAGE_MAPPER = new HashMap<String, MessageMapper>();
+    private static final Map<String, MessageMapper> MESSAGE_VERSION_TO_MESSAGE_MAPPER = new HashMap<>();
     static {
-//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.4.0", com.traiana.tquickfix.qf.v40.QFMessageMapper.getInstance());
-//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.4.4", com.traiana.tquickfix.qf.v44.QFMessageMapper.getInstance());
-//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0", com.traiana.tquickfix.qf.v50.QFMessageMapper.getInstance());
-//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0.SP1", com.traiana.tquickfix.qf.v50sp1.QFMessageMapper.getInstance());
-        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0.SP2", com.traiana.tquickfix.qf.v50sp2.QFMessageMapper.getInstance());
+//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.4.0", tqf.v40.QFMessageMapper.getInstance());
+//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.4.4", tqf.v44.QFMessageMapper.getInstance());
+//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0", tqf.v50.QFMessageMapper.getInstance());
+//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0.SP1", tqf.v50sp1.QFMessageMapper.getInstance());
+        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0.SP2", tqf.v50sp2.QFMessageMapper.getInstance());
     }
 
 
@@ -83,7 +85,7 @@ public class QFParser {
      * @param fixString FIX message.
      * @param config
      * @return TQF Message instance.
-     * @throws ParseException if Message Standard Header ({@linkplain com.traiana.tquickfix.qf.v50sp2.component.StandardHeaderComponent}) cannot be parsed
+     * @throws ParseException if Message Standard Header ({@linkplain tqf.v50sp2.component.StandardHeaderComponent}) cannot be parsed
      *                        or a runtime error occurred while message parsing.
      */
     public QFCommonMessage parseMessage(CharSequence fixString, QFBuilderConfig config) throws ParseException {
@@ -112,7 +114,7 @@ public class QFParser {
         MessageMapper messageMapper;
         if(ignoreVersion) {
 //            messageMapper = null;
-            messageMapper = com.traiana.tquickfix.qf.v50sp2.QFMessageMapper.getInstance();
+            messageMapper = tqf.v50sp2.QFMessageMapper.getInstance();
         } else {
             String msgVersion = kv.get(0).getTagValue(); // 8=FIX.5.0
             messageMapper = MESSAGE_VERSION_TO_MESSAGE_MAPPER.get(msgVersion);

@@ -13,11 +13,11 @@ import java.util.Map;
 public class QFMessageMapperBuilder {
     private static final StringBuilder PUT_STATEMENTS = new StringBuilder(16384);
     private static final String PUT_TEMPLATE = "\t\t\tMESSAGE_TYPE_TO_PARSE_METHOD.put(\"%s\", %s.class.getMethod(\"parse\", List.class, MutableInt.class, QFBuilderConfig.class));%n";
-    private static final String TEMPLATE_MESSAGE_MAPPER = "package com.traiana.tquickfix.qf.$VER;\n" +
+    private static final String TEMPLATE_MESSAGE_MAPPER = "package " + QFBuilder.getSoucesPackage() + "$VER;\n" +
             "\n" +
             "import com.traiana.tquickfix.MessageMapper;\n" +
             "import com.traiana.tquickfix.builder.QFBuilderConfig;\n" +
-            "import com.traiana.tquickfix.qf.$VER.message.*;\n" +
+            "import " + QFBuilder.getSoucesPackage() + "$VER.message.*;\n" +
             "\n" +
             "import org.apache.commons.lang3.mutable.MutableInt;\n" +
             "\n" +
@@ -52,7 +52,7 @@ public class QFMessageMapperBuilder {
 
 
 
-    private static final Map<CharSequence, CharSequence> VERSION_TO_BEGIN_STRING_VALUE = new HashMap<CharSequence, CharSequence>(10);
+    private static final Map<CharSequence, CharSequence> VERSION_TO_BEGIN_STRING_VALUE = new HashMap<>(10);
     static {
         VERSION_TO_BEGIN_STRING_VALUE.put("vfixt11", "FIXT.1.1");
         VERSION_TO_BEGIN_STRING_VALUE.put("v50sp2", "FIX.5.0SP2");
@@ -61,16 +61,16 @@ public class QFMessageMapperBuilder {
         VERSION_TO_BEGIN_STRING_VALUE.put("v44", "FIX.4.4");
         VERSION_TO_BEGIN_STRING_VALUE.put("v40", "FIX.4.0");
     }
-    private static final String TEMPLATE_QF_MESSAGE = "package com.traiana.tquickfix.qf.$VER.message;\n" +
+    private static final String TEMPLATE_QF_MESSAGE = "package " + QFBuilder.getSoucesPackage()+ "$VER.message;\n" +
             "\n" +
             "import com.traiana.tquickfix.blocks.QFCommonMessage;\n" +
             "import com.traiana.tquickfix.blocks.QFField;\n" +
             "import com.traiana.tquickfix.builder.QFBuilderConfig;\n" +
-            "import com.traiana.tquickfix.qf.$VER.component.StandardHeaderComponent;\n" +
-            "import com.traiana.tquickfix.qf.$VER.component.StandardTrailerComponent;\n" +
-            "import com.traiana.tquickfix.qf.$VER.field.BeginString;\n" +
-            "import com.traiana.tquickfix.qf.$VER.field.CheckSum;\n" +
-            "import com.traiana.tquickfix.qf.$VER.field.MsgType;\n" +
+            "import  "+ QFBuilder.getSoucesPackage() + "$VER.component.StandardHeaderComponent;\n" +
+            "import  "+ QFBuilder.getSoucesPackage() + "$VER.component.StandardTrailerComponent;\n" +
+            "import  "+ QFBuilder.getSoucesPackage() + "$VER.field.BeginString;\n" +
+            "import  "+ QFBuilder.getSoucesPackage() + "$VER.field.CheckSum;\n" +
+            "import  "+ QFBuilder.getSoucesPackage() + "$VER.field.MsgType;\n" +
             "\n" +
             "/**\n" +
             " * Abstract presentation of FIX message element.\n" +

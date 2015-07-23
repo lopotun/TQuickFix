@@ -143,7 +143,7 @@ public class QFFieldClassBuilder {
     private static final TypeMetadata TMD_MonthYear = new TypeMetadata("QFMonthYearField", "Date", "import java.util.Date;", true);
     private static final TypeMetadata TMD_Time = new TypeMetadata("QFTimeField", "Date", "import java.util.Date;", true);
 
-    private static final Map<String, TypeMetadata> FIX_TYPE_TO_JAVA_TYPE = new HashMap<String, TypeMetadata>();
+    private static final Map<String, TypeMetadata> FIX_TYPE_TO_JAVA_TYPE = new HashMap<>();
     static {
         FIX_TYPE_TO_JAVA_TYPE.put("STRING", TMD_String);
         FIX_TYPE_TO_JAVA_TYPE.put("MULTIPLECHARVALUE", TMD_String);
@@ -209,7 +209,7 @@ public class QFFieldClassBuilder {
     }
 
     private static CharSequence getPackage() {
-        return "package com.traiana.tquickfix.qf." + QFBuilder.qfVersion + ".field;\n";
+        return "package " + QFBuilder.getSoucesPackage() + QFBuilder.qfVersion + ".field;\n";
     }
 
     private static CharSequence getImport(CharSequence superclassName, CharSequence imports, List<String[]> fEnumDescr) {

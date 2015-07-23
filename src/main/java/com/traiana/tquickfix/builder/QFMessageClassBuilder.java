@@ -54,7 +54,7 @@ public class QFMessageClassBuilder extends QFComponentClassBuilder {
     }
 
     protected CharSequence generatePackage() {
-        return "package com.traiana.tquickfix.qf." + QFBuilder.qfVersion + ".message;";
+        return "package " + QFBuilder.getSoucesPackage() + QFBuilder.qfVersion + ".message;";
     }
 
     protected CharSequence generateImports(ComponentTag componentGroupTag) {
@@ -62,13 +62,13 @@ public class QFMessageClassBuilder extends QFComponentClassBuilder {
         res
                 .append("import com.traiana.tquickfix.ThreadContext;\n")
                 .append("import com.traiana.tquickfix.blocks.QFField;\n")
-                .append(componentGroupTag.groupTags.isEmpty()? "": "import com.traiana.tquickfix.blocks.QFGroup;\n")
+                .append(componentGroupTag.groupTags.isEmpty() ? "" : "import com.traiana.tquickfix.blocks.QFGroup;\n")
 //                .append("import com.traiana.tquickfix.blocks.QFMessage;\n")
                 .append("import com.traiana.tquickfix.blocks.QFTag;\n")
                 .append("import com.traiana.tquickfix.builder.QFBuilderConfig;\n")
-                .append("import com.traiana.tquickfix.qf." + QFBuilder.qfVersion + ".field.*;\n")
-                .append("import com.traiana.tquickfix.qf." + QFBuilder.qfVersion + ".common.*;\n")
-                .append("import com.traiana.tquickfix.qf." + QFBuilder.qfVersion + ".component.*;\n\n");
+                .append("import ").append(QFBuilder.getSoucesPackage()).append(QFBuilder.qfVersion).append(".field.*;\n")
+                .append("import ").append(QFBuilder.getSoucesPackage()).append(QFBuilder.qfVersion).append(".common.*;\n")
+                .append("import ").append(QFBuilder.getSoucesPackage()).append(QFBuilder.qfVersion).append(".component.*;\n\n");
 
         res.append("\nimport org.apache.commons.lang3.mutable.MutableInt;\n\n")
                 .append("import java.util.ArrayList;\n")
