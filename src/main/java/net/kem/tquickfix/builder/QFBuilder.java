@@ -13,6 +13,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import javax.tools.DiagnosticCollector;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
+import javax.tools.StandardLocation;
+import javax.tools.ToolProvider;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -22,12 +28,16 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -42,6 +52,8 @@ public class QFBuilder {
 	static CharSequence qfVersion = "50sp1";
 	static String sourcesPackage = "net.kem.tquickfix.qf.";
 	private static File javaSourcesOutputDir = new File("D:/Temp/QF/com/traiana/tquickfix/qf");
+	private static File classOutputDir;
+	private static File jarFile;
 	private static InputStream qfStructureXML;
 	private static Set<QFComponentClassBuilder.NameReq> allComponents = new HashSet<>(128);
 
@@ -131,6 +143,10 @@ public class QFBuilder {
 		processComponents(document, xpath);
 		processMessages(document, xpath, qfVersion);
 		processMessageInterfaces();
+
+		if(classOutputDir != null) {
+			compile();
+		}
 	}
 
 	static String getSoucesPackage() {
@@ -350,26 +366,68 @@ public class QFBuilder {
 		}
 	}
 
+	//See more at: http://www.javabeat.net/the-java-6-0-compiler-api/#sthash.kb3qqndw.dpuf
+	private static boolean compile() throws IOException {
+		// Generated Java sources to compile.
+		List<File> sourcesToCompile = new LinkedList<>();
+		getFilesToCompile("field", sourcesToCompile);// Add "field" sources.
+		getFilesToCompile("component", sourcesToCompile);// Add "component" sources.
+		getFilesToCompile("common", sourcesToCompile);// Add "common" sources.
+		getFilesToCompile("message", sourcesToCompile);// Add "message" sources.
+		getFilesToCompile("", sourcesToCompile);// Add other root sources.
+
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+		DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
+		StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, null);
+		Iterable<? extends JavaFileObject> compilationUnits = fileManager.getJavaFileObjectsFromFiles(sourcesToCompile);
+		// Set classes output directory.
+		fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singleton(classOutputDir));
+
+		JavaCompiler.CompilationTask task = compiler.getTask(null, fileManager, diagnostics, null, null, compilationUnits);
+		boolean success = task.call();
+		fileManager.close();
+		return success;
+	}
+
+	private static void getFilesToCompile(String subDirName, List<File> toCompile) {
+		File currentDir = new File(javaSourcesOutputDir, subDirName);
+		File[] files = currentDir.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File pathname) {
+				return pathname.isFile() && pathname.getName().endsWith(".java");
+			}
+		});
+		toCompile.addAll(Arrays.asList(files));
+	}
+
 
 	public static void main(String[] args) {
 		// Create Options object
 		Options options = new Options();
 
-		Option optQFStructureXMLFile = Option.builder("qfxml")
+		Option optQFStructureXMLFile = Option.builder("qfxml").required()
 				.hasArg().argName("xml_file")
-				.desc("QuickFix structure XML file").build();
-		Option optJavaSourcesOutputDir = Option.builder("o").longOpt("out")
+				.desc("QuickFix structure XML file. E.g. xml/FIX50SP2.xml").build();
+		Option optJavaSourcesOutputDir = Option.builder("o").longOpt("sourcesout").required()
 				.hasArg().argName("dir")
-				.desc("Output directory for generated Java sources").build();
-		Option optPackage = Option.builder("p").longOpt("package")
+				.desc("Output directory for generated Java sources. E.g.  D:/HLSTools/TQuickFix/src/main/java").build();
+		Option optPackage = Option.builder("p").longOpt("package").required()
 				.hasArg().argName("package_name")
-				.desc("Name of the package for genetared Java files").build();
-		Option optQFVersion = Option.builder("v").longOpt("version")
+				.desc("Name of the package for genetared Java files. E.g. tqf.").build();
+		Option optQFVersion = Option.builder("v").longOpt("version").required()
 				.hasArg().argName("QFVersion")
-				.desc("QuickFix version").build();
+				.desc("QuickFix version. E.g. v50sp2").build();
+
+		Option optClassOutputDir = Option.builder("d").longOpt("classesout").required(false)
+				.hasArg().argName("dir")
+				.desc("Output directory for compiled classes (e.g. target/classes/). If omitted, then the generated Java sources won't be compiled.").build();
+		Option optJarFile = Option.builder("j").longOpt("jarfile").required(false)
+				.hasArg().argName("file")
+				.desc("Name of Jar file that will contain newly compiled classes (e.g. target/qtf_v50sp2.jar). This option can be set only if \"classesout\" is set. If omitted, then no Jar file will be created.").build();
 
 		// Add options
-		options.addOption(optQFStructureXMLFile).addOption(optJavaSourcesOutputDir).addOption(optPackage).addOption(optQFVersion);
+		options.addOption(optQFStructureXMLFile).addOption(optJavaSourcesOutputDir).addOption(optPackage).addOption(optQFVersion).addOption(optClassOutputDir).addOption(optJarFile);
 
 		CommandLineParser parser = new DefaultParser();
 		try {
@@ -377,14 +435,31 @@ public class QFBuilder {
 
 			CharSequence qfStructureXMLFile = cmd.getOptionValue(optQFStructureXMLFile.getOpt());
 			CharSequence javaSourcesOutputDir = cmd.getOptionValue(optJavaSourcesOutputDir.getOpt());
-			CharSequence pckg = cmd.getOptionValue(optPackage.getOpt());
+			String pckg = cmd.getOptionValue(optPackage.getOpt());
 			CharSequence qfVersion = cmd.getOptionValue(optQFVersion.getOpt());
 
-			buildJavaSources(qfStructureXMLFile, javaSourcesOutputDir, pckg.toString(), qfVersion);
+			// Set classes output directory.
+			String classOutDir = cmd.getOptionValue(optClassOutputDir.getOpt());
+			if(classOutDir != null) {
+				classOutputDir = new File(classOutDir);
+				classOutputDir.mkdirs();
+			}
+			// Set output jar file.
+			String outJar = cmd.getOptionValue(optJarFile.getOpt());
+			if(outJar != null) {
+				if(classOutputDir != null) {
+					jarFile = new File(outJar);
+				} else {
+					throw new ParseException(optJarFile.getOpt() + " can be used only if \"" + optClassOutputDir.getOpt() +"\" is set");
+				}
+			}
+
+			buildJavaSources(qfStructureXMLFile, javaSourcesOutputDir, pckg, qfVersion);
 		} catch(ParseException e) {
 			// automatically generate the help statement
 			HelpFormatter formatter = new HelpFormatter();
 			formatter.printHelp("QFBuilder", options);
+			System.err.println(e.getMessage());
 		} catch(ParserConfigurationException e) {
 			e.printStackTrace();
 		} catch(IOException e) {
