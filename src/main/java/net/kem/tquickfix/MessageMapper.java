@@ -1,4 +1,4 @@
-package com.traiana.tquickfix;
+package net.kem.tquickfix;
 
 import java.lang.reflect.Method;
 
