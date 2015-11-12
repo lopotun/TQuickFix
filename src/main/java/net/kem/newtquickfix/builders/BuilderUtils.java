@@ -1,5 +1,8 @@
 package net.kem.newtquickfix.builders;
 
+import net.kem.newtquickfix.blocks.QFMember;
+import org.w3c.dom.Element;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,6 +16,7 @@ import java.util.Map;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class BuilderUtils {
+
     private static final Map<CharSequence, QFFieldBrick> FIX_TYPE_TO_JAVA_BUILDING_BRICK = new HashMap<>();
 
     static {
@@ -72,4 +76,18 @@ public class BuilderUtils {
     public static QFFieldBrick getJavaSourceFieldBuildingBrick(CharSequence fieldType) {
         return FIX_TYPE_TO_JAVA_BUILDING_BRICK.get(fieldType);
     }
+
+    public static QFMemberBrick getQFMemberBrick(Element startElement, StringBuilder sb) {
+        switch (QFMember.Type.valueOf(startElement.getTagName().toUpperCase())) {
+            case FIELD:
+                return new QFFieldBrick();
+            case GROUP:
+                return new QFGroupBrick(startElement, sb);
+            case COMPONENT:
+                return new QFComponentBrick(startElement, sb);
+            default: return null;
+        }
+    }
+
+
 }

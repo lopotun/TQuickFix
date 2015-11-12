@@ -20,14 +20,6 @@ import java.util.Stack;
  * Time: 3:00 PM
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  * <p>
- * <component name="RelSymDerivSecUpdGrp">
- * <group name="NoRelatedSym" required="N">
- * <field name="ListUpdateAction" required="N"/>
- * <component name="Instrument" required="N"/>
- * <field name="StreamAsgnRejReason" required="N"/>
- * <component name="InstrmtLegGrp" required="N"/>
- * </group>
- * </component>
  */
 @SuppressWarnings("unused")
 public class ComponentMain extends QFComponent {
@@ -93,7 +85,6 @@ public class ComponentMain extends QFComponent {
         public FieldStringA getFieldStringA() {
             return fieldStringA;
         }
-
         public void setFieldStringA(FieldStringA fieldStringA) {
             this.fieldStringA = fieldStringA;
         }

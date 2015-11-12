@@ -19,7 +19,7 @@ public class QFBooleanFieldBrick extends QFFieldBrick {
     }
 
     @Override
-    protected void getMethodGetInstanceString(QFFieldBrick.Container container) {
+    protected void getMethodGetInstanceString() {
         /*
         public static AggressorIndicator getInstance(String value) {
             if(value.length() == 1 && (value.charAt(0) == 'Y' || value.charAt(0) == 'y')) {
@@ -29,7 +29,7 @@ public class QFBooleanFieldBrick extends QFFieldBrick {
         }
         */
         if (typeToStringConversion != null) {
-            container.sb.append("\tpublic static ").append(container.fixName).append(" getInstance(String value) {\n")
+            sb.append("\tpublic static ").append(fixName).append(" getInstance(String value) {\n")
                     .append("\t\tif(value.length() == 1 && (value.charAt(0) == 'Y' || value.charAt(0) == 'y')) {\n")
                     .append("\t\t\treturn getInstance(true);\n")
                     .append("\t\t}\n")

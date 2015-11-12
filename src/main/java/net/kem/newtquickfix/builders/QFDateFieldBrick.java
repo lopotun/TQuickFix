@@ -10,20 +10,20 @@ public class QFDateFieldBrick extends QFFieldBrick {
     }
 
     @Override
-    protected void getClassTitle(QFFieldBrick.Container container) {
-        container.sb.append("public class ").append(container.fixName).append(" extends ")
+    protected void getClassTitle() {
+        sb.append("public class ").append(fixName).append(" extends ")
                 .append(parentClassName).append(" {\n");
     }
 
     @Override
-    protected void getMethodGetInstanceString(QFFieldBrick.Container container) {
+    protected void getMethodGetInstanceString() {
 		/*
 		public static EffectiveTime getInstance(String value) throws ParseException {
             return getInstance(LocalDateTime.parse(value, getDateFormat()));
         }
         */
         if (typeToStringConversion != null) {
-            container.sb.append("\tpublic static ").append(container.fixName).append(" getInstance(String value) throws DateTimeParseException {\n")
+            sb.append("\tpublic static ").append(fixName).append(" getInstance(String value) throws DateTimeParseException {\n")
                     .append("\t\treturn getInstance(").append(typeClass.getSimpleName()).append(".parse(value, getDateFormat()));\n")
                     .append("\t}\n\n");
         }

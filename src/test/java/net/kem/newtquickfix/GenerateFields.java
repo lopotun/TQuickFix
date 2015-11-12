@@ -62,7 +62,7 @@ public class GenerateFields {
             Node fieldNode = nodes.item(j);
             if (fieldNode instanceof Element) {
                 QFFieldBrick fieldBrick = QFFieldBrick.getNewQFFieldBrick((Element) fieldNode);
-                QFFieldBrick.Container javaSourceContainer = fieldBrick.toJavaSource((Element) fieldNode);
+                QFFieldBrick javaSourceContainer = fieldBrick.toJavaSource((Element) fieldNode);
 //				System.out.println();
                 File file = new File(dir, javaSourceContainer.getJavaSourceFileName() + ".java");
                 FileWriter fileWriter = new FileWriter(file);
