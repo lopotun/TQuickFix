@@ -1,6 +1,6 @@
 package net.kem.newtquickfix;
 
-import net.kem.newtquickfix.builders.QFFieldElement;
+import net.kem.newtquickfix.builders.QFComponentElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,7 +25,7 @@ import java.text.ParseException;
  * Created by Evgeny Kurtser on 11/10/2015 at 9:29 AM.
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
-public class GenerateFields {
+public class GenerateComponents {
     public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException, ClassNotFoundException, ParseException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 //        QFField testT1 = AggressorIndicator.getInstance("true");
 //        QFField testT2 = AggressorIndicator.getInstance(true);
@@ -55,19 +55,19 @@ public class GenerateFields {
 
         XPathExpression expr;
         NodeList nodes;
-        expr = xpath.compile("/fix/fields/field");// //person/*//*text()
-        File dir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\fields");
+        expr = xpath.compile("/fix/components/component");// //person/*//*text()
+        File dir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\components");
         dir.mkdirs();
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
         for (int j = 0; j < nodes.getLength(); j++) {
             Node fieldNode = nodes.item(j);
             if (fieldNode instanceof Element) {
-                QFFieldElement fieldBrick = QFFieldElement.getNewQFFieldBrick((Element) fieldNode);
-                fieldBrick.toJavaSource();
+                QFComponentElement block = new QFComponentElement((Element) fieldNode, new StringBuilder(), "");
+                block.toJavaSource();
 //				System.out.println();
-                File file = new File(dir, fieldBrick.getJavaSourceFileName() + ".java");
+                File file = new File(dir, block.getJavaSourceFileName() + ".java");
                 FileWriter fileWriter = new FileWriter(file);
-                fileWriter.write(fieldBrick.getJavaSource().toString());
+                fileWriter.write(block.getJavaSource().toString());
                 fileWriter.close();
             }
         }

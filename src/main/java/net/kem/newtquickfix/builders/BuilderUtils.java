@@ -16,23 +16,93 @@ import java.util.Map;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class BuilderUtils {
+    public static class QFFieldBlockDef {
+        protected final Class thisClass;
+        protected final String parentClassName;
+        protected final Class typeClass;
+        protected final CharSequence importLine;
+        protected final CharSequence typeToStringConversion;
 
-    private static final Map<CharSequence, QFFieldBrick> FIX_TYPE_TO_JAVA_BUILDING_BRICK = new HashMap<>();
+        public QFFieldBlockDef(Class thisClass, String parentClassName, Class typeClass, CharSequence importLine, CharSequence typeToStringConversion) {
+            this.thisClass = thisClass;
+            this.parentClassName = parentClassName;
+            this.typeClass = typeClass;
+            this.importLine = importLine;
+            this.typeToStringConversion = typeToStringConversion;
+        }
+    }
+
+    //    private static final Map<CharSequence, QFFieldElement> FIX_TYPE_TO_JAVA_BUILDING_BRICK = new HashMap<>();
+    private static final Map<CharSequence, QFFieldBlockDef> FIX_TYPE_TO_JAVA_BUILDING_BRICK1 = new HashMap<>();
 
     static {
-        final QFFieldBrick BrickString = new QFStringFieldBrick("QFField", String.class, null, null);
-        final QFFieldBrick BrickCharacter = new QFCharacterFieldBrick("QFField", Character.class, null, "value.charAt(0)");
-        final QFFieldBrick BrickBigDecimal = new QFFieldBrick("QFField", BigDecimal.class, "import java.math.BigDecimal;", "new BigDecimal(value)");
-        final QFFieldBrick BrickInteger = new QFFieldBrick("QFField", Integer.class, null, "Integer.parseInt(value)");
-        final QFFieldBrick BrickDouble = new QFFieldBrick("QFField", Double.class, null, "Double.parseDouble(value)");
-        final QFFieldBrick BrickBoolean = new QFBooleanFieldBrick("QFField", Boolean.class, null, "Boolean.parseBoolean(value)");
-        final QFFieldBrick BrickFloat = new QFFieldBrick("QFField", Float.class, null, "Float.parseFloat(value)");
-        final QFFieldBrick BrickCurrency = new QFCurrencyFieldBrick("QFField", Currency.class, null, "java.util.Currency.getInstance(value)");
+        final QFFieldBlockDef BrickString1 = new QFFieldBlockDef(QFStringFieldElement.class, "QFField", String.class, null, null);
+        final QFFieldBlockDef BrickCharacter1 = new QFFieldBlockDef(QFCharacterFieldElement.class, "QFField", Character.class, null, "value.charAt(0)");
+        final QFFieldBlockDef BrickBigDecimal1 = new QFFieldBlockDef(QFFieldElement.class, "QFField", BigDecimal.class, "import java.math.BigDecimal;", "new BigDecimal(value)");
+        final QFFieldBlockDef BrickInteger1 = new QFFieldBlockDef(QFFieldElement.class, "QFField", Integer.class, null, "Integer.parseInt(value)");
+        final QFFieldBlockDef BrickDouble1 = new QFFieldBlockDef(QFFieldElement.class, "QFField", Double.class, null, "Double.parseDouble(value)");
+        final QFFieldBlockDef BrickBoolean1 = new QFFieldBlockDef(QFBooleanFieldElement.class, "QFField", Boolean.class, null, "Boolean.parseBoolean(value)");
+        final QFFieldBlockDef BrickFloat1 = new QFFieldBlockDef(QFFieldElement.class, "QFField", Float.class, null, "Float.parseFloat(value)");
+        final QFFieldBlockDef BrickCurrency1 = new QFFieldBlockDef(QFCurrencyFieldElement.class, "QFField", Currency.class, null, "java.util.Currency.getInstance(value)");
 
-        final QFFieldBrick BrickDateTime = new QFDateFieldBrick("QFDateTimeField", LocalDateTime.class, "import java.time.LocalDateTime;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
-        final QFFieldBrick BrickDate = new QFDateFieldBrick("QFDateField", LocalDate.class, "import java.time.LocalDate;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
-        final QFFieldBrick BrickMonthYear = new QFDateFieldBrick("QFMonthYearField", LocalDate.class, "import java.time.LocalDate;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
-        final QFFieldBrick BrickTime = new QFDateFieldBrick("QFTimeField", LocalTime.class, "import java.time.LocalTime;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
+        final QFFieldBlockDef BrickDateTime1 = new QFFieldBlockDef(QFDateFieldElement.class, "QFDateTimeField", LocalDateTime.class, "import java.time.LocalDateTime;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
+        final QFFieldBlockDef BrickDate1 = new QFFieldBlockDef(QFDateFieldElement.class, "QFDateField", LocalDate.class, "import java.time.LocalDate;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
+        final QFFieldBlockDef BrickMonthYear1 = new QFFieldBlockDef(QFDateFieldElement.class, "QFMonthYearField", LocalDate.class, "import java.time.LocalDate;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
+        final QFFieldBlockDef BrickTime1 = new QFFieldBlockDef(QFDateFieldElement.class, "QFTimeField", LocalTime.class, "import java.time.LocalTime;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
+
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("STRING", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("MULTIPLECHARVALUE", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("EXCHANGE", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("DATA", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("LOCALMKTDATE", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("MONTHYEAR", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("MULTIPLESTRINGVALUE", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("MULTIPLEVALUESTRING", BrickString1); // In FIX v4.4 only.
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("COUNTRY", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("TZTIMEONLY", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("TZTIMESTAMP", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("XMLDATA", BrickString1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("LANGUAGE", BrickString1);
+
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("CHAR", BrickCharacter1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("PRICE", BrickBigDecimal1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("CURRENCY", BrickCurrency1);
+
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("LENGTH", BrickInteger1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("NUMINGROUP", BrickInteger1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("SEQNUM", BrickInteger1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("INT", BrickInteger1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("DAY-OF-MONTH", BrickInteger1); // In FIX v5.0 only.
+
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("AMT", BrickDouble1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("QTY", BrickDouble1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("PERCENTAGE", BrickDouble1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("PRICEOFFSET", BrickDouble1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("BOOLEAN", BrickBoolean1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("FLOAT", BrickFloat1);
+
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("UTCTIMESTAMP", BrickDateTime1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("UTCDATEONLY", BrickDate1); // In FIX v4.0 only.
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("DATE", BrickDate1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("UTCTIMEONLY", BrickTime1);
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("TIME", BrickTime1); // In FIX v4.0 only.
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK1.put("MONTH-YEAR", BrickMonthYear1); // In FIX v5.0 only.
+        
+        
+
+        /*final QFFieldElement BrickString = new QFStringFieldElement("QFField", String.class, null, null);
+        final QFFieldElement BrickCharacter = new QFCharacterFieldElement("QFField", Character.class, null, "value.charAt(0)");
+        final QFFieldElement BrickBigDecimal = new QFFieldElement("QFField", BigDecimal.class, "import java.math.BigDecimal;", "new BigDecimal(value)");
+        final QFFieldElement BrickInteger = new QFFieldElement("QFField", Integer.class, null, "Integer.parseInt(value)");
+        final QFFieldElement BrickDouble = new QFFieldElement("QFField", Double.class, null, "Double.parseDouble(value)");
+        final QFFieldElement BrickBoolean = new QFBooleanFieldElement("QFField", Boolean.class, null, "Boolean.parseBoolean(value)");
+        final QFFieldElement BrickFloat = new QFFieldElement("QFField", Float.class, null, "Float.parseFloat(value)");
+        final QFFieldElement BrickCurrency = new QFCurrencyFieldElement("QFField", Currency.class, null, "java.util.Currency.getInstance(value)");
+
+        final QFFieldElement BrickDateTime = new QFDateFieldElement("QFDateTimeField", LocalDateTime.class, "import java.time.LocalDateTime;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
+        final QFFieldElement BrickDate = new QFDateFieldElement("QFDateField", LocalDate.class, "import java.time.LocalDate;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
+        final QFFieldElement BrickMonthYear = new QFDateFieldElement("QFMonthYearField", LocalDate.class, "import java.time.LocalDate;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
+        final QFFieldElement BrickTime = new QFDateFieldElement("QFTimeField", LocalTime.class, "import java.time.LocalTime;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
 
         FIX_TYPE_TO_JAVA_BUILDING_BRICK.put("STRING", BrickString);
         FIX_TYPE_TO_JAVA_BUILDING_BRICK.put("MULTIPLECHARVALUE", BrickString);
@@ -70,24 +140,40 @@ public class BuilderUtils {
         FIX_TYPE_TO_JAVA_BUILDING_BRICK.put("DATE", BrickDate);
         FIX_TYPE_TO_JAVA_BUILDING_BRICK.put("UTCTIMEONLY", BrickTime);
         FIX_TYPE_TO_JAVA_BUILDING_BRICK.put("TIME", BrickTime); // In FIX v4.0 only.
-        FIX_TYPE_TO_JAVA_BUILDING_BRICK.put("MONTH-YEAR", BrickMonthYear); // In FIX v5.0 only.
+        FIX_TYPE_TO_JAVA_BUILDING_BRICK.put("MONTH-YEAR", BrickMonthYear); // In FIX v5.0 only.*/
     }
 
-    public static QFFieldBrick getJavaSourceFieldBuildingBrick(CharSequence fieldType) {
+    /*public static QFFieldElement getJavaSourceFieldBuildingBrick(CharSequence fieldType) {
         return FIX_TYPE_TO_JAVA_BUILDING_BRICK.get(fieldType);
+    }*/
+
+    public static QFFieldBlockDef getJavaSourceFieldBuildingBrick1(CharSequence fieldType) {
+        return FIX_TYPE_TO_JAVA_BUILDING_BRICK1.get(fieldType);
     }
 
-    public static QFMemberBrick getQFMemberBrick(Element startElement, StringBuilder sb) {
+    /*public static QFElement getQFMemberBrick(Element startElement, StringBuilder sb) {
         switch (QFMember.Type.valueOf(startElement.getTagName().toUpperCase())) {
             case FIELD:
-                return new QFFieldBrick();
+                return new QFFieldElement();
             case GROUP:
                 return new QFGroupBrick(startElement, sb);
             case COMPONENT:
-                return new QFComponentBrick(startElement, sb);
+                return new QFComponentElement(startElement, sb);
+            default: return null;
+        }
+    }*/
+
+    public static QFRequirable getQFRequirable(Element startElement, StringBuilder sb, CharSequence ident) {
+        QFMember.Type type = QFMember.Type.valueOf(startElement.getTagName().toUpperCase());
+        switch (type) {
+            case FIELD:
+                return new QFFieldBrick(startElement, sb, ident);
+            case COMPONENT:
+                return new QFComponentBrick(startElement, sb, ident);
+            case GROUP:
+                return new QFGroupBrick(startElement, sb, ident);
             default: return null;
         }
     }
-
 
 }

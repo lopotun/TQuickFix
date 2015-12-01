@@ -1,13 +1,15 @@
 package net.kem.newtquickfix.builders;
 
+import org.w3c.dom.Element;
+
 /**
  * Created by Evgeny Kurtser on 11/9/2015 at 12:27 PM.
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
-public class QFStringFieldBrick extends QFFieldBrick {
+public class QFStringFieldElement extends QFFieldElement {
 
-    public QFStringFieldBrick(String parentClassName, Class typeClass, CharSequence importLine, CharSequence typeToStringConversion) {
-        super(parentClassName, typeClass, importLine, typeToStringConversion);
+    public QFStringFieldElement(Element startElement, BuilderUtils.QFFieldBlockDef def) {
+        super(startElement, def);
     }
 
     @Override

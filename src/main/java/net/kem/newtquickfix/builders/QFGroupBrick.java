@@ -1,90 +1,123 @@
 package net.kem.newtquickfix.builders;
 
-import net.kem.newtquickfix.blocks.QFMember;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 /**
  * Created by Evgeny Kurtser on 11/5/2015 at 3:43 PM.
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
+ *
+     @QFMember(type = QFMember.Type.GROUP, groupClass = ComponentMain.GroupA.class)
+     private List<ComponentMain.GroupA> groupA;
+     public List<ComponentMain.GroupA> getGroupA() {
+     return groupA;
+     }
+     public void setGroupA(List<ComponentMain.GroupA> groupA) {
+     this.groupA = groupA;
+     }
  */
-public class QFGroupBrick extends QFMemberBrick {
-    protected QFGroupBrick(Element startElement, StringBuilder sb) throws IllegalArgumentException {
-        super(startElement, sb);
+public class QFGroupBrick extends QFRequirable {
+    protected QFGroupBrick(Element startElement, StringBuilder sb, CharSequence ident) throws IllegalArgumentException {
+        super(startElement, sb, ident);
+    }
+
+    // for (NoAffectedOrders item: noAffectedOrders) {
+    //  item.toFIXString(sb);
+    // }
+    @Override
+    protected void getMethodToFIXStringPart(StringBuilder sb) {
+        String memberVarName = StringUtils.uncapitalize(name);
+        sb.append(ident).append("\t\t\tfor (").append(name).append(" item: ").append(memberVarName).append(") {\n");
+        sb.append(ident).append("\t\t\t\titem.toFIXString(sb);\n");
+        sb.append(ident).append("\t\t\t}\n");
     }
 
     @Override
+    protected void getImportSectionPart(StringBuilder sb) {
+        sb.append("import net.kem.newtquickfix.blocks.QFGroupDef;\n").append("import java.util.List;\n");
+    }
+
     public void toJavaSource() {
-        getClassTitle();
-        getMembers();
-        getConstructor();
-        getMethodGetInstance();
-        getMethodToFIXString();
-        sb.append('}'); // end of class
+        addDefinition();
+        super.toJavaSource();
     }
-
-    public String getFirstFiledName() {
-        QFBrick firstMember = members.get(0);
-        if (firstMember.getFIXType() == QFMember.Type.FIELD) {
-            return firstMember.getName();
-        }
-        return firstMember.getFirstFiledName();
-    }
-
 
     /*
-    @Override
-    public void toFIXString(StringBuilder sb) {
-        if(fieldStringGroupDelimiter != null) {
-            fieldStringGroupDelimiter.toFIXString(sb);
-        }
-        if(fieldStringA != null) {
-            fieldStringA.toFIXString(sb);
-        }
-        if(componentC != null) {
-            componentC.toFIXString(sb);
-        }
-        if(fieldIntegerA != null) {
-            fieldIntegerA.toFIXString(sb);
-        }
-    }
-    */
-    protected void getMethodToFIXString() {
-        sb.append("\t@Override\n\tpublic void toFIXString(StringBuilder sb) {");
-        for (QFBrick member : members) {
-            String memberClassName = member.getName();
-            String memberVarName = StringUtils.uncapitalize(memberClassName);
-            sb.append("\t\tif(").append(memberVarName).append(" != null) {\n")
-                    .append("\t\t\t").append(memberVarName).append(".toFIXString(sb);\n\t\t}\n");
-        }
-        sb.append("\t}\n");
-    }
-
-    /*	@QFGroupDef(count = FieldIntegerGroupCount.TAG, delimiter = FieldStringGroupDelimiter.TAG)
+    @QFGroupDef(count = FieldIntegerGroupCount.TAG, delimiter = FieldStringGroupDelimiter.TAG)
     public static class GroupA extends QFComponent {
-    private static final int $GROUP_COUNT;
+        private static final int $GROUP_COUNT;
         static {
             QFGroupDef groupAnnotation = GroupA.class.getAnnotation(QFGroupDef.class);
             $GROUP_COUNT = groupAnnotation.count();
         }
-    */
-    @Override
-    protected void getClassTitle() {
-        sb.append("\t@QFGroupDef(count = ")
-                .append(name) //group count
-                .append(".TAG, delimiter = ")
-                .append(getFirstFiledName()) //group delimiter
-                .append(".TAG)\n")
-                .append("\tpublic static class ").append(name).append(" extends QFComponent {\n")
-                .append("\tprivate static final int $GROUP_COUNT;\n")
-                .append("\t\tstatic {\n")
-                .append("\t\t\tQFGroupDef groupAnnotation = ").append(name).append(".class.getAnnotation(QFGroupDef.class);\n")
-                .append("\t\t\t$GROUP_COUNT = groupAnnotation.count();\n")
-                .append("\t\t{\n");
+        @QFMember
+        private FieldStringGroupDelimiter fieldStringGroupDelimiter;
+        public FieldStringGroupDelimiter getFieldStringGroupDelimiter() {
+            return fieldStringGroupDelimiter;
+        }
+        public void setFieldStringGroupDelimiter(FieldStringGroupDelimiter fieldStringGroupDelimiter) {
+            this.fieldStringGroupDelimiter = fieldStringGroupDelimiter;
+        }
+
+        // ... group members
+
+        private GroupA() {
+        }
+
+        public static GroupA getInstance(Stack<QFField> tags, GroupA instance) {
+            return getInstance(tags, instance, GroupA.class);
+        }
+
+        @Override
+        public void toFIXString(StringBuilder sb) {
+            if(fieldStringGroupDelimiter != null) {
+                fieldStringGroupDelimiter.toFIXString(sb);
+            }
+            if(fieldStringA != null) {
+                fieldStringA.toFIXString(sb);
+            }
+            if(componentC != null) {
+                componentC.toFIXString(sb);
+            }
+            if(fieldIntegerA != null) {
+                fieldIntegerA.toFIXString(sb);
+            }
+        }
+    }
+     */
+    private void addDefinition() {
+        QFGroupElement groupBlock = new QFGroupElement(startElement, sb);
+        groupBlock.toJavaSource();
     }
 
     // @QFMember(type = QFMember.Type.GROUP, groupClass = ComponentMain.GroupA.class)
-    public void getMemberAnnotation() {
-        sb.append("@QFMember(type = QFMember.Type.GROUP, groupClass = ").append(name).append(".class)\n");
+    @Override
+    protected void addAnnotation() {
+        sb.append(ident).append("\t@QFMember(type = QFMember.Type.GROUP, groupClass = ").append(name).append(".class)\n");
+    }
+
+    // private List<ComponentMain.GroupA> groupA;
+    protected void addDeclaration() {
+        sb.append(ident).append("\tprivate List<").append(name).append("> ").append(StringUtils.uncapitalize(name)).append(";\n");
+    }
+
+    /*
+    public List<ComponentMain.GroupA> getGroupA() {
+        return groupA;
+    }
+     */
+    protected void addGetter() {
+        sb.append(ident).append("\tpublic List<").append(name).append("> get").append(name).append("() {\n")
+                .append("\t\treturn ").append(StringUtils.uncapitalize(name)).append(";\n\t}\n");
+    }
+
+    /*
+    public void setGroupA(List<ComponentMain.GroupA> groupA) {
+        this.groupA = groupA;
+    }
+     */
+    protected void addSetter() {
+        sb.append(ident).append("\tpublic void set").append(name).append("(List<").append(name).append("> ").append(StringUtils.uncapitalize(name)).append(") {\n")
+                .append("\t\tthis.").append(StringUtils.uncapitalize(name)).append(" = ").append(StringUtils.uncapitalize(name)).append(";\n\t}\n");
     }
 }

@@ -1,5 +1,7 @@
 package net.kem.newtquickfix.builders;
 
+import org.w3c.dom.Element;
+
 import java.util.Map;
 
 /**
@@ -8,9 +10,9 @@ import java.util.Map;
  * Created by Evgeny Kurtser on 11/9/2015 at 12:27 PM.
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
-public class QFCurrencyFieldBrick extends QFFieldBrick {
-    public QFCurrencyFieldBrick(String parentClassName, Class typeClass, CharSequence importLine, CharSequence typeToStringConversion) {
-        super(parentClassName, typeClass, importLine, typeToStringConversion);
+public class QFCurrencyFieldElement extends QFFieldElement {
+    public QFCurrencyFieldElement(Element startElement, BuilderUtils.QFFieldBlockDef def) {
+        super(startElement, def);
     }
 
     @Override
@@ -20,14 +22,14 @@ public class QFCurrencyFieldBrick extends QFFieldBrick {
             return new Currency(value);
         }
         */
-        sb.append("\tpublic static ").append(fixName).append(" getInstance(").append(typeClass.getName()).append(" value) {\n");
+        sb.append("\tpublic static ").append(name).append(" getInstance(").append(def.typeClass.getName()).append(" value) {\n");
         if (defaultValues != null) {
-            sb.append("\t\t").append(fixName).append(" res = STATIC_VALUES_MAPPING.get(value);\n")
-                    .append("\t\tif (res == null) {\n").append("\t\t\tres = new ").append(fixName).append("(value);\n")
+            sb.append("\t\t").append(name).append(" res = STATIC_VALUES_MAPPING.get(value);\n")
+                    .append("\t\tif (res == null) {\n").append("\t\t\tres = new ").append(name).append("(value);\n")
                     .append("\t\t}\n")
                     .append("\t\treturn res;\n");
         } else {
-            sb.append("\t\treturn new ").append(fixName).append("(value);\n");
+            sb.append("\t\treturn new ").append(name).append("(value);\n");
         }
         sb.append("\t}\n");
     }
@@ -39,7 +41,7 @@ public class QFCurrencyFieldBrick extends QFFieldBrick {
             this.value = value;
         }
 		 */
-        sb.append("\tprivate ").append(fixName).append('(').append(typeClass.getName()).append(" value) {\n")
+        sb.append("\tprivate ").append(name).append('(').append(def.typeClass.getName()).append(" value) {\n")
                 .append("\t\tthis.value = value;\n")
                 .append("\t}\n\n");
     }
@@ -48,10 +50,10 @@ public class QFCurrencyFieldBrick extends QFFieldBrick {
     protected void getPredefinedStaticMembers() {
         if (defaultValues != null) {
             // "	private static final Map<Integer, FieldIntegerExample> STATIC_VALUES_MAPPING = new HashMap<>();\n\n"
-            sb.append("\tprivate static final Map<").append(typeClass.getName()).append(", ").append(fixName).append("> STATIC_VALUES_MAPPING = new HashMap<>();\n\n");
+            sb.append("\tprivate static final Map<").append(def.typeClass.getName()).append(", ").append(name).append("> STATIC_VALUES_MAPPING = new HashMap<>();\n\n");
             for (Map.Entry<CharSequence, CharSequence> defaultValue : defaultValues.entrySet()) {
                 // "	public static final FieldIntegerExample UNKNOWN_CLIENT = new FieldIntegerExample(0);\n"
-                sb.append("\tpublic static final ").append(fixName).append(' ').append(defaultValue.getKey()).append(" = new ").append(fixName).append('(');
+                sb.append("\tpublic static final ").append(name).append(' ').append(defaultValue.getKey()).append(" = new ").append(name).append('(');
                 sb.append(defaultValue.getValue());
                 sb.append(");\n");
             }
@@ -67,7 +69,7 @@ public class QFCurrencyFieldBrick extends QFFieldBrick {
 
     @Override
     protected void getClassTitle() {
-        sb.append("public class ").append(fixName).append(" extends ")
-                .append(parentClassName).append('<').append(typeClass.getName()).append("> {\n");
+        sb.append("public class ").append(name).append(" extends ")
+                .append(def.parentClassName).append('<').append(def.typeClass.getName()).append("> {\n");
     }
 }
