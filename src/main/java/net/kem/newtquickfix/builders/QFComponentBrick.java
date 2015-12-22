@@ -25,4 +25,9 @@ public class QFComponentBrick extends QFRequirable {
     protected void addAnnotation() {
         sb.append(ident).append("\t@QFMember(type = QFMember.Type.COMPONENT)\n");
     }
+
+    @Override
+    protected void getImportSectionPart(StringBuilder sb) {
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_COMPONENTS).append('.').append(name).append(";\n");
+    }
 }

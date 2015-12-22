@@ -8,10 +8,11 @@ import org.w3c.dom.Element;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class QFGroupElement extends QFComponentElement {
-
-    protected QFGroupElement(Element startElement, StringBuilder sb) throws IllegalArgumentException {
+    private QFElement parent;
+    protected QFGroupElement(Element startElement, StringBuilder sb, QFElement parent) throws IllegalArgumentException {
         super(startElement, sb, "\t");
         this.type = QFMember.Type.GROUP;
+        this.parent = parent;
     }
 
     /*
@@ -71,18 +72,18 @@ public class QFGroupElement extends QFComponentElement {
         sb.append(ident).append("}\n"); // end of class
     }
 
-    private void getImportSection() {
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n");
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFGroupDef;\n");
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n\n");
+    protected void getImportSection() {
         for (QFRequirable member : members) {
             if (member.getTagType() == QFMember.Type.FIELD) {
-                sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(member.getName()).append(";\n");
+                if(member.getName().equals(parent.getName())) {
+                    // In some cases (e.g. in net.kem.newtquickfix.components.RateSource) we have class member (of type QFField)
+                    // that has the same name as Component class. In this case we have to use full-specified name for this class member.
+                    member.useFQDN(true);
+                } else {
+                    member.getImportSectionPart(sb);
+                }
             }
         }
-
-        sb.append("import java.util.List;\n");
-        sb.append("import java.util.Stack;\n");
         sb.append('\n');
     }
 

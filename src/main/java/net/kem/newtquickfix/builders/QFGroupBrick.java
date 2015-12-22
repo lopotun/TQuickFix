@@ -17,8 +17,11 @@ import org.w3c.dom.Element;
      }
  */
 public class QFGroupBrick extends QFRequirable {
-    protected QFGroupBrick(Element startElement, StringBuilder sb, CharSequence ident) throws IllegalArgumentException {
+    private QFGroupElement groupBlock;
+    private QFElement parent;
+    protected QFGroupBrick(Element startElement, StringBuilder sb, CharSequence ident, QFElement parent) throws IllegalArgumentException {
         super(startElement, sb, ident);
+        this.parent = parent;
     }
 
     // for (NoAffectedOrders item: noAffectedOrders) {
@@ -35,6 +38,10 @@ public class QFGroupBrick extends QFRequirable {
     @Override
     protected void getImportSectionPart(StringBuilder sb) {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFGroupDef;\n").append("import java.util.List;\n");
+        if(groupBlock == null) {
+            groupBlock = new QFGroupElement(startElement, sb, parent);
+        }
+        groupBlock.getImportSection();
     }
 
     public void toJavaSource() {
@@ -86,7 +93,9 @@ public class QFGroupBrick extends QFRequirable {
     }
      */
     private void addDefinition() {
-        QFGroupElement groupBlock = new QFGroupElement(startElement, sb);
+        if(groupBlock == null) {
+            groupBlock = new QFGroupElement(startElement, sb, parent);
+        }
         groupBlock.toJavaSource();
     }
 

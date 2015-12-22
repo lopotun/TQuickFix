@@ -9,6 +9,7 @@ import org.w3c.dom.Element;
  */
 public abstract class QFRequirable extends QFElement {
     protected boolean required;
+    protected boolean useFQDN;
 
     /*
     <group name="NoMDEntries" required="Y">
@@ -79,5 +80,9 @@ public abstract class QFRequirable extends QFElement {
     protected void addSetter() {
         sb.append(ident).append("\tpublic void set").append(name).append("(").append(name).append(' ').append(StringUtils.uncapitalize(name)).append(") {\n")
                 .append(ident).append("\t\tthis.").append(StringUtils.uncapitalize(name)).append(" = ").append(StringUtils.uncapitalize(name)).append(";\n").append(ident).append("\t}\n");
+    }
+
+    public void useFQDN(boolean useFQDN) {
+        this.useFQDN = useFQDN;
     }
 }

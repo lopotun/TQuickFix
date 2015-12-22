@@ -171,7 +171,7 @@ public class BuilderUtils {
         }
     }*/
 
-    public static QFRequirable getQFRequirable(Element startElement, StringBuilder sb, CharSequence ident) {
+    public static QFRequirable getQFRequirable(Element startElement, StringBuilder sb, CharSequence ident, QFElement parent) {
         QFMember.Type type = QFMember.Type.valueOf(startElement.getTagName().toUpperCase());
         switch (type) {
             case FIELD:
@@ -179,7 +179,11 @@ public class BuilderUtils {
             case COMPONENT:
                 return new QFComponentBrick(startElement, sb, ident);
             case GROUP:
-                return new QFGroupBrick(startElement, sb, ident);
+                return new QFGroupBrick(startElement, sb, ident, parent);
+            case HEADER:
+                return new QFComponentBrick(startElement, sb, ident);
+            case TRAILER:
+                return new QFComponentBrick(startElement, sb, ident);
             default: return null;
         }
     }

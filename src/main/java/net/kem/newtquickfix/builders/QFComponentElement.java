@@ -24,7 +24,7 @@ public class QFComponentElement extends QFElement {
             for (int j = 0; j < values.getLength(); j++) {
                 Node value = values.item(j);
                 if (value instanceof Element) {
-                    QFRequirable member = BuilderUtils.getQFRequirable((Element) value, sb, ident);
+                    QFRequirable member = BuilderUtils.getQFRequirable((Element) value, sb, ident, this);
                     if (member != null) {
                         members.add(member);
                     }
@@ -55,21 +55,24 @@ public class QFComponentElement extends QFElement {
         return BuilderUtils.PACKAGE_NAME_FIELDS + "." + fieldName.toString();
     }
 
-    private void getPackageSection() {
+    protected void getPackageSection() {
         sb.append("package ").append(BuilderUtils.PACKAGE_NAME_COMPONENTS).append(";\n\n");
     }
 
-    private void getImportSection() {
+    protected void getImportSection() {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFComponent;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n");
-//        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFGroupDef;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n");
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".*;\n\n");
         for (QFRequirable member : members) {
-            member.getImportSectionPart(sb);
+            // In some cases (e.g. in net.kem.newtquickfix.components.RateSource) we have class member (of type QFField)
+            // that has the same name as Component class. In this case we have to use full-specified name for this class member.
+            if(member.getName().equals(name)) {
+                member.useFQDN(true);
+            } else {
+                member.getImportSectionPart(sb);
+            }
         }
 
-//        sb.append("import java.util.List;\n");
         sb.append("import java.util.Stack;\n");
         sb.append('\n');
     }

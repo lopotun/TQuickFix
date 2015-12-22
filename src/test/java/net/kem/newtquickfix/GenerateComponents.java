@@ -28,21 +28,6 @@ import java.text.ParseException;
  */
 public class GenerateComponents {
     public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException, ClassNotFoundException, ParseException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-//        QFField testT1 = AggressorIndicator.getInstance("true");
-//        QFField testT2 = AggressorIndicator.getInstance(true);
-//        QFField testT3 = AggressorIndicator.getInstance("Y");
-//        QFField testT4 = AggressorIndicator.ORDER_INITIATOR_IS_AGGRESSOR;
-//        QFField testF1 = AggressorIndicator.getInstance("false");
-//        QFField testF2 = AggressorIndicator.getInstance(false);
-//        QFField testF3 = AggressorIndicator.getInstance("n");
-//        QFField testF4 = AggressorIndicator.ORDER_INITIATOR_IS_PASSIVE;
-//        System.out.println(testF1.toFixString() + ", " + testF2.toFixString());
-//        System.out.println(testT1.toFixString() + ", " + testT2.toFixString());
-//
-//        QFField testDT1 = EffectiveTime.getInstance("20151109-14:55:07");//yyyyMMdd-HH:mm:ss
-//        QFField testDT2 = EffectiveTime.getInstance(LocalDateTime.now());
-//        System.out.println(testDT1.toFixString() + ", " + testDT2.toFixString());
-
         //Get the DOM Builder Factory
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 
@@ -96,7 +81,7 @@ public class GenerateComponents {
 
         File dir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\components");
         dir.mkdirs();
-        expr = xpath.compile("/fix/components/component");// //person/*//*text()
+        expr = xpath.compile("/fix/components/component | /fix/header | /fix/trailer");// //person/*//*text()
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
         for (int j = 0; j < nodes.getLength(); j++) {
             Node fieldNode = nodes.item(j);

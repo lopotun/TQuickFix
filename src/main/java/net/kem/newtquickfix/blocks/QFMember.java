@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD}) //on field level
 public @interface QFMember {
     enum Type {
-        FIELD, COMPONENT, GROUP
+        FIELD, COMPONENT, GROUP, MESSAGE, HEADER, TRAILER
     }
 
     Type type() default Type.FIELD;
