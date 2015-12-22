@@ -34,7 +34,7 @@ public class QFGroupBrick extends QFRequirable {
 
     @Override
     protected void getImportSectionPart(StringBuilder sb) {
-        sb.append("import net.kem.newtquickfix.blocks.QFGroupDef;\n").append("import java.util.List;\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFGroupDef;\n").append("import java.util.List;\n");
     }
 
     public void toJavaSource() {

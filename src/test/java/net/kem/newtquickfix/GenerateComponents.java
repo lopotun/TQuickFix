@@ -1,5 +1,6 @@
 package net.kem.newtquickfix;
 
+import net.kem.newtquickfix.builders.BuilderUtils;
 import net.kem.newtquickfix.builders.QFComponentElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -55,9 +56,47 @@ public class GenerateComponents {
 
         XPathExpression expr;
         NodeList nodes;
-        expr = xpath.compile("/fix/components/component");// //person/*//*text()
+
+        /*
+        <component name="PegInstructions">
+            <XXX name="PegOffsetValue" required="N"/>
+            |
+         */
+        expr = xpath.compile("//component/*[1]");
+        nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+        for (int j = 0; j < nodes.getLength(); j++) {
+            Node node = nodes.item(j);
+            if (node instanceof Element) {
+                Element child = (Element) node;
+                if(child.getTagName().equals("field")) {
+                    Element parentNode = (Element)child.getParentNode();
+                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentNode.getAttribute("name"), child.getAttribute("name"));
+                }
+            }
+        }
+
+        /*
+        <component name="RgstDistInstGrp">
+            <group name="NoDistribInsts" required="N">
+                <XXX name="DistribPaymentMethod" required="N"/>
+         */
+        expr = xpath.compile("//component/group/*[1]");
+        nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+        for (int j = 0; j < nodes.getLength(); j++) {
+            Node node = nodes.item(j);
+            if (node instanceof Element) {
+                Element child = (Element) node;
+                if(child.getTagName().equals("field")) {
+                    Element parentNode = (Element)child.getParentNode().getParentNode();
+                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentNode.getAttribute("name"), child.getAttribute("name"));
+                }
+
+            }
+        }
+
         File dir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\components");
         dir.mkdirs();
+        expr = xpath.compile("/fix/components/component");// //person/*//*text()
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
         for (int j = 0; j < nodes.getLength(); j++) {
             Node fieldNode = nodes.item(j);

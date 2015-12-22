@@ -69,7 +69,7 @@ public class QFFieldElement extends QFElement {
 
     /*package net.kem.newtquickfix;*/
     private void getPackageSection() {
-        sb.append("package net.kem.newtquickfix.fields;\n\n");
+        sb.append("package ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(";\n\n");
     }
 
     //				"import net.kem.newtquickfix.blocks.QFField;\n" +
@@ -78,7 +78,7 @@ public class QFFieldElement extends QFElement {
     //				"import java.util.Map;\n" +
     //				"\n" +
     private void getImportSection() {
-        sb.append("import net.kem.newtquickfix.blocks.").append(def.parentClassName).append(";\n\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append(def.parentClassName).append(";\n\n");
         if (defaultValues != null) {
             sb.append("import java.util.HashMap;\n").append("import java.util.Map;\n");
         }

@@ -16,6 +16,14 @@ import java.util.Map;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class BuilderUtils {
+    public static final CharSequence PACKAGE_NAME_BLOCKS = "net.kem.newtquickfix.blocks.";
+
+    public static CharSequence PACKAGE_NAME_COMPONENTS = "net.kem.newtquickfix.components";
+    public static CharSequence PACKAGE_NAME_FIELDS = "net.kem.newtquickfix.fields";
+    public static CharSequence PACKAGE_NAME_MESSAGES = "net.kem.newtquickfix.messages";
+
+    public static final Map<CharSequence, CharSequence> COMPONENTS_FIRST_FIELD = new HashMap<>(64);
+
     public static class QFFieldBlockDef {
         protected final Class thisClass;
         protected final String parentClassName;

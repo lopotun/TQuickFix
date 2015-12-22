@@ -49,28 +49,23 @@ public class QFComponentElement extends QFElement {
     public String getFirstFiledName() {
         QFRequirable firstMember = members.get(0);
         if (firstMember.getTagType() == QFMember.Type.FIELD) {
-            return firstMember.getName();
+            return BuilderUtils.PACKAGE_NAME_FIELDS + "." + firstMember.getName();
         }
-        //TODO Implement
-//        String blockName = "net.kem.newtquickfix.components." + name + "." + firstMember.getName();
-//        Class<QFComponentElement> clazz = Class.forName(blockName);
-        return firstMember.getFirstFiledName();
+        CharSequence fieldName = BuilderUtils.COMPONENTS_FIRST_FIELD.get(firstMember.name);
+        return BuilderUtils.PACKAGE_NAME_FIELDS + "." + fieldName.toString();
     }
 
     private void getPackageSection() {
-        sb.append("package net.kem.newtquickfix.components;\n\n");
+        sb.append("package ").append(BuilderUtils.PACKAGE_NAME_COMPONENTS).append(";\n\n");
     }
 
     private void getImportSection() {
-        sb.append("import net.kem.newtquickfix.blocks.QFComponent;\n");
-        sb.append("import net.kem.newtquickfix.blocks.QFField;\n");
-//        sb.append("import net.kem.newtquickfix.blocks.QFGroupDef;\n");
-        sb.append("import net.kem.newtquickfix.blocks.QFMember;\n");
-        sb.append("import net.kem.newtquickfix.fields.*;\n\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFComponent;\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n");
+//        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFGroupDef;\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".*;\n\n");
         for (QFRequirable member : members) {
-//            if (member.getTagType() == QFMember.Type.FIELD) {
-//                sb.append("import net.kem.newtquickfix.fields.").append(member.getName()).append(";\n");
-//            }
             member.getImportSectionPart(sb);
         }
 

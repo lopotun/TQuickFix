@@ -71,17 +71,13 @@ public class QFGroupElement extends QFComponentElement {
         sb.append(ident).append("}\n"); // end of class
     }
 
-    //    private void getPackageSection() {
-//        sb.append("package net.kem.newtquickfix.components;\n\n");
-//    }
-//
     private void getImportSection() {
-        sb.append("import net.kem.newtquickfix.blocks.QFField;\n");
-        sb.append("import net.kem.newtquickfix.blocks.QFGroupDef;\n");
-        sb.append("import net.kem.newtquickfix.blocks.QFMember;\n\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFGroupDef;\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n\n");
         for (QFRequirable member : members) {
             if (member.getTagType() == QFMember.Type.FIELD) {
-                sb.append("import net.kem.newtquickfix.fields.").append(member.getName()).append(";\n");
+                sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(member.getName()).append(";\n");
             }
         }
 
@@ -94,7 +90,7 @@ public class QFGroupElement extends QFComponentElement {
     // public static class GroupA extends QFComponent {
     @Override
     protected void getClassTitle() {
-        sb.append(ident).append("@QFGroupDef(count = net.kem.newtquickfix.fields.").append(name).append(".TAG, delimiter = ").append(getFirstFiledName()).append(".TAG)\n")
+        sb.append(ident).append("@QFGroupDef(count = ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(name).append(".TAG, delimiter = ").append(getFirstFiledName()).append(".TAG)\n")
                 .append(ident).append("@SuppressWarnings(\"unused\")\n")
                 .append(ident).append("public static class ").append(name).append(" extends QFComponent {\n");
     }
