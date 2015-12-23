@@ -18,6 +18,7 @@ import java.util.Map;
 public class BuilderUtils {
     public static final CharSequence PACKAGE_NAME_BLOCKS = "net.kem.newtquickfix.blocks.";
 
+    public static CharSequence FIX_VERSION = "";
     public static CharSequence PACKAGE_NAME_COMPONENTS = "net.kem.newtquickfix.components";
     public static CharSequence PACKAGE_NAME_FIELDS = "net.kem.newtquickfix.fields";
     public static CharSequence PACKAGE_NAME_MESSAGES = "net.kem.newtquickfix.messages";

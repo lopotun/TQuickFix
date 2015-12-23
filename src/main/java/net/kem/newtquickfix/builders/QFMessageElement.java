@@ -1,5 +1,6 @@
 package net.kem.newtquickfix.builders;
 
+import net.kem.newtquickfix.blocks.QFMember;
 import org.w3c.dom.Element;
 
 /**
@@ -22,7 +23,7 @@ public class QFMessageElement extends QFComponentElement {
     private void addHeaderTrailer(Element headerOrTrailer, boolean isHeader) {
         QFRequirable member = BuilderUtils.getQFRequirable(headerOrTrailer, sb, ident, this);
         if (member != null) {
-            if(isHeader) {
+            if (isHeader) {
                 members.add(0, member);
             } else {
                 members.add(member);
@@ -40,7 +41,9 @@ public class QFMessageElement extends QFComponentElement {
     */
     protected void getClassTitle() {
         sb.append("\t@SuppressWarnings(\"unused\")\n")
-                .append("public class ").append(name).append(" extends QFMessage {\n");
+                .append("public class ").append(name).append(" extends QFMessage ");
+        generateImplementsSection();
+        sb.append("{\n");
     }
 
     protected void getImportSection() {
@@ -54,17 +57,36 @@ public class QFMessageElement extends QFComponentElement {
         sb.append('\n');
     }
 
+    private void generateImplementsSection() {
+        boolean componentChildFound = false;
+        for (QFRequirable member : members) {
+            if (member.type == QFMember.Type.COMPONENT) {
+                if (!componentChildFound) {
+                    sb.append("implements ");
+                    componentChildFound = true;
+                }
+                sb.append("I").append(member.name).append(", ");
+            }
+        }
+        if (componentChildFound) {
+            sb.setLength(sb.length() - 2); // Get rid of the last ", ".
+            sb.append(" ");
+        }
+    }
+
+
     /**
      * This method puts the following lines:
-     *
+     * <p>
      * // Show unknown ta(s) if any.
      * super.toFIXString(sb);
-     *
+     * <p>
      * before the StandardTrailer component in {@link #getMethodToFIXString()} method.
-     * @param member    .
+     *
+     * @param member .
      */
     protected void hookMethodToFIXString(QFRequirable member) {
-        if(member.getName().equals("StandardTrailer")) {
+        if (member.getName().equals("StandardTrailer")) {
             sb.append(ident).append("\t\t// Show unknown tag(s) if any.\n")
                     .append("\t\tsuper.toFIXString(sb);\n\n");
         }

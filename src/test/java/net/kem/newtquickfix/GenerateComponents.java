@@ -2,6 +2,7 @@ package net.kem.newtquickfix;
 
 import net.kem.newtquickfix.builders.BuilderUtils;
 import net.kem.newtquickfix.builders.QFComponentElement;
+import net.kem.newtquickfix.builders.QFMessageInterface;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -81,17 +82,26 @@ public class GenerateComponents {
 
         File dir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\components");
         dir.mkdirs();
+        File componentInterfacesDir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\messages");
+        componentInterfacesDir.mkdirs();
         expr = xpath.compile("/fix/components/component | /fix/header | /fix/trailer");// //person/*//*text()
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
         for (int j = 0; j < nodes.getLength(); j++) {
             Node fieldNode = nodes.item(j);
             if (fieldNode instanceof Element) {
+                // Generate and store component.
                 QFComponentElement block = new QFComponentElement((Element) fieldNode, new StringBuilder(), "");
                 block.toJavaSource();
-//				System.out.println();
                 File file = new File(dir, block.getJavaSourceFileName() + ".java");
                 FileWriter fileWriter = new FileWriter(file);
                 fileWriter.write(block.getJavaSource().toString());
+                fileWriter.close();
+
+                // Generate and store component interface. This QFMessage might implement this interface.
+                String componentInterfaceSource = QFMessageInterface.buildInterfaceSource(block.getJavaSourceFileName());
+                file = new File(componentInterfacesDir, "I" + block.getJavaSourceFileName() + ".java");
+                fileWriter = new FileWriter(file);
+                fileWriter.write(componentInterfaceSource);
                 fileWriter.close();
             }
         }
