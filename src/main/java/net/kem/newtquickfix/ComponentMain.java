@@ -24,7 +24,7 @@ import java.util.Stack;
 @SuppressWarnings("unused")
 public class ComponentMain extends QFComponent {
 
-    public static void main(String[] args) throws NoSuchMethodException {
+    public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
         QFFieldUtils.fillMap();
 
         Stack<QFTag> origTags = new Stack<>();

@@ -12,7 +12,7 @@ public abstract class QFDateTimeField extends QFField<LocalDateTime> {
         return new SimpleDateFormat("yyyyMMdd-HH:mm:ss");//:S
     }*/
     protected static DateTimeFormatter getDateFormat() {
-        return DateTimeFormatter.ofPattern("yyyyMMdd-HH:mm:ss");
+        return DateTimeFormatter.ofPattern("yyyyMMdd-HH:mm:ss.SSS");
     }
 
     @Override

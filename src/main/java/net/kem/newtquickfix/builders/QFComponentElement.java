@@ -138,6 +138,7 @@ public class QFComponentElement extends QFElement {
         sb.append(ident).append("\t@Override\n")
           .append(ident).append("\tpublic void toFIXString(StringBuilder sb) {\n");
         for (QFRequirable member : members) {
+            hookMethodToFIXString(member);
             String memberClassName = member.getName();
             String memberVarName = StringUtils.uncapitalize(memberClassName);
             sb.append(ident).append("\t\tif(").append(memberVarName).append(" != null) {\n");
@@ -145,5 +146,8 @@ public class QFComponentElement extends QFElement {
             sb.append(ident).append("\t\t}\n");
         }
         sb.append(ident).append("\t}\n");
+    }
+
+    protected void hookMethodToFIXString(QFRequirable member) {
     }
 }

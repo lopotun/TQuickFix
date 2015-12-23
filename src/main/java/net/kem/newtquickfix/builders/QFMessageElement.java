@@ -53,4 +53,20 @@ public class QFMessageElement extends QFComponentElement {
         sb.append("import java.util.Stack;\n");
         sb.append('\n');
     }
+
+    /**
+     * This method puts the following lines:
+     *
+     * // Show unknown ta(s) if any.
+     * super.toFIXString(sb);
+     *
+     * before the StandardTrailer component in {@link #getMethodToFIXString()} method.
+     * @param member    .
+     */
+    protected void hookMethodToFIXString(QFRequirable member) {
+        if(member.getName().equals("StandardTrailer")) {
+            sb.append(ident).append("\t\t// Show unknown tag(s) if any.\n")
+                    .append("\t\tsuper.toFIXString(sb);\n\n");
+        }
+    }
 }

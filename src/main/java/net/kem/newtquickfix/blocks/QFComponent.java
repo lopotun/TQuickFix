@@ -62,13 +62,16 @@ public abstract class QFComponent {
                 return instance;
             }
             QFField qfField = tags.peek();
+            if(!qfField.isKnown()) {
+                return instance;
+            }
 
             // Look for fields.
             QFFieldUtils.ChildGetterSetter childGS = QFFieldUtils.lookupField(qfField.getClass(), compClass);
             if(childGS != null) {
                 // Create instance of this component/group if needed.
                 if(instance == null) {
-                    instance = createInstance(instance, compClass);
+                    instance = createThisInstance(instance, compClass);
                 } else {
                     // This instance is a Group and this field is a group element delimiter ->
                     // 1. We're at beginning of next group element.
@@ -109,19 +112,16 @@ public abstract class QFComponent {
                         if (childrenComponentInstance != null) {
                             // Child component instance has been created (that means that the current filed belongs to this child component (or to one of its descenders)).
                             // Create instance of this component if needed.
-                            if(instance == null) {
-                                instance = createInstance(instance, compClass);
+                            instance = createThisInstance(instance, compClass);
+                            // Check if the value was not assigned previously.
+                            Method fieldGetter = childrenComponentGS.getGetter();
+                            QFComponent currentValue = (QFComponent) fieldGetter.invoke(instance);
+                            if(currentValue == null) {
+                                // Assign the value of the newly created child component.
+                                childrenComponentGS.getSetter().invoke(instance, childrenComponentInstance);
                             } else {
-                                // Check if the value was not assigned previously.
-                                Method fieldGetter = childrenComponentGS.getGetter();
-                                QFComponent currentValue = (QFComponent) fieldGetter.invoke(instance);
-                                if(currentValue == null) {
-                                    // Assign the value of the newly created child component.
-                                    childrenComponentGS.getSetter().invoke(instance, childrenComponentInstance);
-                                } else {
-                                    // The value has been already assigned to this member.
-                                    System.out.println("Component \"" + childrenComponentInstance.getName() + "\" already exists in class \"" + compClass.getName() + "\". Please, check the incoming FIX message for data integrity.");
-                                }
+                                // The value has been already assigned to this member.
+                                System.out.println("Component \"" + childrenComponentInstance.getName() + "\" already exists in class \"" + compClass.getName() + "\". Please, check the incoming FIX message for data integrity.");
                             }
                             // Proceed to next field. Note: do not pop stack since it has been already popped while child component creation.
                             continue NEXT_TAG;
@@ -156,7 +156,7 @@ public abstract class QFComponent {
                             }
                             // Assign the value of the newly created child group.
                             if (!groupInstances.isEmpty()) {
-                                instance = createInstance(instance, compClass);
+                                instance = createThisInstance(instance, compClass);
                                 groupComponentGS.getSetter().invoke(instance, groupInstances);
                             }
                             // Proceed to next field. Note: do not pop stack since it has been already popped while child group creation.
@@ -171,203 +171,7 @@ public abstract class QFComponent {
         }
     }
 
-    /*protected static <QFComp extends QFComponent> QFComp getInstanceOLD1(Stack<QFTag> tags, QFComp instance, Class<QFComp> compClass) {
-        QFField qfField;
-        boolean qfFieldAccepted = false;
-        ComponentMetadata<QFComp> componentMetadata = getComponentMetadata(compClass);
-        while ((qfField = getNextField(tags, true)) != null) {
-            // Look for fields.
-            qfFieldAccepted = false;
-            Method[] fieldSetters = componentMetadata.getFieldSetters();
-            if(fieldSetters != null) {
-                for (Method fieldSetterMethod : fieldSetters) {
-                    if (fieldSetterMethod.getParameterTypes()[0].equals(qfField.getClass())) {
-                        if(instance == null) {
-                            instance = createInstance(instance, compClass);
-                        }
-                        try {
-                            fieldSetterMethod.invoke(instance, qfField);
-                            qfFieldAccepted = true;
-                            break;
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-                if(qfFieldAccepted) {
-                    continue;
-                }
-            }
-
-            // Look for components.
-            Method[] componentSetters = componentMetadata.getComponentSetters();
-            if(componentSetters != null) {
-                for (Method componentSetterMethod : componentSetters) {
-                    try {
-                        // Get group component Class.
-                        Class<QFComp> componentClass = (Class<QFComp>)componentSetterMethod.getParameterTypes()[0];
-                        // Create component instance.
-                        QFComp componentInstance = getInstanceOLD1(tags, null, componentClass);
-                        if (componentInstance != null) {
-                            instance = createInstance(instance, compClass);
-                            componentSetterMethod.invoke(instance, componentInstance);
-                            qfFieldAccepted = true;
-                            break;
-                        }
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if(qfFieldAccepted) {
-                    continue;
-                }
-            }
-
-            // Look for groups.
-            SetterStructure[] setterStructures = componentMetadata.getSetterStructure();
-            if(setterStructures != null) {
-                for (SetterStructure setterStructure : setterStructures) {
-                    if (qfField.getTag() == setterStructure.getGroupCounter()) {
-                        // Get number of group members.
-                        int numOfGroupMembers = Integer.parseInt(qfField.getValue().toString());
-                        List<QFComp> groupMembers = new ArrayList<>(numOfGroupMembers);
-                        for(int i=0; i<numOfGroupMembers; i++) {
-                            // Get group member Class.
-                            Class<QFComp> groupClass = setterStructure.getGroupClazz();
-                            // Create group member instance.
-                            QFComp component = getInstanceOLD1(tags, null, groupClass);
-                            if(component != null) {
-                                groupMembers.add(component);
-                            }
-                        }
-                        try {
-                            instance = createInstance(instance, compClass);
-                            Method groupSetterMethod = setterStructure.getGroupOwnerSetter();
-                            groupSetterMethod.invoke(instance, groupMembers);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
-        }
-        return instance;
-    }*/
-
-    /*private static <QFComp extends QFComponent> ComponentMetadata<QFComp> getComponentMetadata(Class<QFComp> compClass) {
-        try {
-            Field reflectionField = compClass.getDeclaredField("$METADATA");
-            reflectionField.setAccessible(true);
-            ComponentMetadata<QFComp> res = (ComponentMetadata<QFComp>)reflectionField.get(null);
-            return res;
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }*/
-
-    /*protected static <QFComp extends QFComponent> QFComp getInstanceOLD(Stack<QFTag> tags, QFComp instance, Class<? extends QFComp> compClass) {
-        QFField field = getNextField(tags, false);
-        if (field == null) {
-            return instance;
-        }
-        Field reflectionField;
-
-        try {
-            reflectionField = compClass.getDeclaredField("$FIELD_SETTERS");
-            reflectionField.setAccessible(true);
-            Method[] fieldSetterMethods = (Method[]) reflectionField.get(null);
-            for (Method fieldSetterMethod : fieldSetterMethods) {
-                if (fieldSetterMethod.getParameterTypes()[0].equals(field.getClass())) {
-                    instance = createInstance(instance, compClass);
-                    try {
-                        fieldSetterMethod.invoke(instance, field);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                    field = getNextField(tags, true);
-                    if (field == null) {
-                        return instance;
-                    }
-                }
-            }
-        } catch (NoSuchFieldException | SecurityException | IllegalAccessException | IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-
-        // Field setter is not found.
-        // Look in Components.
-        try {
-            reflectionField = compClass.getDeclaredField("$COMPONENT_SETTERS");
-            reflectionField.setAccessible(true);
-            Method[] componentSetterMethods = (Method[]) reflectionField.get(null);
-            for (Method componentSetterMethod : componentSetterMethods) {
-                Class<? extends QFComponent> componentClass = (Class<? extends QFComponent>) componentSetterMethod.getParameterTypes()[0];
-                QFComponent component = getInstanceOLD(tags, instance, componentClass);
-                if (component != null) {
-                    try {
-                        instance = createInstance(instance, compClass);
-                        componentSetterMethod.invoke(instance, component);
-                    } catch (IllegalAccessException | InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                    field = getNextField(tags, true);
-                    if (field == null) {
-                        return instance;
-                    }
-                }
-            }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        // Neither Field nor Component setter are found.
-        // Look in Groups.
-        try {
-            reflectionField = compClass.getDeclaredField("$GROUP_SETTERS");
-            reflectionField.setAccessible(true);
-            int groupCounter = 0;
-            SetterStructure[] setterStructures = (SetterStructure[]) reflectionField.get(null);
-            for (SetterStructure setterStructure : setterStructures) {
-                if (field.getTag() == setterStructure.getGroupCounter()) {
-                    groupCounter = setterStructure.getGroupCounter();
-                    field = getNextField(tags, true);
-                    if (field == null) {
-                        return instance;
-                    }
-                }
-                Class<? extends QFComponent> groupClass = setterStructure.getGroupClazz();
-                QFComponent component = getInstanceOLD(tags, instance, groupClass);
-                try {
-                    instance = createInstance(instance, compClass);
-                    Method groupSetterMethod = setterStructure.getGroupOwnerSetter();
-                    groupSetterMethod.invoke(instance, component);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    e.printStackTrace();
-                }
-//					tags.pop();
-                return (QFComp) getInstanceOLD(tags, instance, instance.getClass());
-            }
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return instance;
-    }*/
-
-    /*private static <QFComp extends QFComponent> QFComp createInstance(QFComp instance, Class<? extends QFComp> compClass) {
-        if (instance == null) {
-            try {
-                Constructor constructor = compClass.getDeclaredConstructor();
-                constructor.setAccessible(true);
-                instance = (QFComp) constructor.newInstance();
-            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
-                e.printStackTrace();
-            }
-        }
-        return instance;
-    }*/
-
-    private static <QFComp extends QFComponent> QFComp createInstance(QFComp instance, Class<? extends QFComponent> compClass) {
+    private static <QFComp extends QFComponent> QFComp createThisInstance(QFComp instance, Class<? extends QFComponent> compClass) {
         if (instance == null) {
             try {
                 Constructor constructor = compClass.getDeclaredConstructor();
@@ -381,13 +185,4 @@ public abstract class QFComponent {
     }
 
     public abstract void toFIXString(StringBuilder sb);
-
-    /*private static QFField getNextField(Stack<QFTag> tags, boolean doPop) {
-        if (tags.isEmpty()) {
-            return null;
-        }
-        QFTag kv = doPop ? tags.pop() : tags.peek();
-        QFField field = QFFieldUtils.lookupField(kv);
-        return field;
-    }*/
 }

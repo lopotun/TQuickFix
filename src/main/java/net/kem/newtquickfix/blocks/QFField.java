@@ -33,6 +33,10 @@ public abstract class QFField<V> implements Serializable {
 		return value;
 	}
 
+	public boolean isKnown() {
+		return true;
+	}
+
 	public void toFIXString(StringBuilder sb) {
 		if($fixString == null) {
 			$fixString = getTag() + "=" + (value==null? "": value) + QFFieldUtils.FIELD_SEPARATOR;
@@ -48,11 +52,11 @@ public abstract class QFField<V> implements Serializable {
 		return $fixString;
 	}
 
-	/*@Override
+	@Override
 	public String toString() {
 		String res = getClass().getSimpleName() + ": " + toFixString();
 		return res.substring(0, res.length()-1);
-	}*/
+	}
 
 	@Override
 	public boolean equals(Object o) {
@@ -60,10 +64,7 @@ public abstract class QFField<V> implements Serializable {
 		if (o == null || getClass() != o.getClass()) return false;
 
 		QFField<?> that = (QFField<?>) o;
-
-		if (getTag() != that.getTag()) return false;
-		return value.equals(that.value);
-
+		return getTag() == that.getTag() && value.equals(that.value);
 	}
 
 	@Override
