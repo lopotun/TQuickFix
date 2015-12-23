@@ -3,6 +3,9 @@ package net.kem.newtquickfix;
 import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFFieldUtils;
 import net.kem.newtquickfix.blocks.QFMessage;
+import net.kem.newtquickfix.components.StandardHeader;
+import net.kem.newtquickfix.components.StandardTrailer;
+import net.kem.newtquickfix.fields.TradeDate;
 import net.kem.newtquickfix.messages.AllocationReportAck;
 import net.kem.tquickfix.blocks.QFTag;
 
@@ -40,10 +43,25 @@ public class ParseMessages {
             tags.push(qfField);
         }
 
-        QFMessage msg = AllocationReportAck.getInstance(tags, null);
+        QFMessage msg = AllocationReportAck.getInstance(tags);
 
         StringBuilder sb = new StringBuilder();
         msg.toFIXString(sb);
+        System.out.printf(sb.toString());
+
+        AllocationReportAck ara = AllocationReportAck.getInstance();
+
+        StandardHeader standardHeader = StandardHeader.getInstance();
+        ara.setStandardHeader(standardHeader);
+
+        TradeDate tradeDate = TradeDate.getInstance("20151221");
+        ara.setTradeDate(tradeDate);
+
+        StandardTrailer standardTrailer = StandardTrailer.getInstance();
+        ara.setStandardTrailer(standardTrailer);
+
+        sb.setLength(0);
+        ara.toFIXString(sb);
         System.out.printf(sb.toString());
     }
 

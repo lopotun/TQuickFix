@@ -108,12 +108,19 @@ public class QFComponentElement extends QFElement {
     }
 
 
-    // public static ComponentMain getInstance(Stack<QFField> tags, ComponentMain instance) {
-    //  return getInstance(tags, instance, ComponentMain.class);
-    // }
     protected void getMethodGetInstance() {
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags, ").append(name).append(" instance) {\n")
-                .append(ident).append("\t\treturn getInstance(tags, instance, ").append(name).append(".class);\n")
+        // public static ComponentMain getInstance() {
+        //  return new ComponentMain();
+        // }
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance() {\n")
+                .append(ident).append("\t\treturn new ").append(name).append("();\n")
+                .append(ident).append("\t}\n\n");
+
+        // public static ComponentMain getInstance(Stack<QFField> tags) {
+        //  return tags==null? new ComponentMain(): getInstance(tags, null, ComponentMain.class);
+        // }
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags").append(") {\n")
+                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): getInstance(tags, null, ").append(name).append(".class);\n")
                 .append(ident).append("\t}\n\n");
     }
 
