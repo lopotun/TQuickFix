@@ -31,7 +31,7 @@ public class QFCurrencyFieldElement extends QFFieldElement {
         } else {
             sb.append("\t\treturn new ").append(name).append("(value);\n");
         }
-        sb.append("\t}\n");
+        sb.append("\t}\n\n");
     }
 
     @Override

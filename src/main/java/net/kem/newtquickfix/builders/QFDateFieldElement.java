@@ -50,6 +50,6 @@ public class QFDateFieldElement extends QFFieldElement {
         sb.append("\n")
         .append("\tpublic static ").append(name).append(" getInstance() {\n")
         .append("\t\treturn new ").append(name).append("(").append(def.typeClass.getSimpleName()).append(".now());\n")
-        .append("\t}\n");
+        .append("\t}\n\n");
     }
 }

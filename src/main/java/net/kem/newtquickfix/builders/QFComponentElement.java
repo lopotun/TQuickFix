@@ -61,9 +61,7 @@ public class QFComponentElement extends QFElement {
     }
 
     protected void getImportSection() {
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFComponent;\n");
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n");
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n");
+        super.getImportSection();
         for (QFRequirable member : members) {
             // In some cases (e.g. in net.kem.newtquickfix.components.RateSource) we have class member (of type QFField)
             // that has the same name as Component class. In this case we have to use full-specified name for this class member.
@@ -73,9 +71,12 @@ public class QFComponentElement extends QFElement {
                 member.getImportSectionPart(sb);
             }
         }
-
-        sb.append("import java.util.Stack;\n");
+        getImportSectionFromSubElements();
         sb.append('\n');
+    }
+
+    protected void getImportSectionFromSubElements() {
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFComponent;\n");
     }
 
     /*
@@ -104,7 +105,39 @@ public class QFComponentElement extends QFElement {
         }
     }
 
-    protected void getCustomMethods() {}
+    protected void getCustomMethods() {
+        // //	---- Component-specific methods BEGIN
+        // private static final ValidationHandler validationHandler = QFFieldUtils.getMessageValidationHandler(AllocationReportAck.class);
+        sb.append(ident).append("\t//\t---- Component-specific methods BEGIN\n");
+        sb.append(ident).append("\tprivate static final ValidationHandler<Void> validationHandler = QFFieldUtils.getMessageValidationHandler(").append(name).append(".class);\n");
+
+        // public void validate() {
+        //    if(allocReportID == null) {
+        //        validationHandler.invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null);
+        //    }
+        // }
+        sb.append(ident).append("\tpublic void validate() {\n");
+        for (QFRequirable member : members) {
+            switch (member.type) {
+                case FIELD: { // validationHandler.invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null);
+                    sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n");
+                    CharSequence fieldNameForTag = member.useFQDN? BuilderUtils.PACKAGE_NAME_FIELDS + "." + member.name: member.name;
+                    sb.append(ident).append("\t\t\tvalidationHandler.invalidValue(").append(name).append(".class, \"").append(member.name).append("[+ \" + ").append(fieldNameForTag).append(".TAG + \"]\", null);\n");
+                    sb.append(ident).append("\t\t}\n");
+                } break;
+                case GROUP: { // validationHandler.invalidValue(CompIDStatGrp.class, "NoCompIDs", null);
+                    sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n");
+                    sb.append(ident).append("\t\t\tvalidationHandler.invalidValue(").append(name).append(".class, \"").append(member.name).append("\", null);\n");
+                    sb.append(ident).append("\t\t}\n");
+                } break;
+
+            }
+        }
+        sb.append(ident).append("\t}\n");
+
+        // //	---- Component-specific methods END
+        sb.append(ident).append("\t//\t---- Component-specific methods END\n\n");
+    }
 
     protected void getConstructor() {
         sb.append(ident).append("\tprivate ").append(name).append("() {}\n\n");

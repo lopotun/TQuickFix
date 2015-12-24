@@ -52,4 +52,13 @@ public abstract class QFElement {
                 .append(" * <a href=mailto:Lopotun@gmail.com>Eugene Kurtzer</a>\n")
                 .append(" */\n");
     }
+
+    protected void getImportSection() {
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFFieldUtils;\n\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("ValidationHandler;\n\n");
+        sb.append("import java.util.Stack;\n");
+        sb.append('\n');
+    }
 }
