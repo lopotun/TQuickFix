@@ -16,7 +16,7 @@ public class QFCurrencyFieldElement extends QFFieldElement {
     }
 
     @Override
-    protected void getMethodGetInstanceType() {
+    protected void generateMethodGetInstanceType() {
         /*
 		public static Currency getInstance(java.util.Currency value) {
             return new Currency(value);
@@ -35,7 +35,7 @@ public class QFCurrencyFieldElement extends QFFieldElement {
     }
 
     @Override
-    protected void getConstructor() {
+    protected void generateConstructor() {
 		/*
 		private Currency(java.util.Currency value) {
             this.value = value;
@@ -47,7 +47,9 @@ public class QFCurrencyFieldElement extends QFFieldElement {
     }
 
     @Override
-    protected void getPredefinedStaticMembers() {
+    protected void generatePredefinedStaticMembers() {
+        // private static ValidationHandler<Integer> validationHandler = QFFieldUtils.getValidationHandler(AllocTransType.class);
+        sb.append("\tprivate static ValidationHandler<").append(def.typeClass.getName()).append("> validationHandler = QFFieldUtils.getValidationHandler(").append(name).append(".class);\n");
         if (defaultValues != null) {
             // "	private static final Map<Integer, FieldIntegerExample> STATIC_VALUES_MAPPING = new HashMap<>();\n\n"
             sb.append("\tprivate static final Map<").append(def.typeClass.getName()).append(", ").append(name).append("> STATIC_VALUES_MAPPING = new HashMap<>();\n\n");
@@ -68,7 +70,7 @@ public class QFCurrencyFieldElement extends QFFieldElement {
     }
 
     @Override
-    protected void getClassTitle() {
+    protected void generateClassTitle() {
         sb.append("public class ").append(name).append(" extends ")
                 .append(def.parentClassName).append('<').append(def.typeClass.getName()).append("> {\n");
     }

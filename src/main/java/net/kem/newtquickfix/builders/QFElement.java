@@ -43,7 +43,7 @@ public abstract class QFElement {
 
     public abstract void toJavaSource();
 
-    protected void getCreditsSection() {
+    protected void generateCreditsSection() {
         LocalDateTime now = LocalDateTime.now();
         sb.append("/**\n")
                 .append(" * Eugene Kurtzer\n")

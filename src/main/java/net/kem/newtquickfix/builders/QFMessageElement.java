@@ -1,6 +1,7 @@
 package net.kem.newtquickfix.builders;
 
 import net.kem.newtquickfix.blocks.QFMember;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -50,6 +51,11 @@ public class QFMessageElement extends QFComponentElement {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMessage;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n");
+
+        //import net.kem.newtquickfix.fields.BeginString;
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".BeginString;\n");
+        //import net.kem.newtquickfix.fields.MsgType;
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".MsgType;\n");
         for (QFRequirable member : members) {
             member.getImportSectionPart(sb);
         }
@@ -74,18 +80,65 @@ public class QFMessageElement extends QFComponentElement {
         }
     }
 
+    @Override
+    protected void getCustomMethods() {
+        ////	---- Message-specific methods BEGIN
+        //private static final ValidationHandler VALIDATION_HANDLER = QFFieldUtils.getMessageValidationHandler(AllocationReportAck.class);
+        //public MsgType getMsgType() {
+        //    return standardHeader.getMsgType();
+        //}
+        ////	---- Message-specific methods END
+        sb.append(ident).append("\t//\t---- Message-specific methods BEGIN\n");
+        sb.append(ident).append("\tprivate static final ValidationHandler VALIDATION_HANDLER = QFFieldUtils.getMessageValidationHandler(").append(name).append(".class);\n");
+
+        sb.append(ident).append("\tpublic MsgType getMsgType() {\n")
+                .append(ident).append("\t\treturn standardHeader.getMsgType();\n")
+                .append(ident).append("\t}\n\n");
+
+        //public void validate() {
+        //    if(allocReportID == null) {
+        //        VALIDATION_HANDLER.invalidValue(new UnsupportedOperationException("Mandatory tag AllocReportID [" + AllocReportID.TAG + "] is missing in message AllocationReportAck"));
+        //    }
+        //}
+        sb.append(ident).append(ident).append("\tpublic void validate() {\n");
+        for (QFRequirable member : members) {
+            if(member.type == QFMember.Type.FIELD) {
+                sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n");
+                sb.append(ident).append("\t\t\tVALIDATION_HANDLER.invalidValue(new UnsupportedOperationException(\"Mandatory tag ").append(member.name).append("[+ \"").append(member.name).append(".TAG + \"] is missing in message ").append(name).append("\"));\n");
+                sb.append(ident).append("\t\t}\n");
+            }
+        }
+        sb.append(ident).append("\t}\n");
+
+        sb.append(ident).append("\t//\t---- Message-specific methods END\n\n");
+    }
+
+    protected void getConstructor() {
+        //private AllocationReportAck() {
+        //    standardHeader = StandardHeader.getInstance();
+        //    standardHeader.setBeginString(BeginString.getInstance("FIX50SP2"));
+        //    standardHeader.setMsgType(MsgType.getInstance("AT"));
+        //    standardTrailer = StandardTrailer.getInstance();
+        //}
+        sb.append(ident).append("\tprivate ").append(name).append("() {\n")
+                .append("\t\tstandardHeader = StandardHeader.getInstance();\n")
+                .append("\t\tstandardHeader.setBeginString(BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSION).append("\"));\n")
+                .append("\t\tstandardHeader.setMsgType(MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\"));\n\n")
+                .append("\t\tstandardTrailer = StandardTrailer.getInstance();\n")
+                .append("\t}\n\n");
+    }
 
     /**
      * This method puts the following lines:
      * <p>
-     * // Show unknown ta(s) if any.
+     * // Show unknown tag(s) if any.
      * super.toFIXString(sb);
      * <p>
      * before the StandardTrailer component in {@link #getMethodToFIXString()} method.
      *
      * @param member .
      */
-    protected void hookMethodToFIXString(QFRequirable member) {
+    protected void hookMethodToFIXStringMemberPre(QFRequirable member) {
         if (member.getName().equals("StandardTrailer")) {
             sb.append(ident).append("\t\t// Show unknown tag(s) if any.\n")
                     .append("\t\tsuper.toFIXString(sb);\n\n");

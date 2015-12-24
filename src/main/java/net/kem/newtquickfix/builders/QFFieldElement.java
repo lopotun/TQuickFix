@@ -54,21 +54,22 @@ public class QFFieldElement extends QFElement {
 
     @Override
     public void toJavaSource() {
-        getPackageSection();
-        getImportSection();
-        getCreditsSection();
-        getClassTitle();
-        getPredefinedStaticMembers();
-        getMemberTag();
-        getConstructor();
-        getMethodGetTag();
-        getMethodGetInstanceString();
-        getMethodGetInstanceType();
+        generatePackageSection();
+        generateImportSection();
+        generateCreditsSection();
+        generateClassTitle();
+        generatePredefinedStaticMembers();
+        generateMemberTag();
+        generateConstructor();
+        generateMethodGetTag();
+        generateMethodGetInstanceString();
+        generateMethodGetInstanceType();
+        generateAuxMethods();
         sb.append('}'); // end of class
     }
 
     /*package net.kem.newtquickfix;*/
-    private void getPackageSection() {
+    private void generatePackageSection() {
         sb.append("package ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(";\n\n");
     }
 
@@ -77,8 +78,12 @@ public class QFFieldElement extends QFElement {
     //				"import java.util.HashMap;\n" +
     //				"import java.util.Map;\n" +
     //				"\n" +
-    private void getImportSection() {
+    private void generateImportSection() {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append(def.parentClassName).append(";\n\n");
+        // import net.kem.newtquickfix.blocks.QFFieldUtils;
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFFieldUtils;\n\n");
+        // import net.kem.newtquickfix.blocks.ValidationHandler;
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("ValidationHandler;\n\n");
         if (defaultValues != null) {
             sb.append("import java.util.HashMap;\n").append("import java.util.Map;\n");
         }
@@ -88,7 +93,7 @@ public class QFFieldElement extends QFElement {
     }
 
     /*public class FieldIntegerExample extends QFField<Integer> {*/
-    protected void getClassTitle() {
+    protected void generateClassTitle() {
         sb.append("public class ").append(name).append(" extends ")
                 .append(def.parentClassName).append('<').append(def.typeClass.getSimpleName()).append("> {\n");
     }
@@ -108,7 +113,9 @@ public class QFFieldElement extends QFElement {
     //				"        STATIC_VALUES_MAPPING.put(NO_AVAILABLE_STREAM.getValue(), NO_AVAILABLE_STREAM);\n" +
     //				"        STATIC_VALUES_MAPPING.put(OTHER.getValue(), OTHER);\n" +
     //				"    }\n" +
-    protected void getPredefinedStaticMembers() {
+    protected void generatePredefinedStaticMembers() {
+        // private static final ValidationHandler<Integer> validationHandler = QFFieldUtils.getValidationHandler(AllocTransType.class);
+        sb.append("\tprivate static ValidationHandler<").append(def.typeClass.getSimpleName()).append("> validationHandler = QFFieldUtils.getValidationHandler(").append(name).append(".class);\n");
         if (defaultValues != null) {
             // "	private static final Map<Integer, FieldIntegerExample> STATIC_VALUES_MAPPING = new HashMap<>();\n\n"
             sb.append("\tprivate static final Map<").append(def.typeClass.getSimpleName()).append(", ").append(name).append("> STATIC_VALUES_MAPPING = new HashMap<>();\n\n");
@@ -129,7 +136,7 @@ public class QFFieldElement extends QFElement {
     }
 
     /*public static final int TAG = 1497;*/
-    private void getMemberTag() {
+    private void generateMemberTag() {
         sb.append("\tpublic static final int TAG = ").append(tag).append(";\n\n");
     }
 
@@ -138,7 +145,7 @@ public class QFFieldElement extends QFElement {
         this.value = value;
     }
 	*/
-    protected void getConstructor() {
+    protected void generateConstructor() {
         sb.append("\tprivate ").append(name).append('(').append(def.typeClass.getSimpleName()).append(" value) {\n")
                 .append("\t\tthis.value = value;\n")
                 .append("\t}\n\n");
@@ -149,7 +156,7 @@ public class QFFieldElement extends QFElement {
     public int getTag() {
         return TAG;
     };*/
-    private void getMethodGetTag() {
+    private void generateMethodGetTag() {
         sb.append("\t@Override\n").append("\tpublic int getTag() {\n").append("\t\treturn TAG;\n").append("\t}\n\n");
     }
 
@@ -157,13 +164,26 @@ public class QFFieldElement extends QFElement {
     public static FieldIntegerExample getInstance(String value) {
         return getInstance(Integer.parseInt(value));
     };
+
+    public static ApplReportType getInstance(String value) {
+		try {
+			return getInstance(Integer.parseInt(value));
+		} catch (Exception e) {//NumberFormatException
+			final Integer newValue = validationHandler.invalidValue(ApplReportType.class, value, e);
+			return getInstance(newValue);
+		}
+	}
     */
-    protected void getMethodGetInstanceString() {
+    protected void generateMethodGetInstanceString() {
         if (def.typeToStringConversion != null) {
             sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
-                    .append("\t\treturn getInstance(")
-                    .append(def.typeToStringConversion)//"Integer.parseInt(value)"
-                    .append(");\n\t}\n\n");
+                    .append("\t\ttry {\n")
+                    .append("\t\t\treturn getInstance(").append(def.typeToStringConversion).append(");\n") //"Integer.parseInt(value)"
+                    .append("\t\t} catch (Exception e) {\n")
+                    .append("\t\t\tfinal ").append(def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName()).append(" newValue = validationHandler.invalidValue(").append(name).append(".class, value, e);\n")
+                    .append("\t\t\treturn getInstance(newValue);\n")
+                    .append("\t\t}\n")
+            .append("\t}\n\n");
         }
     }
 
@@ -171,24 +191,36 @@ public class QFFieldElement extends QFElement {
     public static FieldIntegerExample getInstance(Integer value) {
         FieldIntegerExample res = STATIC_VALUES_MAPPING.get(value);
         if (res == null) {
-            res = new FieldIntegerExample(value);
+            final Integer newValue = validationHandler.invalidValue(ApplReportType.class, value, null);
+			res = new ApplReportType(newValue);
         }
         return res;
         // OR
         return new FieldIntegerExample(value);
     }
     */
-    protected void getMethodGetInstanceType() {
+    protected void generateMethodGetInstanceType() {
         sb.append("\tpublic static ").append(name).append(" getInstance(").append(def.typeClass.getSimpleName()).append(" value) {\n");
         if (defaultValues != null) {
             sb.append("\t\t").append(name).append(" res = STATIC_VALUES_MAPPING.get(value);\n")
-                    .append("\t\tif (res == null) {\n").append("\t\t\tres = new ").append(name).append("(value);\n")
+                    .append("\t\tif (res == null) {\n")
+                    .append("\t\t\tfinal ").append(def.typeClass.getSimpleName()).append(" newValue = validationHandler.invalidValue(").append(name).append(".class, value, null);\n")
+                    .append("\t\t\tres = new ").append(name).append("(newValue);\n")
                     .append("\t\t}\n")
                     .append("\t\treturn res;\n");
         } else {
             sb.append("\t\treturn new ").append(name).append("(value);\n");
         }
         sb.append("\t}\n");
+    }
+
+    protected void generateAuxMethods() {
+        //public static void setValidationHandler(ValidationHandler<LocalDateTime> newValidationHandler) {
+        //    validationHandler = newValidationHandler;
+        //}
+        sb.append("\tpublic static void setValidationHandler(ValidationHandler<").append(def.typeClass==java.util.Currency.class ? def.typeClass.getName(): def.typeClass.getSimpleName()).append("> newValidationHandler) {\n")
+                .append("\t\tvalidationHandler = newValidationHandler;\n")
+                .append("\t}\n");
     }
 
 

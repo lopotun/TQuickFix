@@ -21,7 +21,7 @@ public class QFBooleanFieldElement extends QFFieldElement {
     }
 
     @Override
-    protected void getMethodGetInstanceString() {
+    protected void generateMethodGetInstanceString() {
         /*
         public static AggressorIndicator getInstance(String value) {
             if(value.length() == 1 && (value.charAt(0) == 'Y' || value.charAt(0) == 'y')) {

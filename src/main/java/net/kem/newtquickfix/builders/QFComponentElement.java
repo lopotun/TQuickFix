@@ -37,9 +37,10 @@ public class QFComponentElement extends QFElement {
     public void toJavaSource() {
         getPackageSection();
         getImportSection();
-        getCreditsSection();
+        generateCreditsSection();
         getClassTitle();
         getMembers();
+        getCustomMethods();
         getConstructor();
         getMethodGetInstance();
         getMethodToFIXString();
@@ -103,6 +104,8 @@ public class QFComponentElement extends QFElement {
         }
     }
 
+    protected void getCustomMethods() {}
+
     protected void getConstructor() {
         sb.append(ident).append("\tprivate ").append(name).append("() {}\n\n");
     }
@@ -145,7 +148,7 @@ public class QFComponentElement extends QFElement {
         sb.append(ident).append("\t@Override\n")
           .append(ident).append("\tpublic void toFIXString(StringBuilder sb) {\n");
         for (QFRequirable member : members) {
-            hookMethodToFIXString(member);
+            hookMethodToFIXStringMemberPre(member);
             String memberClassName = member.getName();
             String memberVarName = StringUtils.uncapitalize(memberClassName);
             sb.append(ident).append("\t\tif(").append(memberVarName).append(" != null) {\n");
@@ -155,6 +158,6 @@ public class QFComponentElement extends QFElement {
         sb.append(ident).append("\t}\n");
     }
 
-    protected void hookMethodToFIXString(QFRequirable member) {
+    protected void hookMethodToFIXStringMemberPre(QFRequirable member) {
     }
 }

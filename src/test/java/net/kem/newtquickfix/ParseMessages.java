@@ -2,16 +2,18 @@ package net.kem.newtquickfix;
 
 import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFFieldUtils;
-import net.kem.newtquickfix.blocks.QFMessage;
-import net.kem.newtquickfix.components.StandardHeader;
-import net.kem.newtquickfix.components.StandardTrailer;
-import net.kem.newtquickfix.fields.TradeDate;
-import net.kem.newtquickfix.messages.AllocationReportAck;
 import net.kem.tquickfix.blocks.QFTag;
 
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+/*
+import net.kem.newtquickfix.components.StandardHeader;
+import net.kem.newtquickfix.components.StandardTrailer;
+import net.kem.newtquickfix.fields.TradeDate;
+import net.kem.newtquickfix.messages.AllocationReportAck;
+*/
 
 /**
  * Created by Evgeny Kurtser on 12/22/2015 at 12:46 PM.
@@ -42,27 +44,21 @@ public class ParseMessages {
             QFField qfField = QFFieldUtils.lookupField(kv);
             tags.push(qfField);
         }
-
+/*
         QFMessage msg = AllocationReportAck.getInstance(tags);
 
         StringBuilder sb = new StringBuilder();
         msg.toFIXString(sb);
-        System.out.printf(sb.toString());
+        System.out.println(sb.toString());
 
         AllocationReportAck ara = AllocationReportAck.getInstance();
-
-        StandardHeader standardHeader = StandardHeader.getInstance();
-        ara.setStandardHeader(standardHeader);
-
         TradeDate tradeDate = TradeDate.getInstance("20151221");
         ara.setTradeDate(tradeDate);
 
-        StandardTrailer standardTrailer = StandardTrailer.getInstance();
-        ara.setStandardTrailer(standardTrailer);
-
         sb.setLength(0);
         ara.toFIXString(sb);
-        System.out.printf(sb.toString());
+        System.out.println(sb.toString());
+        */
     }
 
     private Stack<QFTag> toStack(CharSequence src) {

@@ -24,6 +24,7 @@ import java.util.Set;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public abstract class QFFieldUtils {
+
     public static class ChildGetterSetter<T> {
         enum ElementType {FIELD, COMPONENT, GROUP}
 
@@ -114,6 +115,8 @@ public abstract class QFFieldUtils {
     private static final Map<Class<? extends QFField>, Map<Class<? extends QFComponent>, ChildGetterSetter>> FIELD_SETTERS = new HashMap<>();
     private static final Map<Class<? extends QFComponent>, List<ChildGetterSetter<? extends QFComponent>>> COMPONENT_CHILDREN = new HashMap<>();
     private static final Map<Class<? extends QFComponent>, List<ChildGetterSetterGroup<? extends QFComponent>>> GROUP_CHILDREN = new HashMap<>();
+    private static final Map<Class<? extends QFField<?>>, ValidationHandler> FIELD_VALIDATORS = new HashMap<>();
+    private static final Map<Class<? extends QFComponent>, ValidationHandler> MESSAGE_VALIDATORS = new HashMap<>();
 
     public static final IllegalArgumentException ILLEGALARGUMENTEXCEPTION = new IllegalArgumentException("This instance does not contain the given field.");
 
@@ -229,5 +232,20 @@ public abstract class QFFieldUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static <V> ValidationHandler<V> getValidationHandler(Class<? extends QFField<?>> fieldClass) {
+        final ValidationHandler<V> validationHandler = FIELD_VALIDATORS.get(fieldClass);
+        return validationHandler==null? ValidationHandler.VALIDATION_HANDLER_WARNING_NUMBER: validationHandler;
+    }
+
+    // final Integer integer = QFFieldUtils.<Integer>handleError(AllocTransType.class, "abcd", new NumberFormatException("Bad abcd"));
+    public static <V> V handleError(Class<? extends QFField<?>> fieldClass, Object problematicValue, Throwable t) {
+        return null;
+    }
+
+    public static ValidationHandler getMessageValidationHandler(Class<? extends QFComponent> fieldClass) {
+        final ValidationHandler validationHandler = MESSAGE_VALIDATORS.get(fieldClass);
+        return validationHandler==null? ValidationHandler.VALIDATION_HANDLER_WARNING_NUMBER: validationHandler;
     }
 }
