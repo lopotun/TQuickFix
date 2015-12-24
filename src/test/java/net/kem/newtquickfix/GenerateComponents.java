@@ -36,7 +36,7 @@ public class GenerateComponents {
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         //Load and Parse the XML document
-        Document document = builder.parse("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\resources\\xml\\FIX50SP2.xml");
+        Document document = builder.parse("./src/main/resources/xml/FIX50SP2.xml");
 
         XPath xpath = XPathFactory.newInstance().newXPath();
 
@@ -80,9 +80,9 @@ public class GenerateComponents {
             }
         }
 
-        File dir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\components");
+        File dir = new File("./src/main/java/net/kem/newtquickfix/components");
         dir.mkdirs();
-        File componentInterfacesDir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\messages");
+        File componentInterfacesDir = new File("./src/main/java/net/kem/newtquickfix/messages");
         componentInterfacesDir.mkdirs();
         expr = xpath.compile("/fix/components/component | /fix/header | /fix/trailer");// //person/*//*text()
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);

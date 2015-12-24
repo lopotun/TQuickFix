@@ -28,7 +28,7 @@ import java.text.ParseException;
 public class GenerateMessages {
 
     public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException, ClassNotFoundException, ParseException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        File dir = new File("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\java\\net\\kem\\newtquickfix\\messages");
+        File dir = new File("./src/main/java/net/kem/newtquickfix/messages");
         dir.mkdirs();
 
         //Get the DOM Builder Factory
@@ -38,7 +38,7 @@ public class GenerateMessages {
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         //Load and Parse the XML document
-        Document document = builder.parse("D:\\projects\\HLSTools\\TQuickFix\\src\\main\\resources\\xml\\FIX50SP2.xml");
+        Document document = builder.parse("./src/main/resources/xml/FIX50SP2.xml");
 
         XPath xpath = XPathFactory.newInstance().newXPath();
 

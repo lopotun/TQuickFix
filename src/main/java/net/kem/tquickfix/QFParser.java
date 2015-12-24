@@ -37,7 +37,7 @@ public class QFParser {
 //        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.4.4", tqf.v44.QFMessageMapper.getInstance());
 //        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0", tqf.v50.QFMessageMapper.getInstance());
 //        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0.SP1", tqf.v50sp1.QFMessageMapper.getInstance());
-        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0.SP2", tqf.v50sp2.QFMessageMapper.getInstance());
+//        MESSAGE_VERSION_TO_MESSAGE_MAPPER.put("FIX.5.0.SP2", tqf.v50sp2.QFMessageMapper.getInstance());
     }
 
 
