@@ -1,5 +1,6 @@
 package net.kem.newtquickfix.builders;
 
+import net.kem.newtquickfix.blocks.ValidationHandler;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -161,15 +162,11 @@ public class QFFieldElement extends QFElement {
     }
 
     /*
-    public static FieldIntegerExample getInstance(String value) {
-        return getInstance(Integer.parseInt(value));
-    };
-
     public static ApplReportType getInstance(String value) {
 		try {
 			return getInstance(Integer.parseInt(value));
 		} catch (Exception e) {//NumberFormatException
-			final Integer newValue = validationHandler.invalidValue(ApplReportType.class, value, e);
+			final Integer newValue = validationHandler.invalidValue(ApplReportType.class, value, e, ValidationHandler.ErrorType.PARSING);
 			return getInstance(newValue);
 		}
 	}
@@ -180,7 +177,10 @@ public class QFFieldElement extends QFElement {
                     .append("\t\ttry {\n")
                     .append("\t\t\treturn getInstance(").append(def.typeToStringConversion).append(");\n") //"Integer.parseInt(value)"
                     .append("\t\t} catch (Exception e) {\n")
-                    .append("\t\t\tfinal ").append(def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName()).append(" newValue = validationHandler.invalidValue(").append(name).append(".class, value, e);\n")
+                    .append("\t\t\tfinal ")
+                        .append(def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName())
+                        .append(" newValue = validationHandler.invalidValue(")
+                        .append(name).append(".class, value, e, ValidationHandler.ErrorType.PARSING);\n")
                     .append("\t\t\treturn getInstance(newValue);\n")
                     .append("\t\t}\n")
             .append("\t}\n\n");
@@ -191,7 +191,7 @@ public class QFFieldElement extends QFElement {
     public static FieldIntegerExample getInstance(Integer value) {
         FieldIntegerExample res = STATIC_VALUES_MAPPING.get(value);
         if (res == null) {
-            final Integer newValue = validationHandler.invalidValue(ApplReportType.class, value, null);
+            final Integer newValue = validationHandler.invalidValue(ApplReportType.class, value, null, ValidationHandler.ErrorType.NOT_PREDEFINED);
 			res = new ApplReportType(newValue);
         }
         return res;
@@ -204,7 +204,9 @@ public class QFFieldElement extends QFElement {
         if (defaultValues != null) {
             sb.append("\t\t").append(name).append(" res = STATIC_VALUES_MAPPING.get(value);\n")
                     .append("\t\tif (res == null) {\n")
-                    .append("\t\t\tfinal ").append(def.typeClass.getSimpleName()).append(" newValue = validationHandler.invalidValue(").append(name).append(".class, value, null);\n")
+                    .append("\t\t\tfinal ")
+                        .append(def.typeClass.getSimpleName()).append(" newValue = validationHandler.invalidValue(")
+                        .append(name).append(".class, value, null, ValidationHandler.ErrorType.NOT_PREDEFINED);\n")
                     .append("\t\t\tres = new ").append(name).append("(newValue);\n")
                     .append("\t\t}\n")
                     .append("\t\treturn res;\n");
@@ -215,10 +217,18 @@ public class QFFieldElement extends QFElement {
     }
 
     protected void generateAuxMethods() {
-        //public static void setValidationHandler(ValidationHandler<LocalDateTime> newValidationHandler) {
+        // public static ValidationHandler<String> getValidationHandler() {
+        //    return validationHandler;
+        // }
+        // public static void setValidationHandler(ValidationHandler<LocalDateTime> newValidationHandler) {
         //    validationHandler = newValidationHandler;
-        //}
-        sb.append("\tpublic static void setValidationHandler(ValidationHandler<").append(def.typeClass==java.util.Currency.class ? def.typeClass.getName(): def.typeClass.getSimpleName()).append("> newValidationHandler) {\n")
+        // }
+        CharSequence diamondValue = def.typeClass==java.util.Currency.class ? def.typeClass.getName(): def.typeClass.getSimpleName();
+        sb.append("\n\n");
+        sb.append("\tpublic static ValidationHandler<").append(diamondValue).append("> getValidationHandler() {\n")
+                .append("\t\treturn validationHandler;\n")
+                .append("\t}\n");
+        sb.append("\tpublic static void setValidationHandler(ValidationHandler<").append(diamondValue).append("> newValidationHandler) {\n")
                 .append("\t\tvalidationHandler = newValidationHandler;\n")
                 .append("\t}\n");
     }

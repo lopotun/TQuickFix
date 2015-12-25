@@ -22,7 +22,7 @@ public class QFDateFieldElement extends QFFieldElement {
         try {
         return getInstance(LocalDateTime.parse(value, getDateFormat()));
         } catch (Exception e) {
-            final java.time.LocalDateTime newValue = validationHandler.invalidValue(OrigTime.class, value, e);
+            final java.time.LocalDateTime newValue = validationHandler.invalidValue(OrigTime.class, value, e, ValidationHandler.ErrorType.PARSING);
             return getInstance(newValue);
         }
 	}
@@ -34,7 +34,10 @@ public class QFDateFieldElement extends QFFieldElement {
                     .append("\t\ttry {\n")
                     .append("\t\treturn getInstance(").append(def.typeClass.getSimpleName()).append(".parse(value, getDateFormat()));\n")
                     .append("\t\t} catch (Exception e) {\n")
-                    .append("\t\t\tfinal ").append(def.typeClass.getName()).append(" newValue = validationHandler.invalidValue(").append(name).append(".class, value, e);\n")
+                    .append("\t\t\tfinal ")
+                        .append(def.typeClass.getName())
+                        .append(" newValue = validationHandler.invalidValue(")
+                        .append(name).append(".class, value, e, ValidationHandler.ErrorType.PARSING);\n")
                     .append("\t\t\treturn getInstance(newValue);\n")
                     .append("\t\t}\n")
                     .append("\t}\n\n");

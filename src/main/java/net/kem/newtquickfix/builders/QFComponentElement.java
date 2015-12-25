@@ -65,7 +65,7 @@ public class QFComponentElement extends QFElement {
         for (QFRequirable member : members) {
             // In some cases (e.g. in net.kem.newtquickfix.components.RateSource) we have class member (of type QFField)
             // that has the same name as Component class. In this case we have to use full-specified name for this class member.
-            if(member.getName().equals(name)) {
+            if (member.getName().equals(name)) {
                 member.useFQDN(true);
             } else {
                 member.getImportSectionPart(sb);
@@ -109,28 +109,66 @@ public class QFComponentElement extends QFElement {
         // //	---- Component-specific methods BEGIN
         // private static final ValidationHandler validationHandler = QFFieldUtils.getMessageValidationHandler(AllocationReportAck.class);
         sb.append(ident).append("\t//\t---- Component-specific methods BEGIN\n");
-        sb.append(ident).append("\tprivate static final ValidationHandler<Void> validationHandler = QFFieldUtils.getMessageValidationHandler(").append(name).append(".class);\n");
+        sb.append(ident).append("\tprivate static ValidationHandler<Void> validationHandler = QFFieldUtils.getMessageValidationHandler(").append(name).append(".class);\n");
+        sb.append(ident).append("\tpublic static ValidationHandler<Void> getValidationHandler() {\n")
+                .append(ident).append("\t\treturn validationHandler;\n")
+                .append(ident).append("\t}\n");
+        sb.append(ident).append("\tpublic static void setValidationHandler(ValidationHandler<Void> newValidationHandler) {\n")
+                .append(ident).append("\t\tvalidationHandler = newValidationHandler;\n")
+                .append(ident).append("\t}\n");
 
         // public void validate() {
         //    if(allocReportID == null) {
-        //        validationHandler.invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null);
+        //        AllocReportID.getValidationHandler().invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null, ValidationHandler.ErrorType.MISSING);
+        //    } else {
+        //      allocReportID.validate();
         //    }
         // }
         sb.append(ident).append("\tpublic void validate() {\n");
         for (QFRequirable member : members) {
             switch (member.type) {
-                case FIELD: { // validationHandler.invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null);
-                    sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n");
-                    CharSequence fieldNameForTag = member.useFQDN? BuilderUtils.PACKAGE_NAME_FIELDS + "." + member.name: member.name;
-                    sb.append(ident).append("\t\t\tvalidationHandler.invalidValue(").append(name).append(".class, \"").append(member.name).append("[+ \" + ").append(fieldNameForTag).append(".TAG + \"]\", null);\n");
-                    sb.append(ident).append("\t\t}\n");
-                } break;
-                case GROUP: { // validationHandler.invalidValue(CompIDStatGrp.class, "NoCompIDs", null);
-                    sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n");
-                    sb.append(ident).append("\t\t\tvalidationHandler.invalidValue(").append(name).append(".class, \"").append(member.name).append("\", null);\n");
-                    sb.append(ident).append("\t\t}\n");
-                } break;
-
+                case FIELD: { // AllocReportID.getValidationHandler().invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null);
+                    if (member.isRequired()) {
+                        sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n");
+                        CharSequence fieldNameForTag = member.useFQDN ? BuilderUtils.PACKAGE_NAME_FIELDS + "." + member.name : member.name;
+                        sb.append(ident).append("\t\t\t").append(fieldNameForTag).append(".getValidationHandler().invalidValue(")
+                                .append(name).append(".class, \"").append(member.name).append("[\" + ")
+                                .append(fieldNameForTag).append(".TAG + \"]\", null, ValidationHandler.ErrorType.MISSING);\n");
+                        sb.append(ident).append("\t\t}\n");
+                    }
+                }
+                break;
+                case GROUP:
+                case COMPONENT:
+                case HEADER:
+                case TRAILER: { // AllocReportID.getValidationHandler().invalidValue(CompIDStatGrp.class, "NoCompIDs", null);
+                    if (member.isRequired()) {
+                        sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n")
+                                .append(ident).append("\t\t\t").append(member.name).append(".getValidationHandler().invalidValue(")
+                                .append(name).append(".class, \"").append(member.name).append("\", null, ValidationHandler.ErrorType.MISSING);\n")
+                                .append(ident).append("\t\t}\n");
+                    } else {
+                        // if(standardTrailer != null) {
+                        //    standardTrailer.validate();
+                        // }
+                        //
+                        // if(standardTrailer != null) {
+                        //    	for(NoLegSecurityAltID groupMemeber: noLegSecurityAltID) {
+                        //          groupMemeber.validate();
+                        //      }
+                        // }
+                        sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" != null) {\n");
+                        if (member.getTagType() == QFMember.Type.GROUP) {
+                            sb.append(ident).append("\t\t\t").append("for(").append(member.name).append(" groupMember: ").append(StringUtils.uncapitalize(member.name)).append(") {\n");
+                            sb.append(ident).append("\t\t\t\tgroupMember.validate();\n");
+                            sb.append(ident).append("\t\t\t}\n");
+                        } else {
+                            sb.append(ident).append("\t\t\t").append(StringUtils.uncapitalize(member.name)).append(".validate();\n");
+                        }
+                        sb.append(ident).append("\t\t}\n");
+                    }
+                }
+                break;
             }
         }
         sb.append(ident).append("\t}\n");
@@ -179,7 +217,7 @@ public class QFComponentElement extends QFElement {
     */
     protected void getMethodToFIXString() {
         sb.append(ident).append("\t@Override\n")
-          .append(ident).append("\tpublic void toFIXString(StringBuilder sb) {\n");
+                .append(ident).append("\tpublic void toFIXString(StringBuilder sb) {\n");
         for (QFRequirable member : members) {
             hookMethodToFIXStringMemberPre(member);
             String memberClassName = member.getName();

@@ -1,5 +1,5 @@
 <fix major="5" minor="0">
-  <header name="StandardHeader">
+  <header name="StandardHeader" required="Y">
       <field name="BeginString" required="Y"/>
       <field name="BodyLength" required="Y"/>
       <field name="MsgType" required="Y"/>
@@ -31,7 +31,7 @@
       <field name="LastMsgSeqNumProcessed" required="N"/>
       <component name="HopGrp" required="N"/>
   </header>
-  <trailer name="StandardTrailer">
+  <trailer name="StandardTrailer" required="Y">
       <field name="SignatureLength" required="N"/>
       <field name="Signature" required="N"/>
       <field name="CheckSum" required="Y"/>

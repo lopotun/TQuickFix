@@ -3,10 +3,13 @@ package net.kem.newtquickfix;
 import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFFieldUtils;
 import net.kem.newtquickfix.blocks.QFMessage;
+
+import net.kem.newtquickfix.fields.AllocReportID;
 import net.kem.newtquickfix.fields.AllocStatus;
 import net.kem.newtquickfix.fields.SendingTime;
 import net.kem.newtquickfix.fields.TradeDate;
 import net.kem.newtquickfix.messages.AllocationReportAck;
+
 import net.kem.tquickfix.blocks.QFTag;
 
 import java.util.Stack;
@@ -42,6 +45,7 @@ public class ParseMessages {
             QFField qfField = QFFieldUtils.lookupField(kv);
             tags.push(qfField);
         }
+
         QFMessage msg = AllocationReportAck.getInstance(tags);
 
         StringBuilder sb = new StringBuilder();
@@ -54,6 +58,12 @@ public class ParseMessages {
         ara.setAllocStatus(AllocStatus.getInstance(120));
         ara.setAllocStatus(AllocStatus.getInstance("abcd"));
         ara.getStandardHeader().setSendingTime(SendingTime.getInstance("wrong one"));
+        ara.validate();
+        AllocReportID.setValidationHandler((cls, problematicValue, t, errorType) -> {
+            System.err.println("My custom error handler.");
+            return "my value";
+        });
+        ara.validate();
 
         sb.setLength(0);
         ara.toFIXString(sb);
