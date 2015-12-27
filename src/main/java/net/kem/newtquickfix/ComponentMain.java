@@ -6,9 +6,11 @@ import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFFieldUtils;
 import net.kem.newtquickfix.blocks.QFGroupDef;
 import net.kem.newtquickfix.blocks.QFMember;
+import net.kem.newtquickfix.blocks.QFTag;
+import net.kem.newtquickfix.blocks.QFUtils;
 import net.kem.newtquickfix.blocks.SetterStructure;
-import net.kem.tquickfix.blocks.QFTag;
 
+import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Stack;
@@ -24,8 +26,8 @@ import java.util.Stack;
 @SuppressWarnings("unused")
 public class ComponentMain extends QFComponent {
 
-    public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
-        QFFieldUtils.fillMap();
+    public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, IOException {
+        QFUtils.fillMaps();
 
         Stack<QFTag> origTags = new Stack<>();
         // ComponentMain
@@ -54,7 +56,7 @@ public class ComponentMain extends QFComponent {
         Stack<QFField> tags = new Stack<>();
         while (!origTags.empty()) {
             QFTag kv = origTags.pop();
-            QFField qfField = QFFieldUtils.lookupField(kv);
+            QFField qfField = QFUtils.lookupField(kv);
             tags.push(qfField);
         }
 //		QFComponent theRabbit0 = ComponentC.getInstance(tags, null);
@@ -67,42 +69,52 @@ public class ComponentMain extends QFComponent {
     @QFGroupDef(count = FieldIntegerGroupCount.TAG, delimiter = FieldStringGroupDelimiter.TAG)
     public static class GroupA extends QFComponent {
         private static final int $GROUP_COUNT;
+
         static {
             QFGroupDef groupAnnotation = GroupA.class.getAnnotation(QFGroupDef.class);
             $GROUP_COUNT = groupAnnotation.count();
         }
+
         @QFMember
         private FieldStringGroupDelimiter fieldStringGroupDelimiter;
+
         public FieldStringGroupDelimiter getFieldStringGroupDelimiter() {
             return fieldStringGroupDelimiter;
         }
+
         public void setFieldStringGroupDelimiter(FieldStringGroupDelimiter fieldStringGroupDelimiter) {
             this.fieldStringGroupDelimiter = fieldStringGroupDelimiter;
         }
 
         @QFMember(type = QFMember.Type.FIELD)
         private FieldStringA fieldStringA;
+
         public FieldStringA getFieldStringA() {
             return fieldStringA;
         }
+
         public void setFieldStringA(FieldStringA fieldStringA) {
             this.fieldStringA = fieldStringA;
         }
 
         @QFMember(type = QFMember.Type.COMPONENT)
         private ComponentC componentC;
+
         public ComponentC getComponentC() {
             return componentC;
         }
+
         public void setComponentC(ComponentC componentC) {
             this.componentC = componentC;
         }
 
         @QFMember(type = QFMember.Type.FIELD)
         private FieldIntegerA fieldIntegerA;
+
         public FieldIntegerA getFieldIntegerA() {
             return fieldIntegerA;
         }
+
         public void setFieldIntegerA(FieldIntegerA fieldIntegerA) {
             this.fieldIntegerA = fieldIntegerA;
         }
@@ -118,16 +130,16 @@ public class ComponentMain extends QFComponent {
 
         @Override
         public void toFIXString(StringBuilder sb) {
-            if(fieldStringGroupDelimiter != null) {
+            if (fieldStringGroupDelimiter != null) {
                 fieldStringGroupDelimiter.toFIXString(sb);
             }
-            if(fieldStringA != null) {
+            if (fieldStringA != null) {
                 fieldStringA.toFIXString(sb);
             }
-            if(componentC != null) {
+            if (componentC != null) {
                 componentC.toFIXString(sb);
             }
-            if(fieldIntegerA != null) {
+            if (fieldIntegerA != null) {
                 fieldIntegerA.toFIXString(sb);
             }
         }
@@ -175,9 +187,11 @@ public class ComponentMain extends QFComponent {
 
     @QFMember(type = QFMember.Type.GROUP, groupClass = ComponentMain.GroupA.class)
     private List<ComponentMain.GroupA> groupA;
+
     public List<ComponentMain.GroupA> getGroupA() {
         return groupA;
     }
+
     public void setGroupA(List<ComponentMain.GroupA> groupA) {
         this.groupA = groupA;
     }
@@ -191,7 +205,7 @@ public class ComponentMain extends QFComponent {
 
     @Override
     public void toFIXString(StringBuilder sb) {
-        if(groupA != null && !groupA.isEmpty()) {
+        if (groupA != null && !groupA.isEmpty()) {
             sb.append(GroupA.$GROUP_COUNT).append('=').append(groupA.size()).append(QFFieldUtils.FIELD_SEPARATOR);
             for (GroupA group : groupA) {
                 group.toFIXString(sb);

@@ -55,7 +55,7 @@ public abstract class QFElement {
 
     protected void getImportSection() {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n");
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFFieldUtils;\n\n");
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFUtils;\n\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("ValidationHandler;\n\n");
         sb.append("import java.util.Stack;\n");

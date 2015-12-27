@@ -13,6 +13,15 @@ public class QFGroupElement extends QFComponentElement {
         super(startElement, sb, "\t");
         this.type = QFMember.Type.GROUP;
         this.parent = parent;
+
+        // In group, the first field is used as group element delimiter. So, it must be present and valid.
+        String delimiterTagName = getFirstFiledName();
+        for (QFRequirable member : members) {
+            if(delimiterTagName.endsWith(member.getName())) {
+                member.required = true;
+                break;
+            }
+        }
     }
 
     /*

@@ -77,7 +77,7 @@ public class QFMessageElement extends QFComponentElement {
     protected void getCustomMethods() {
         super.getCustomMethods();
         // //	---- Message-specific methods BEGIN
-        // private static final ValidationHandler VALIDATION_HANDLER = QFFieldUtils.getMessageValidationHandler(AllocationReportAck.class);
+        // private static final ValidationHandler VALIDATION_HANDLER = QFUtils.getMessageValidationHandler(AllocationReportAck.class);
         // public MsgType getMsgType() {
         //    return standardHeader.getMsgType();
         // }

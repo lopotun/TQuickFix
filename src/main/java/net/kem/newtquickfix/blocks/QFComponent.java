@@ -67,7 +67,7 @@ public abstract class QFComponent {
             }
 
             // Look for fields.
-            QFFieldUtils.ChildGetterSetter childGS = QFFieldUtils.lookupField(qfField.getClass(), compClass);
+            QFUtils.ChildGetterSetter childGS = QFUtils.getFieldGetterSetter(qfField.getClass(), compClass);
             if(childGS != null) {
                 // Create instance of this component/group if needed.
                 if(instance == null) {
@@ -102,10 +102,10 @@ public abstract class QFComponent {
             }
 
             // The current field does not belong to this component. Check if the filed belongs to one of its child components (if any).
-            List<QFFieldUtils.ChildGetterSetter<? extends QFComponent>> childrenComponentGSs = QFFieldUtils.getChildrenComponentClasses(compClass);
+            List<QFUtils.ChildGetterSetter<? extends QFComponent>> childrenComponentGSs = QFUtils.getChildrenComponentClasses(compClass);
             if(childrenComponentGSs != null) {
                 // Get child component's metadata.
-                for (QFFieldUtils.ChildGetterSetter<? extends QFComponent> childrenComponentGS : childrenComponentGSs) {
+                for (QFUtils.ChildGetterSetter<? extends QFComponent> childrenComponentGS : childrenComponentGSs) {
                     try {
                         // Create (recursively) child component's instance.
                         QFComp childrenComponentInstance = getInstance(tags, null, childrenComponentGS.getChildClass());
@@ -133,10 +133,10 @@ public abstract class QFComponent {
             }
 
             // The current field belong neither to this component nor to one of its child components. Check if the filed belongs to one of child groups (if any).
-            List<QFFieldUtils.ChildGetterSetterGroup<? extends QFComponent>> groupComponentGSs = QFFieldUtils.getChildrenGroupClasses(compClass);
+            List<QFUtils.ChildGetterSetterGroup<? extends QFComponent>> groupComponentGSs = QFUtils.getChildrenGroupClasses(compClass);
             if(groupComponentGSs != null) {
                 // Get child group component metadata.
-                for (QFFieldUtils.ChildGetterSetterGroup<? extends QFComponent> groupComponentGS : groupComponentGSs) {
+                for (QFUtils.ChildGetterSetterGroup<? extends QFComponent> groupComponentGS : groupComponentGSs) {
                     try {
                         // Check if this field is a group count.
                         if(qfField.getTag() == groupComponentGS.getGroupCount()) {

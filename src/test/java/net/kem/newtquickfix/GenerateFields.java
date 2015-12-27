@@ -49,14 +49,14 @@ public class GenerateFields {
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         //Load and Parse the XML document
-        Document document = builder.parse("./src/main/resources/xml/FIX50SP2.xml");
+        Document document = builder.parse("./TQuickFix/src/main/resources/xml/FIX50SP2.xml");
 
         XPath xpath = XPathFactory.newInstance().newXPath();
 
         XPathExpression expr;
         NodeList nodes;
         expr = xpath.compile("/fix/fields/field");// //person/*//*text()
-        File dir = new File("./src/main/java/net/kem/newtquickfix/fields");
+        File dir = new File("./TQuickFix/src/main/java/net/kem/newtquickfix/fields");
         dir.mkdirs();
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
         for (int j = 0; j < nodes.getLength(); j++) {

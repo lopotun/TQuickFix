@@ -26,10 +26,6 @@ public abstract class QFRequirable extends QFElement {
         return required;
     }
 
-    protected String getFirstFiledName() {
-        return name;
-    }
-
     protected void getMethodToFIXStringPart(StringBuilder sb) {
         String memberVarName = StringUtils.uncapitalize(name);
         sb.append(ident).append("\t\t\t").append(memberVarName).append(".toFIXString(sb);\n");

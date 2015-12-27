@@ -107,9 +107,9 @@ public class QFComponentElement extends QFElement {
 
     protected void getCustomMethods() {
         // //	---- Component-specific methods BEGIN
-        // private static final ValidationHandler validationHandler = QFFieldUtils.getMessageValidationHandler(AllocationReportAck.class);
+        // private static final ValidationHandler validationHandler = QFUtils.getMessageValidationHandler(AllocationReportAck.class);
         sb.append(ident).append("\t//\t---- Component-specific methods BEGIN\n");
-        sb.append(ident).append("\tprivate static ValidationHandler<Void> validationHandler = QFFieldUtils.getMessageValidationHandler(").append(name).append(".class);\n");
+        sb.append(ident).append("\tprivate static ValidationHandler<Void> validationHandler = QFUtils.getMessageValidationHandler(").append(name).append(".class);\n");
         sb.append(ident).append("\tpublic static ValidationHandler<Void> getValidationHandler() {\n")
                 .append(ident).append("\t\treturn validationHandler;\n")
                 .append(ident).append("\t}\n");

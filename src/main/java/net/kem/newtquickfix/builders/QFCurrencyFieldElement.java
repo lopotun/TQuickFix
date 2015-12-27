@@ -48,8 +48,8 @@ public class QFCurrencyFieldElement extends QFFieldElement {
 
     @Override
     protected void generatePredefinedStaticMembers() {
-        // private static ValidationHandler<Integer> validationHandler = QFFieldUtils.getValidationHandler(AllocTransType.class);
-        sb.append("\tprivate static ValidationHandler<").append(def.typeClass.getName()).append("> validationHandler = QFFieldUtils.getValidationHandler(").append(name).append(".class);\n");
+        // private static ValidationHandler<Integer> validationHandler = QFUtils.getValidationHandler(AllocTransType.class);
+        sb.append("\tprivate static ValidationHandler<").append(def.typeClass.getName()).append("> validationHandler = QFUtils.getValidationHandler(").append(name).append(".class);\n");
         if (defaultValues != null) {
             // "	private static final Map<Integer, FieldIntegerExample> STATIC_VALUES_MAPPING = new HashMap<>();\n\n"
             sb.append("\tprivate static final Map<").append(def.typeClass.getName()).append(", ").append(name).append("> STATIC_VALUES_MAPPING = new HashMap<>();\n\n");

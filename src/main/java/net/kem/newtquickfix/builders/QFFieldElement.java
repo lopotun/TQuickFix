@@ -1,6 +1,5 @@
 package net.kem.newtquickfix.builders;
 
-import net.kem.newtquickfix.blocks.ValidationHandler;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -81,8 +80,8 @@ public class QFFieldElement extends QFElement {
     //				"\n" +
     private void generateImportSection() {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append(def.parentClassName).append(";\n\n");
-        // import net.kem.newtquickfix.blocks.QFFieldUtils;
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFFieldUtils;\n\n");
+        // import net.kem.newtquickfix.blocks.QFUtils;
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFUtils;\n\n");
         // import net.kem.newtquickfix.blocks.ValidationHandler;
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("ValidationHandler;\n\n");
         if (defaultValues != null) {
@@ -115,8 +114,8 @@ public class QFFieldElement extends QFElement {
     //				"        STATIC_VALUES_MAPPING.put(OTHER.getValue(), OTHER);\n" +
     //				"    }\n" +
     protected void generatePredefinedStaticMembers() {
-        // private static final ValidationHandler<Integer> validationHandler = QFFieldUtils.getValidationHandler(AllocTransType.class);
-        sb.append("\tprivate static ValidationHandler<").append(def.typeClass.getSimpleName()).append("> validationHandler = QFFieldUtils.getValidationHandler(").append(name).append(".class);\n");
+        // private static final ValidationHandler<Integer> validationHandler = QFUtils.getValidationHandler(AllocTransType.class);
+        sb.append("\tprivate static ValidationHandler<").append(def.typeClass.getSimpleName()).append("> validationHandler = QFUtils.getValidationHandler(").append(name).append(".class);\n");
         if (defaultValues != null) {
             // "	private static final Map<Integer, FieldIntegerExample> STATIC_VALUES_MAPPING = new HashMap<>();\n\n"
             sb.append("\tprivate static final Map<").append(def.typeClass.getSimpleName()).append(", ").append(name).append("> STATIC_VALUES_MAPPING = new HashMap<>();\n\n");
