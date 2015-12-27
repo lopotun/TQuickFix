@@ -1,15 +1,20 @@
 package net.kem.newtquickfix;
 
+import net.kem.newtquickfix.blocks.QFComponent;
 import net.kem.newtquickfix.blocks.QFField;
+import net.kem.newtquickfix.blocks.QFMessage;
 import net.kem.newtquickfix.blocks.QFTag;
 import net.kem.newtquickfix.blocks.QFUtils;
+import net.kem.newtquickfix.fields.AllocReportID;
+import net.kem.newtquickfix.fields.AllocStatus;
+import net.kem.newtquickfix.fields.SendingTime;
+import net.kem.newtquickfix.fields.TradeDate;
+import net.kem.newtquickfix.messages.AllocationReportAck;
 
 import java.io.IOException;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-//import net.kem.newtquickfix.messages.AllocationReportAck;
 
 /**
  * Created by Evgeny Kurtser on 12/22/2015 at 12:46 PM.
@@ -42,28 +47,34 @@ public class ParseMessages {
             tags.push(qfField);
         }
 
-//        QFMessage msg = AllocationReportAck.getInstance(tags);
-//
-//        StringBuilder sb = new StringBuilder();
-//        msg.toFIXString(sb);
-//        System.out.println(sb.toString());
-//
-//        AllocationReportAck ara = AllocationReportAck.getInstance();
-//        TradeDate tradeDate = TradeDate.getInstance("20151221");
-//        ara.setTradeDate(tradeDate);
-//        ara.setAllocStatus(AllocStatus.getInstance(120));
-//        ara.setAllocStatus(AllocStatus.getInstance("abcd"));
-//        ara.getStandardHeader().setSendingTime(SendingTime.getInstance("wrong one"));
-//        ara.validate();
-//        AllocReportID.setValidationHandler((cls, problematicValue, t, errorType) -> {
-//            System.err.println("My custom error handler.");
-//            return "my value";
-//        });
-//        ara.validate();
-//
-//        sb.setLength(0);
-//        ara.toFIXString(sb);
-//        System.out.println(sb.toString());
+        QFMessage msg = AllocationReportAck.getInstance(tags);
+
+        StringBuilder sb = new StringBuilder();
+        msg.toFIXString(sb);
+        System.out.println(sb.toString());
+
+        AllocationReportAck ara = AllocationReportAck.getInstance();
+        TradeDate tradeDate = TradeDate.getInstance("20151221");
+        ara.setTradeDate(tradeDate);
+        ara.setAllocStatus(AllocStatus.getInstance(120));
+        ara.setAllocStatus(AllocStatus.getInstance("abcd"));
+        ara.getStandardHeader().setSendingTime(SendingTime.getInstance("wrong one"));
+        ara.validate();
+        AllocReportID.setValidationHandler((cls, problematicValue, t, errorType) -> {
+            System.err.println("My custom error handler.");
+            return "my value";
+        });
+        AllocationReportAck.setComponentValidator(new QFComponentValidator() {
+            @Override
+            public void mandatoryElementMissing(@SuppressWarnings("unused") QFComponent thisComponent, @SuppressWarnings("unused") Class<?> missingElement) {
+                System.err.println("My custom component validator.");
+            }
+        });
+        ara.validate();
+
+        sb.setLength(0);
+        ara.toFIXString(sb);
+        System.out.println(sb.toString());
     }
 
     private Stack<QFTag> toStack(CharSequence src) {

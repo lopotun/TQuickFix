@@ -43,11 +43,17 @@ import java.util.Stack;
  */
 public abstract class QFComponent {
 
+    protected QFComponent parent;
+
+    public QFComponent getParent() {
+        return parent;
+    }
+
     public String getName() {
         return getClass().getSimpleName();
     }
 
-    protected static <QFComp extends QFComponent> QFComp getInstance(Stack<QFField> tags, QFComp instance, Class<? extends QFComponent> compClass) {
+    protected static <QFComp extends QFComponent> QFComp getInstance(Stack<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass) {
         // I'll need to know whether the current component is an ordinal component or a group.
         // I rely on the fact that every group has QFGroupDef annotation.
         int groupDelimiterTag = 0;
@@ -59,36 +65,36 @@ public abstract class QFComponent {
         NEXT_TAG:
         while (true) {
             if (tags.isEmpty()) {
-                return instance;
+                return thisInstance;
             }
             QFField qfField = tags.peek();
             if(!qfField.isKnown()) {
-                return instance;
+                return thisInstance;
             }
 
             // Look for fields.
             QFUtils.ChildGetterSetter childGS = QFUtils.getFieldGetterSetter(qfField.getClass(), compClass);
             if(childGS != null) {
                 // Create instance of this component/group if needed.
-                if(instance == null) {
-                    instance = createThisInstance(instance, compClass);
+                if(thisInstance == null) {
+                    thisInstance = createThisInstance(thisInstance, compClass);
                 } else {
                     // This instance is a Group and this field is a group element delimiter ->
                     // 1. We're at beginning of next group element.
                     // 2. Stop precessing this group element (and then go to next one).
                     if(groupDelimiterTag != 0 && qfField.getTag() == groupDelimiterTag) {
-                        return instance;
+                        return thisInstance;
                     }
                 }
                 // Assign field value to the component member.
                 try {
                     // Check if the value was not assigned previously.
                     Method fieldGetter = childGS.getGetter();
-                    QFField currentValue = (QFField) fieldGetter.invoke(instance);
+                    QFField currentValue = (QFField) fieldGetter.invoke(thisInstance);
                     if(currentValue == null) {
                         // Assign field value to the component member by calling a field setter method.
                         Method fieldSetter = childGS.getSetter();
-                        fieldSetter.invoke(instance, qfField);
+                        fieldSetter.invoke(thisInstance, qfField);
                         // Proceed to next field.
                         tags.pop();
                         continue;
@@ -112,13 +118,15 @@ public abstract class QFComponent {
                         if (childrenComponentInstance != null) {
                             // Child component instance has been created (that means that the current filed belongs to this child component (or to one of its descenders)).
                             // Create instance of this component if needed.
-                            instance = createThisInstance(instance, compClass);
+                            thisInstance = createThisInstance(thisInstance, compClass);
                             // Check if the value was not assigned previously.
                             Method fieldGetter = childrenComponentGS.getGetter();
-                            QFComponent currentValue = (QFComponent) fieldGetter.invoke(instance);
+                            QFComponent currentValue = (QFComponent) fieldGetter.invoke(thisInstance);
                             if(currentValue == null) {
                                 // Assign the value of the newly created child component.
-                                childrenComponentGS.getSetter().invoke(instance, childrenComponentInstance);
+                                childrenComponentGS.getSetter().invoke(thisInstance, childrenComponentInstance);
+                                // Set parent reference.
+                                childrenComponentInstance.parent = thisInstance;
                             } else {
                                 // The value has been already assigned to this member.
                                 System.out.println("Component \"" + childrenComponentInstance.getName() + "\" already exists in class \"" + compClass.getName() + "\". Please, check the incoming FIX message for data integrity.");
@@ -156,8 +164,12 @@ public abstract class QFComponent {
                             }
                             // Assign the value of the newly created child group.
                             if (!groupInstances.isEmpty()) {
-                                instance = createThisInstance(instance, compClass);
-                                groupComponentGS.getSetter().invoke(instance, groupInstances);
+                                thisInstance = createThisInstance(thisInstance, compClass);
+                                groupComponentGS.getSetter().invoke(thisInstance, groupInstances);
+                                // Set parent reference.
+                                for (QFComp groupInstance : groupInstances) {
+                                    groupInstance.parent = thisInstance;
+                                }
                             }
                             // Proceed to next field. Note: do not pop stack since it has been already popped while child group creation.
                             continue NEXT_TAG;
@@ -167,7 +179,7 @@ public abstract class QFComponent {
                     }
                 }
             }
-            return instance;
+            return thisInstance;
         }
     }
 
@@ -184,5 +196,6 @@ public abstract class QFComponent {
         return instance;
     }
 
+    public abstract boolean validate();
     public abstract void toFIXString(StringBuilder sb);
 }

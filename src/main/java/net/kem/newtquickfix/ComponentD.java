@@ -57,6 +57,11 @@ public class ComponentD extends QFComponent {
         }
 
         @Override
+        public boolean validate() {
+            return true;
+        }
+
+        @Override
         public void toFIXString(StringBuilder sb) {
             if(fieldStringGroupDelimiter != null) {
                 fieldStringGroupDelimiter.toFIXString(sb);
@@ -121,6 +126,11 @@ public class ComponentD extends QFComponent {
 
     public static ComponentD getInstance(Stack<QFField> tags, ComponentD instance) {
         return getInstance(tags, instance, ComponentD.class);
+    }
+
+    @Override
+    public boolean validate() {
+        return true;
     }
 
     @Override

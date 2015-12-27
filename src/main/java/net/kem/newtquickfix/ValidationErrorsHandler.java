@@ -1,4 +1,4 @@
-package net.kem.newtquickfix.blocks;
+package net.kem.newtquickfix;
 
 import java.time.LocalDateTime;
 import java.time.temporal.Temporal;
@@ -7,25 +7,22 @@ import java.time.temporal.Temporal;
  * Created by Evgeny Kurtser on 12/23/2015 at 2:41 PM.
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
-public interface ValidationHandler<V> {
+public interface ValidationErrorsHandler<V> {
 
     enum ErrorType {PARSING, NOT_PREDEFINED, MISSING}
 
     interface Numbers {
-        ValidationHandler VALIDATION_HANDLER_SILENT = new ValidationHandler<Number>() {
+        ValidationErrorsHandler VALIDATION_HANDLER_SILENT = new ValidationErrorsHandler<Number>() {
             @Override
             public Number invalidValue(Class<?> cls, Object problematicValue, Throwable t, ErrorType errorType) throws UnsupportedOperationException {
                 return problematicValue instanceof Number ? (Number) problematicValue : 0;
             }
         };
 
-        ValidationHandler VALIDATION_HANDLER_WARNING = new ValidationHandler<Number>() {
+        ValidationErrorsHandler VALIDATION_HANDLER_WARNING = new ValidationErrorsHandler<Number>() {
             @Override
             public Number invalidValue(Class<?> cls, Object problematicValue, Throwable t, ErrorType errorType) throws UnsupportedOperationException {
                 switch (errorType) {
-                    case MISSING: {
-                        System.err.println("Mandatory tag " + problematicValue + " is missing in its parent component " + cls.getSimpleName());
-                    } break;
                     case NOT_PREDEFINED: {
                         System.err.println("Value " + problematicValue + " is out of predefined values list of FIX tag " + cls.getSimpleName());
                     } break;
@@ -37,7 +34,7 @@ public interface ValidationHandler<V> {
             }
         };
 
-        ValidationHandler VALIDATION_HANDLER_ERROR = new ValidationHandler<Number>() {
+        ValidationErrorsHandler VALIDATION_HANDLER_ERROR = new ValidationErrorsHandler<Number>() {
             @Override
             public Number invalidValue(Class<?> cls, Object problematicValue, Throwable t, ErrorType errorType) throws UnsupportedOperationException {
                 if (t instanceof UnsupportedOperationException) {
@@ -50,13 +47,10 @@ public interface ValidationHandler<V> {
     }
 
     interface Temporals<V extends Temporal> {
-        ValidationHandler VALIDATION_HANDLER_SILENT = (cls, problematicValue, t, errorType) -> LocalDateTime.now();
+        ValidationErrorsHandler VALIDATION_HANDLER_SILENT = (cls, problematicValue, t, errorType) -> LocalDateTime.now();
 
-        ValidationHandler VALIDATION_HANDLER_WARNING = (cls, problematicValue, t, errorType) -> {
+        ValidationErrorsHandler VALIDATION_HANDLER_WARNING = (cls, problematicValue, t, errorType) -> {
             switch (errorType) {
-                case MISSING: {
-                    System.err.println("Mandatory tag " + problematicValue + " is missing in its parent component " + cls.getSimpleName());
-                } break;
                 case NOT_PREDEFINED: {
                     System.err.println("Value " + problematicValue + " is out of predefined values list of FIX tag " + cls.getSimpleName());
                 } break;
@@ -67,7 +61,7 @@ public interface ValidationHandler<V> {
             return LocalDateTime.now();
         };
 
-        ValidationHandler VALIDATION_HANDLER_ERROR = (cls, problematicValue, t, errorType) -> {
+        ValidationErrorsHandler VALIDATION_HANDLER_ERROR = (cls, problematicValue, t, errorType) -> {
             if (t instanceof UnsupportedOperationException) {
                 throw (UnsupportedOperationException) t;
             } else {
@@ -76,6 +70,17 @@ public interface ValidationHandler<V> {
         };
     }
 
-
-    V invalidValue(Class<?> cls, Object problematicValue, Throwable t, ErrorType errorType) throws UnsupportedOperationException;
+    /**
+     * This method is called by a:
+     *  (a) LiteFix Field when value of this field is not one of the its predefined values. In this case 'errorType' is {@linkplain ErrorType#NOT_PREDEFINED};
+     *  (b) LiteFix Field when value of this field cannot be parsed to field type (e.g. when value "abcd" is given to an Integer or a Date/Time field). In this case 'errorType' is {@linkplain ErrorType#PARSING};
+     * @param cls                 in case of
+     *  (a):
+     * @param problematicValue
+     * @param t
+     * @param errorType
+     * @return
+     * @throws UnsupportedOperationException
+     */
+    V invalidValue(Class<?> cls, Object problematicValue, Throwable t, ErrorType errorType) throws UnsupportedOperationException;//TODO rename to invalidFieldValue
 }

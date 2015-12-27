@@ -3,6 +3,8 @@ package net.kem.newtquickfix.blocks;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.common.reflect.ClassPath;
+import net.kem.newtquickfix.QFComponentValidator;
+import net.kem.newtquickfix.ValidationErrorsHandler;
 import net.kem.newtquickfix.builders.BuilderUtils;
 
 import java.io.IOException;
@@ -20,8 +22,9 @@ import java.util.Set;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class QFUtils {
-    private static final Map<Class<? extends QFField<?>>, ValidationHandler> FIELD_VALIDATORS = new HashMap<>();
-    static final Map<Class<? extends QFComponent>, ValidationHandler> MESSAGE_VALIDATORS = new HashMap<>();
+    private static final Map<Class<? extends QFField<?>>, ValidationErrorsHandler> FIELD_VALIDATORS = new HashMap<>();
+    private static final Map<Class<? extends QFComponent>, QFComponentValidator> COMPONENT_VALIDATORS = new HashMap<>();
+    static final Map<Class<? extends QFComponent>, ValidationErrorsHandler> MESSAGE_VALIDATORS = new HashMap<>();
     static ClassPath classPath;
 
     static final Map<Integer, Method> MAP = new HashMap<>();
@@ -145,21 +148,27 @@ public class QFUtils {
         return res;
     }
 
-    public static <V> ValidationHandler<V> getValidationHandler(Class<? extends QFField<?>> fieldClass) {
-        ValidationHandler<V> validationHandler = FIELD_VALIDATORS.get(fieldClass);
+    public static <V> ValidationErrorsHandler<V> getValidationErrorsHandler(Class<? extends QFField<?>> fieldClass) {
+        ValidationErrorsHandler<V> validationErrorsHandler = FIELD_VALIDATORS.get(fieldClass);
         if(QFDateTimeField.class.isAssignableFrom(fieldClass)) {
-            validationHandler = ValidationHandler.Temporals.VALIDATION_HANDLER_WARNING;
+            validationErrorsHandler = ValidationErrorsHandler.Temporals.VALIDATION_HANDLER_WARNING;
         }
         if(QFDateField.class.isAssignableFrom(fieldClass)) {
-            validationHandler = ValidationHandler.Temporals.VALIDATION_HANDLER_WARNING;
+            validationErrorsHandler = ValidationErrorsHandler.Temporals.VALIDATION_HANDLER_WARNING;
         }
         if(QFTimeField.class.isAssignableFrom(fieldClass)) {
-            validationHandler = ValidationHandler.Temporals.VALIDATION_HANDLER_WARNING;
+            validationErrorsHandler = ValidationErrorsHandler.Temporals.VALIDATION_HANDLER_WARNING;
         }
         if(QFMonthYearField.class.isAssignableFrom(fieldClass)) {
-            validationHandler = ValidationHandler.Temporals.VALIDATION_HANDLER_WARNING;
+            validationErrorsHandler = ValidationErrorsHandler.Temporals.VALIDATION_HANDLER_WARNING;
         }
-        return validationHandler==null? ValidationHandler.Numbers.VALIDATION_HANDLER_WARNING: validationHandler;
+        return validationErrorsHandler ==null? ValidationErrorsHandler.Numbers.VALIDATION_HANDLER_WARNING: validationErrorsHandler;
+    }
+
+
+    public static QFComponentValidator getComponentValidator(Class<? extends QFComponent> componentClass) {
+        QFComponentValidator validationErrorsHandler = COMPONENT_VALIDATORS.get(componentClass);
+        return validationErrorsHandler ==null? QFComponentValidator.DEFAULT_COMPONENT_VALIDATOR: validationErrorsHandler;
     }
 
     // final Integer integer = QFFieldUtils.<Integer>handleError(AllocTransType.class, "abcd", new NumberFormatException("Bad abcd"));
@@ -167,9 +176,9 @@ public class QFUtils {
         return null;
     }
 
-    public static <V> ValidationHandler<V> getMessageValidationHandler(Class<? extends QFComponent> fieldClass) {
-        final ValidationHandler<V> validationHandler = MESSAGE_VALIDATORS.get(fieldClass);
-        return validationHandler==null? ValidationHandler.Numbers.VALIDATION_HANDLER_WARNING: validationHandler;
+    public static <V> ValidationErrorsHandler<V> getMessageValidationErrorsHandler(Class<? extends QFComponent> fieldClass) {
+        final ValidationErrorsHandler<V> validationErrorsHandler = MESSAGE_VALIDATORS.get(fieldClass);
+        return validationErrorsHandler ==null? ValidationErrorsHandler.Numbers.VALIDATION_HANDLER_WARNING: validationErrorsHandler;
     }
 
 

@@ -30,6 +30,11 @@ public class ComponentB extends QFComponent {
 	}
 
 	@Override
+	public boolean validate() {
+		return true;
+	}
+
+	@Override
 	public void toFIXString(StringBuilder sb) {
 		if(fieldStringB != null) {
 			fieldStringB.toFIXString(sb);

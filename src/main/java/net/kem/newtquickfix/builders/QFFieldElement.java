@@ -82,8 +82,8 @@ public class QFFieldElement extends QFElement {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append(def.parentClassName).append(";\n\n");
         // import net.kem.newtquickfix.blocks.QFUtils;
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFUtils;\n\n");
-        // import net.kem.newtquickfix.blocks.ValidationHandler;
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("ValidationHandler;\n\n");
+        // import net.kem.newtquickfix.ValidationErrorsHandler;
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME).append("ValidationErrorsHandler;\n\n");
         if (defaultValues != null) {
             sb.append("import java.util.HashMap;\n").append("import java.util.Map;\n");
         }
@@ -114,8 +114,8 @@ public class QFFieldElement extends QFElement {
     //				"        STATIC_VALUES_MAPPING.put(OTHER.getValue(), OTHER);\n" +
     //				"    }\n" +
     protected void generatePredefinedStaticMembers() {
-        // private static final ValidationHandler<Integer> validationHandler = QFUtils.getValidationHandler(AllocTransType.class);
-        sb.append("\tprivate static ValidationHandler<").append(def.typeClass.getSimpleName()).append("> validationHandler = QFUtils.getValidationHandler(").append(name).append(".class);\n");
+        // private static final ValidationErrorsHandler<Integer> validationErrorsHandler = QFUtils.getValidationErrorsHandler(AllocTransType.class);
+        sb.append("\tprivate static ValidationErrorsHandler<").append(def.typeClass.getSimpleName()).append("> validationErrorsHandler = QFUtils.getValidationErrorsHandler(").append(name).append(".class);\n");
         if (defaultValues != null) {
             // "	private static final Map<Integer, FieldIntegerExample> STATIC_VALUES_MAPPING = new HashMap<>();\n\n"
             sb.append("\tprivate static final Map<").append(def.typeClass.getSimpleName()).append(", ").append(name).append("> STATIC_VALUES_MAPPING = new HashMap<>();\n\n");
@@ -165,7 +165,7 @@ public class QFFieldElement extends QFElement {
 		try {
 			return getInstance(Integer.parseInt(value));
 		} catch (Exception e) {//NumberFormatException
-			final Integer newValue = validationHandler.invalidValue(ApplReportType.class, value, e, ValidationHandler.ErrorType.PARSING);
+			final Integer newValue = validationErrorsHandler.invalidValue(ApplReportType.class, value, e, ValidationErrorsHandler.ErrorType.PARSING);
 			return getInstance(newValue);
 		}
 	}
@@ -178,8 +178,8 @@ public class QFFieldElement extends QFElement {
                     .append("\t\t} catch (Exception e) {\n")
                     .append("\t\t\tfinal ")
                         .append(def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName())
-                        .append(" newValue = validationHandler.invalidValue(")
-                        .append(name).append(".class, value, e, ValidationHandler.ErrorType.PARSING);\n")
+                        .append(" newValue = validationErrorsHandler.invalidValue(")
+                        .append(name).append(".class, value, e, ValidationErrorsHandler.ErrorType.PARSING);\n")
                     .append("\t\t\treturn getInstance(newValue);\n")
                     .append("\t\t}\n")
             .append("\t}\n\n");
@@ -190,7 +190,7 @@ public class QFFieldElement extends QFElement {
     public static FieldIntegerExample getInstance(Integer value) {
         FieldIntegerExample res = STATIC_VALUES_MAPPING.get(value);
         if (res == null) {
-            final Integer newValue = validationHandler.invalidValue(ApplReportType.class, value, null, ValidationHandler.ErrorType.NOT_PREDEFINED);
+            final Integer newValue = validationErrorsHandler.invalidValue(ApplReportType.class, value, null, ValidationErrorsHandler.ErrorType.NOT_PREDEFINED);
 			res = new ApplReportType(newValue);
         }
         return res;
@@ -204,8 +204,8 @@ public class QFFieldElement extends QFElement {
             sb.append("\t\t").append(name).append(" res = STATIC_VALUES_MAPPING.get(value);\n")
                     .append("\t\tif (res == null) {\n")
                     .append("\t\t\tfinal ")
-                        .append(def.typeClass.getSimpleName()).append(" newValue = validationHandler.invalidValue(")
-                        .append(name).append(".class, value, null, ValidationHandler.ErrorType.NOT_PREDEFINED);\n")
+                        .append(def.typeClass.getSimpleName()).append(" newValue = validationErrorsHandler.invalidValue(")
+                        .append(name).append(".class, value, null, ValidationErrorsHandler.ErrorType.NOT_PREDEFINED);\n")
                     .append("\t\t\tres = new ").append(name).append("(newValue);\n")
                     .append("\t\t}\n")
                     .append("\t\treturn res;\n");
@@ -216,19 +216,19 @@ public class QFFieldElement extends QFElement {
     }
 
     protected void generateAuxMethods() {
-        // public static ValidationHandler<String> getValidationHandler() {
-        //    return validationHandler;
+        // public static ValidationErrorsHandler<String> getValidationErrorsHandler() {
+        //    return validationErrorsHandler;
         // }
-        // public static void setValidationHandler(ValidationHandler<LocalDateTime> newValidationHandler) {
-        //    validationHandler = newValidationHandler;
+        // public static void setValidationHandler(ValidationErrorsHandler<LocalDateTime> newValidationHandler) {
+        //    validationErrorsHandler = newValidationHandler;
         // }
         CharSequence diamondValue = def.typeClass==java.util.Currency.class ? def.typeClass.getName(): def.typeClass.getSimpleName();
         sb.append("\n\n");
-        sb.append("\tpublic static ValidationHandler<").append(diamondValue).append("> getValidationHandler() {\n")
-                .append("\t\treturn validationHandler;\n")
+        sb.append("\tpublic static ValidationErrorsHandler<").append(diamondValue).append("> getValidationErrorsHandler() {\n")
+                .append("\t\treturn validationErrorsHandler;\n")
                 .append("\t}\n");
-        sb.append("\tpublic static void setValidationHandler(ValidationHandler<").append(diamondValue).append("> newValidationHandler) {\n")
-                .append("\t\tvalidationHandler = newValidationHandler;\n")
+        sb.append("\tpublic static void setValidationHandler(ValidationErrorsHandler<").append(diamondValue).append("> newValidationErrorsHandler) {\n")
+                .append("\t\tvalidationErrorsHandler = newValidationErrorsHandler;\n")
                 .append("\t}\n");
     }
 
