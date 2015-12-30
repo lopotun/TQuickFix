@@ -18,11 +18,11 @@ public class QFDateFieldElement extends QFFieldElement {
     }
 
     /*
-    public static OrigTime getInstance(String value) {
+    public static OrigTime getInstance(String value, QFComponentValidator componentValidator) {
         try {
-        return getInstance(LocalDateTime.parse(value, getDateFormat()));
+        return getInstance(LocalDateTime.parse(value, getDateFormat()), componentValidator);
         } catch (Exception e) {
-            final java.time.LocalDateTime newValue = validationErrorsHandler.invalidValue(OrigTime.class, value, e, ValidationErrorsHandler.ErrorType.PARSING);
+            final java.time.LocalDateTime newValue = componentValidator.invalidFieldValue(MDEntryDate.class, LocalDate.class, value, e);
             return getInstance(newValue);
         }
 	}
@@ -31,13 +31,16 @@ public class QFDateFieldElement extends QFFieldElement {
     protected void generateMethodGetInstanceString() {
         if (def.typeToStringConversion != null) {
             sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
+                    .append("\t\treturn getInstance(value, QFComponentValidator.getDefaultComponentValidator());\n")
+                    .append("\t}\n\n");
+
+            sb.append("\tpublic static ").append(name).append(" getInstance(String value, QFComponentValidator componentValidator) {\n")
                     .append("\t\ttry {\n")
-                    .append("\t\treturn getInstance(").append(def.typeClass.getSimpleName()).append(".parse(value, getDateFormat()));\n")
+                    .append("\t\t\treturn getInstance(").append(def.typeClass.getSimpleName()).append(".parse(value, getDateFormat()), componentValidator);\n")
                     .append("\t\t} catch (Exception e) {\n")
-                    .append("\t\t\tfinal ")
-                        .append(def.typeClass.getName())
-                        .append(" newValue = validationErrorsHandler.invalidValue(")
-                        .append(name).append(".class, value, e, ValidationErrorsHandler.ErrorType.PARSING);\n")
+                    .append("\t\t\tfinal ").append(def.typeClass.getSimpleName())
+                        .append(" newValue = componentValidator.invalidFieldValue(")
+                        .append(name).append(".class, ").append(def.typeClass.getSimpleName()).append(".class, value, e);\n")
                     .append("\t\t\treturn getInstance(newValue);\n")
                     .append("\t\t}\n")
                     .append("\t}\n\n");

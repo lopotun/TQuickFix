@@ -5,7 +5,6 @@ import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMessage;
 import net.kem.newtquickfix.blocks.QFTag;
 import net.kem.newtquickfix.blocks.QFUtils;
-import net.kem.newtquickfix.fields.AllocReportID;
 import net.kem.newtquickfix.fields.AllocStatus;
 import net.kem.newtquickfix.fields.SendingTime;
 import net.kem.newtquickfix.fields.TradeDate;
@@ -43,11 +42,11 @@ public class ParseMessages {
         Stack<QFField> tags = new Stack<>();
         while (!origTags.empty()) {
             QFTag kv = origTags.pop();
-            QFField qfField = QFUtils.lookupField(kv);
+            QFField qfField = QFUtils.lookupField(kv, QFComponentValidator.getDefaultComponentValidator());
             tags.push(qfField);
         }
 
-        QFMessage msg = AllocationReportAck.getInstance(tags);
+        QFMessage msg = AllocationReportAck.getInstance(tags, QFComponentValidator.getDefaultComponentValidator());
 
         StringBuilder sb = new StringBuilder();
         msg.toFIXString(sb);
@@ -60,10 +59,10 @@ public class ParseMessages {
         ara.setAllocStatus(AllocStatus.getInstance("abcd"));
         ara.getStandardHeader().setSendingTime(SendingTime.getInstance("wrong one"));
         ara.validate();
-        AllocReportID.setValidationHandler((cls, problematicValue, t, errorType) -> {
-            System.err.println("My custom error handler.");
-            return "my value";
-        });
+//        AllocReportID.setValidationHandler((cls, problematicValue, t, errorType) -> {
+//            System.err.println("My custom error handler.");
+//            return "my value";
+//        });
         AllocationReportAck.setComponentValidator(new QFComponentValidator() {
             @Override
             public void mandatoryElementMissing(@SuppressWarnings("unused") QFComponent thisComponent, @SuppressWarnings("unused") Class<?> missingElement) {
@@ -79,7 +78,7 @@ public class ParseMessages {
 
     private Stack<QFTag> toStack(CharSequence src) {
         Stack<QFTag> origTags = new Stack<>();
-        final String[] rawTags = src.toString().split("\u0001");
+        final String[] rawTags = src.toString().split("\u0001|\n");
         for (String rawTag : rawTags) {
             final Matcher matcher = PATTERN.matcher(rawTag);
             if (matcher.matches()) {

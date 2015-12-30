@@ -65,7 +65,7 @@ public class QFUtils {
         for (ClassPath.ClassInfo fieldClass : fieldClasses) {
             Class<?> qfFieldClass = fieldClass.load();
             int tagValue = qfFieldClass.getField("TAG").getInt(null);
-            Method instantiatorByString = qfFieldClass.getDeclaredMethod("getInstance", String.class);
+            Method instantiatorByString = qfFieldClass.getDeclaredMethod("getInstance", String.class, QFComponentValidator.class);
             MAP.put(tagValue, instantiatorByString);
         }
 
@@ -132,12 +132,12 @@ public class QFUtils {
         }
     }
 
-    public static QFField lookupField(QFTag tag) {
+    public static QFField lookupField(QFTag tag, QFComponentValidator componentValidator) {
         QFField res = null;
         Method getInstance = MAP.get(tag.getTagKey());
         if (getInstance != null) {
             try {
-                res = (QFField) getInstance.invoke(null, tag.getTagValue());
+                res = (QFField) getInstance.invoke(null, tag.getTagValue(), componentValidator);
             } catch (IllegalAccessException | InvocationTargetException e) {
                 e.printStackTrace();
             }
@@ -168,7 +168,7 @@ public class QFUtils {
 
     public static QFComponentValidator getComponentValidator(Class<? extends QFComponent> componentClass) {
         QFComponentValidator validationErrorsHandler = COMPONENT_VALIDATORS.get(componentClass);
-        return validationErrorsHandler ==null? QFComponentValidator.DEFAULT_COMPONENT_VALIDATOR: validationErrorsHandler;
+        return validationErrorsHandler ==null? QFComponentValidator.getDefaultComponentValidator(): validationErrorsHandler;
     }
 
     // final Integer integer = QFFieldUtils.<Integer>handleError(AllocTransType.class, "abcd", new NumberFormatException("Bad abcd"));

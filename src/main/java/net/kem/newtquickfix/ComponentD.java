@@ -52,12 +52,15 @@ public class ComponentD extends QFComponent {
         private GroupA() {
         }
 
-        public static GroupA getInstance(Stack<QFField> tags, GroupA instance) {
-            return getInstance(tags, instance, GroupA.class);
+        public static GroupA getInstance(Stack<QFField> tags, GroupA instance, QFComponentValidator componentValidator) {
+            return getInstance(tags, instance, GroupA.class, componentValidator);
         }
 
         @Override
         public boolean validate() {
+            return true;
+        }
+        public boolean validate(QFComponentValidator componentValidator) {
             return true;
         }
 
@@ -124,12 +127,15 @@ public class ComponentD extends QFComponent {
     private ComponentD() {
     }
 
-    public static ComponentD getInstance(Stack<QFField> tags, ComponentD instance) {
-        return getInstance(tags, instance, ComponentD.class);
+    public static ComponentD getInstance(Stack<QFField> tags, ComponentD instance, QFComponentValidator componentValidator) {
+        return getInstance(tags, instance, ComponentD.class, componentValidator);
     }
 
     @Override
     public boolean validate() {
+        return true;
+    }
+    public boolean validate(QFComponentValidator componentValidator) {
         return true;
     }
 

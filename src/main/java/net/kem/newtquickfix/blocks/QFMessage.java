@@ -1,5 +1,7 @@
 package net.kem.newtquickfix.blocks;
 
+import net.kem.newtquickfix.QFComponentValidator;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
@@ -32,9 +34,9 @@ public abstract class QFMessage extends QFComponent {
     }
 
 
-    protected static <QFComp extends QFMessage> QFComp getInstance(Stack<QFField> tags, QFComp instance, Class<? extends QFMessage> compClass) {
+    protected static <QFComp extends QFMessage> QFComp getInstance(Stack<QFField> tags, QFComp thisInstance, Class<? extends QFMessage> compClass, QFComponentValidator componentValidator) {
         while(true) {
-            instance = QFComponent.getInstance(tags, instance, compClass);
+            thisInstance = QFComponent.getInstance(tags, thisInstance, compClass, componentValidator);
             if (tags.isEmpty()) {
                 // All the tags were consumed. Stop the loop.
                 break;
@@ -42,15 +44,15 @@ public abstract class QFMessage extends QFComponent {
                 // One or more tags were not recognized by any of message components.
                 // Remove this tag from the stack,
                 final QFField qfField = tags.pop();
-                // add it to list of unknown tags (this list will be used when the message will be "serialized" to a String)
-                instance.addUnknownTag(qfField);
-                // an proceed to next field.
+                // [most probably] add it to list of unknown tags (this list will be used when the message will be "serialized" to a String)
+                componentValidator.unknownTag(qfField, thisInstance);
+                // and proceed to next field.
             }
         }
-        return instance;
+        return thisInstance;
     }
 
-    protected void addUnknownTag(QFField<String> unknownTag) {
+    public void addUnknownTag(QFField<String> unknownTag) {
         if(unknownTags == null) {
             unknownTags = new LinkedList<>();
         }

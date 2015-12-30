@@ -1,5 +1,7 @@
 package net.kem.newtquickfix.blocks;
 
+import net.kem.newtquickfix.QFComponentValidator;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -53,7 +55,7 @@ public abstract class QFComponent {
         return getClass().getSimpleName();
     }
 
-    protected static <QFComp extends QFComponent> QFComp getInstance(Stack<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass) {
+    protected static <QFComp extends QFComponent> QFComp getInstance(Stack<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
         // I'll need to know whether the current component is an ordinal component or a group.
         // I rely on the fact that every group has QFGroupDef annotation.
         int groupDelimiterTag = 0;
@@ -77,7 +79,7 @@ public abstract class QFComponent {
             if(childGS != null) {
                 // Create instance of this component/group if needed.
                 if(thisInstance == null) {
-                    thisInstance = createThisInstance(thisInstance, compClass);
+                    thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
                 } else {
                     // This instance is a Group and this field is a group element delimiter ->
                     // 1. We're at beginning of next group element.
@@ -100,7 +102,7 @@ public abstract class QFComponent {
                         continue;
                     } else {
                         // The value has been already assigned to this member.
-                        System.out.println("Tag \"" + qfField + "\" will not replace value \"" + currentValue + "\" in class \"" + compClass.getName() + "\". This tag will be used in some other component.");
+                        componentValidator.duplicatedTag(qfField, currentValue, thisInstance);
                     }
                 } catch (IllegalAccessException | InvocationTargetException e) {
                     e.printStackTrace();
@@ -114,11 +116,11 @@ public abstract class QFComponent {
                 for (QFUtils.ChildGetterSetter<? extends QFComponent> childrenComponentGS : childrenComponentGSs) {
                     try {
                         // Create (recursively) child component's instance.
-                        QFComp childrenComponentInstance = getInstance(tags, null, childrenComponentGS.getChildClass());
+                        QFComp childrenComponentInstance = getInstance(tags, null, childrenComponentGS.getChildClass(), componentValidator);
                         if (childrenComponentInstance != null) {
                             // Child component instance has been created (that means that the current filed belongs to this child component (or to one of its descenders)).
                             // Create instance of this component if needed.
-                            thisInstance = createThisInstance(thisInstance, compClass);
+                            thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
                             // Check if the value was not assigned previously.
                             Method fieldGetter = childrenComponentGS.getGetter();
                             QFComponent currentValue = (QFComponent) fieldGetter.invoke(thisInstance);
@@ -129,7 +131,7 @@ public abstract class QFComponent {
                                 childrenComponentInstance.parent = thisInstance;
                             } else {
                                 // The value has been already assigned to this member.
-                                System.out.println("Component \"" + childrenComponentInstance.getName() + "\" already exists in class \"" + compClass.getName() + "\". Please, check the incoming FIX message for data integrity.");
+                                componentValidator.duplicatedComponent(childrenComponentInstance, thisInstance);
                             }
                             // Proceed to next field. Note: do not pop stack since it has been already popped while child component creation.
                             continue NEXT_TAG;
@@ -154,17 +156,17 @@ public abstract class QFComponent {
                             List<QFComp> groupInstances = new ArrayList<>(numberOfGroupMembers);
                             for (int i=0; i<numberOfGroupMembers; i++) {
                                 // Create group instance.
-                                QFComp childrenGroupInstance = getInstance(tags, null, groupComponentGS.getChildClass());
+                                QFComp childrenGroupInstance = getInstance(tags, null, groupComponentGS.getChildClass(), componentValidator);
                                 if (childrenGroupInstance != null) {
                                     groupInstances.add(childrenGroupInstance);
                                 }
                             }
                             if(numberOfGroupMembers != groupInstances.size()) {
-                                //TODO Issue a warn.
+                                componentValidator.invalidGroupCount(qfField, groupInstances, thisInstance);
                             }
                             // Assign the value of the newly created child group.
                             if (!groupInstances.isEmpty()) {
-                                thisInstance = createThisInstance(thisInstance, compClass);
+                                thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
                                 groupComponentGS.getSetter().invoke(thisInstance, groupInstances);
                                 // Set parent reference.
                                 for (QFComp groupInstance : groupInstances) {
@@ -183,12 +185,17 @@ public abstract class QFComponent {
         }
     }
 
-    private static <QFComp extends QFComponent> QFComp createThisInstance(QFComp instance, Class<? extends QFComponent> compClass) {
+    protected static <QFComp extends QFComponent> QFComp createThisInstance(QFComp instance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
         if (instance == null) {
             try {
-                Constructor constructor = compClass.getDeclaredConstructor();
+                if(QFMessage.class.isAssignableFrom(compClass)) {
+                    Method getInstance = compClass.getDeclaredMethod("getInstance", QFComponentValidator.class);
+                    instance = (QFComp) getInstance.invoke(null, componentValidator);
+                } else {
+                    Constructor constructor = compClass.getDeclaredConstructor();
                 constructor.setAccessible(true);
                 instance = (QFComp) constructor.newInstance();
+                }
             } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException | InstantiationException e) {
                 e.printStackTrace();
             }
@@ -197,5 +204,6 @@ public abstract class QFComponent {
     }
 
     public abstract boolean validate();
+    public abstract boolean validate(QFComponentValidator componentValidator);
     public abstract void toFIXString(StringBuilder sb);
 }

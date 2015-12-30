@@ -17,10 +17,12 @@ public class QFFieldElement extends QFElement {
     private int tag;
     protected Map<CharSequence, CharSequence> defaultValues;
     protected BuilderUtils.QFFieldBlockDef def;
+    protected CharSequence typeClassName;
 
     protected QFFieldElement(Element startElement, BuilderUtils.QFFieldBlockDef def) {
         super(startElement, new StringBuilder(), "");
         this.def = def;
+        this.typeClassName = def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName();
 
         String attribute;
         attribute = startElement.getAttribute("number");
@@ -80,10 +82,11 @@ public class QFFieldElement extends QFElement {
     //				"\n" +
     private void generateImportSection() {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append(def.parentClassName).append(";\n\n");
-        // import net.kem.newtquickfix.blocks.QFUtils;
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFUtils;\n\n");
-        // import net.kem.newtquickfix.ValidationErrorsHandler;
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME).append("ValidationErrorsHandler;\n\n");
+        // import net.kem.newtquickfix.QFComponentValidator;
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME).append("QFComponentValidator;\n\n");
+        if (def.typeToStringConversion == null) {
+            sb.append("import org.apache.commons.lang3.StringUtils;\n");
+        }
         if (defaultValues != null) {
             sb.append("import java.util.HashMap;\n").append("import java.util.Map;\n");
         }
@@ -95,7 +98,7 @@ public class QFFieldElement extends QFElement {
     /*public class FieldIntegerExample extends QFField<Integer> {*/
     protected void generateClassTitle() {
         sb.append("public class ").append(name).append(" extends ")
-                .append(def.parentClassName).append('<').append(def.typeClass.getSimpleName()).append("> {\n");
+                .append(def.parentClassName).append('<').append(typeClassName).append("> {\n");
     }
 
     //				"    private static final Map<Integer, FieldIntegerExample> STATIC_VALUES_MAPPING = new HashMap<>();\n" +
@@ -114,8 +117,6 @@ public class QFFieldElement extends QFElement {
     //				"        STATIC_VALUES_MAPPING.put(OTHER.getValue(), OTHER);\n" +
     //				"    }\n" +
     protected void generatePredefinedStaticMembers() {
-        // private static final ValidationErrorsHandler<Integer> validationErrorsHandler = QFUtils.getValidationErrorsHandler(AllocTransType.class);
-        sb.append("\tprivate static ValidationErrorsHandler<").append(def.typeClass.getSimpleName()).append("> validationErrorsHandler = QFUtils.getValidationErrorsHandler(").append(name).append(".class);\n");
         if (defaultValues != null) {
             // "	private static final Map<Integer, FieldIntegerExample> STATIC_VALUES_MAPPING = new HashMap<>();\n\n"
             sb.append("\tprivate static final Map<").append(def.typeClass.getSimpleName()).append(", ").append(name).append("> STATIC_VALUES_MAPPING = new HashMap<>();\n\n");
@@ -146,7 +147,7 @@ public class QFFieldElement extends QFElement {
     }
 	*/
     protected void generateConstructor() {
-        sb.append("\tprivate ").append(name).append('(').append(def.typeClass.getSimpleName()).append(" value) {\n")
+        sb.append("\tprivate ").append(name).append('(').append(typeClassName).append(" value) {\n")
                 .append("\t\tthis.value = value;\n")
                 .append("\t}\n\n");
     }
@@ -161,11 +162,15 @@ public class QFFieldElement extends QFElement {
     }
 
     /*
-    public static ApplReportType getInstance(String value) {
+    public static AccountType getInstance(String value) {
+		return getInstance(value, QFComponentValidator.getDefaultComponentValidator());
+	}
+
+	public static AccountType getInstance(String value, QFComponentValidator componentValidator) {
 		try {
-			return getInstance(Integer.parseInt(value));
-		} catch (Exception e) {//NumberFormatException
-			final Integer newValue = validationErrorsHandler.invalidValue(ApplReportType.class, value, e, ValidationErrorsHandler.ErrorType.PARSING);
+			return getInstance(Integer.parseInt(value), componentValidator);
+		} catch (Exception e) {
+			final Integer newValue = componentValidator.invalidFieldValue(AccountType.class, Integer.class, value, e);
 			return getInstance(newValue);
 		}
 	}
@@ -173,13 +178,17 @@ public class QFFieldElement extends QFElement {
     protected void generateMethodGetInstanceString() {
         if (def.typeToStringConversion != null) {
             sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
+                    .append("\t\treturn getInstance(value, QFComponentValidator.getDefaultComponentValidator());\n")
+                    .append("\t}\n\n");
+
+            CharSequence typeClassName = def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName();
+            sb.append("\tpublic static ").append(name).append(" getInstance(String value, QFComponentValidator componentValidator) {\n")
                     .append("\t\ttry {\n")
-                    .append("\t\t\treturn getInstance(").append(def.typeToStringConversion).append(");\n") //"Integer.parseInt(value)"
+                    .append("\t\t\treturn getInstance(").append(def.typeToStringConversion).append(", componentValidator);\n") //"Integer.parseInt(value)"
                     .append("\t\t} catch (Exception e) {\n")
-                    .append("\t\t\tfinal ")
-                        .append(def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName())
-                        .append(" newValue = validationErrorsHandler.invalidValue(")
-                        .append(name).append(".class, value, e, ValidationErrorsHandler.ErrorType.PARSING);\n")
+                    .append("\t\t\tfinal ").append(typeClassName)
+                        .append(" newValue = componentValidator.invalidFieldValue(")
+                        .append(name).append(".class, ").append(typeClassName).append(".class, value, e);\n")
                     .append("\t\t\treturn getInstance(newValue);\n")
                     .append("\t\t}\n")
             .append("\t}\n\n");
@@ -197,89 +206,51 @@ public class QFFieldElement extends QFElement {
         // OR
         return new FieldIntegerExample(value);
     }
+
+
+
+    public static AccountType getInstance(Integer value) {
+		return getInstance(value, QFComponentValidator.getDefaultComponentValidator());
+	}
+
+	public static AccountType getInstance(Integer value, QFComponentValidator componentValidator) {
+		AccountType res = STATIC_VALUES_MAPPING.get(value);
+		if (res == null) {
+			final Integer newValue = componentValidator.notPredefinedFieldValue(AccountType.class, Integer.class, value);
+			res = new AccountType(newValue);
+		}
+		return res;
+	}
     */
     protected void generateMethodGetInstanceType() {
-        sb.append("\tpublic static ").append(name).append(" getInstance(").append(def.typeClass.getSimpleName()).append(" value) {\n");
+        sb.append("\tpublic static ").append(name).append(" getInstance(").append(typeClassName).append(" value) {\n")
+                .append("\t\treturn getInstance(value, QFComponentValidator.getDefaultComponentValidator());\n")
+                .append("\t}\n\n");
+
+        sb.append("\tpublic static ").append(name).append(" getInstance(").append(typeClassName).append(" value, QFComponentValidator componentValidator) {\n");
         if (defaultValues != null) {
             sb.append("\t\t").append(name).append(" res = STATIC_VALUES_MAPPING.get(value);\n")
                     .append("\t\tif (res == null) {\n")
                     .append("\t\t\tfinal ")
-                        .append(def.typeClass.getSimpleName()).append(" newValue = validationErrorsHandler.invalidValue(")
-                        .append(name).append(".class, value, null, ValidationErrorsHandler.ErrorType.NOT_PREDEFINED);\n")
+                        .append(def.typeClass.getSimpleName()).append(" newValue = componentValidator.notPredefinedFieldValue(")
+                        .append(name).append(".class, ").append(def.typeClass.getSimpleName()).append(".class, value);\n")
                     .append("\t\t\tres = new ").append(name).append("(newValue);\n")
                     .append("\t\t}\n")
                     .append("\t\treturn res;\n");
         } else {
-            sb.append("\t\treturn new ").append(name).append("(value);\n");
+            if (def.typeToStringConversion == null) {
+                sb.append("\t\tif(StringUtils.isBlank(value)) {\n");
+                sb.append("\t\t\tvalue = componentValidator.invalidFieldValue(").append(name).append(".class, ").append(typeClassName).append(".class, value, null);\n");
+            } else {
+                sb.append("\t\tif(value == null) {\n");
+                sb.append("\t\t\tvalue = componentValidator.invalidFieldValue(").append(name).append(".class, ").append(typeClassName).append(".class, null, null);\n");
+            }
+            sb.append("\t\t}\n")
+                    .append("\t\treturn new ").append(name).append("(value);\n");
         }
         sb.append("\t}\n");
     }
 
     protected void generateAuxMethods() {
-        // public static ValidationErrorsHandler<String> getValidationErrorsHandler() {
-        //    return validationErrorsHandler;
-        // }
-        // public static void setValidationHandler(ValidationErrorsHandler<LocalDateTime> newValidationHandler) {
-        //    validationErrorsHandler = newValidationHandler;
-        // }
-        CharSequence diamondValue = def.typeClass==java.util.Currency.class ? def.typeClass.getName(): def.typeClass.getSimpleName();
-        sb.append("\n\n");
-        sb.append("\tpublic static ValidationErrorsHandler<").append(diamondValue).append("> getValidationErrorsHandler() {\n")
-                .append("\t\treturn validationErrorsHandler;\n")
-                .append("\t}\n");
-        sb.append("\tpublic static void setValidationHandler(ValidationErrorsHandler<").append(diamondValue).append("> newValidationErrorsHandler) {\n")
-                .append("\t\tvalidationErrorsHandler = newValidationErrorsHandler;\n")
-                .append("\t}\n");
     }
-
-
-//
-//    @Override
-//    public void toBrickJavaSource() {
-//        addBrickAnnotation();
-//        addBrickDeclaration();
-//        addBrickGetter();
-//        addBrickSetter();
-//        sb.append('\n'); // end of member definition
-//    }
-//
-//    // @QFMember(type = QFMember.Type.FIELD)
-//    @Override
-//    public void addBrickAnnotation() {
-//        sb.append("\t@QFMember(type = QFMember.Type.FIELD)");
-//    }
-//
-//    // private ComplexEventEndDate complexEventEndDate;
-//    @Override
-//    public void addBrickDeclaration() {
-//        sb.append("\tprivate ").append(name).append(' ').append(StringUtils.uncapitalize(name)).append(";\n");
-//    }
-//
-//    // public ComplexEventEndDate getComplexEventEndDate() {return complexEventEndDate;}
-//    @Override
-//    public void addBrickGetter() {
-//        sb.append("\tpublic ").append(name).append(" get").append(name).append("() {\n")
-//                .append("\t\treturn ").append(StringUtils.uncapitalize(name)).append(";\n\t}\n");
-//    }
-//
-//    // public void setComplexEventEndDate(ComplexEventEndDate complexEventEndDate) {this.complexEventEndDate = complexEventEndDate;}
-//    @Override
-//    public void addBrickSetter() {
-//        sb.append("\tpublic void set").append(name).append("(").append(name).append(' ').append(StringUtils.uncapitalize(name)).append(") {\n")
-//                .append("\t\tthis.").append(StringUtils.uncapitalize(name)).append(" = ").append(StringUtils.uncapitalize(name)).append(";\n\t}\n");
-//    }
-//
-//    @Override
-//    public String getName() {
-//        return name;
-//    }
-//
-//    @Override
-//    public QFMember.Type getTagType() {
-//        return QFMember.Type.FIELD;
-//    }
-//
-//    default boolean isRequired() {
-//        return false;
-//    }
 }

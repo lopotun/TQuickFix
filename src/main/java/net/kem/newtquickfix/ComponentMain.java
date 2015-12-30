@@ -56,11 +56,11 @@ public class ComponentMain extends QFComponent {
         Stack<QFField> tags = new Stack<>();
         while (!origTags.empty()) {
             QFTag kv = origTags.pop();
-            QFField qfField = QFUtils.lookupField(kv);
+            QFField qfField = QFUtils.lookupField(kv, QFComponentValidator.getDefaultComponentValidator());
             tags.push(qfField);
         }
 //		QFComponent theRabbit0 = ComponentC.getInstance(tags, null);
-        ComponentMain theRabbit0 = ComponentMain.getInstance(tags, null);
+        ComponentMain theRabbit0 = ComponentMain.getInstance(tags, null, null);
         StringBuilder sb = new StringBuilder();
         theRabbit0.toFIXString(sb);
         System.out.printf(sb.toString());
@@ -124,12 +124,15 @@ public class ComponentMain extends QFComponent {
         private GroupA() {
         }
 
-        public static GroupA getInstance(Stack<QFField> tags, GroupA instance) {
-            return getInstance(tags, instance, GroupA.class);
+        public static GroupA getInstance(Stack<QFField> tags, GroupA instance, QFComponentValidator componentValidator) {
+            return getInstance(tags, instance, GroupA.class, componentValidator);
         }
 
         @Override
         public boolean validate() {
+            return true;
+        }
+        public boolean validate(QFComponentValidator componentValidator) {
             return true;
         }
 
@@ -204,12 +207,15 @@ public class ComponentMain extends QFComponent {
     private ComponentMain() {
     }
 
-    public static ComponentMain getInstance(Stack<QFField> tags, ComponentMain instance) {
-        return getInstance(tags, instance, ComponentMain.class);
+    public static ComponentMain getInstance(Stack<QFField> tags, ComponentMain instance, QFComponentValidator componentValidator) {
+        return getInstance(tags, instance, ComponentMain.class, componentValidator);
     }
 
     @Override
     public boolean validate() {
+        return true;
+    }
+    public boolean validate(QFComponentValidator componentValidator) {
         return true;
     }
 

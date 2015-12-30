@@ -9,7 +9,7 @@ import java.time.temporal.Temporal;
  */
 public interface ValidationErrorsHandler<V> {
 
-    enum ErrorType {PARSING, NOT_PREDEFINED, MISSING}
+    enum ErrorType {PARSING, NOT_PREDEFINED}
 
     interface Numbers {
         ValidationErrorsHandler VALIDATION_HANDLER_SILENT = new ValidationErrorsHandler<Number>() {
@@ -27,7 +27,11 @@ public interface ValidationErrorsHandler<V> {
                         System.err.println("Value " + problematicValue + " is out of predefined values list of FIX tag " + cls.getSimpleName());
                     } break;
                     case PARSING: {
-                        System.err.println("\"" + problematicValue + "\" cannot be used as value of FIX tag " + cls.getSimpleName() + " due to error " + t.getClass().getSimpleName() + ": " + t.getMessage());
+                        if(t == null) {
+                            System.err.println("Empty value shouldn't be used as value of FIX tag \"" + cls.getSimpleName() + "\"");
+                        } else {
+                            System.err.println("\"" + problematicValue + "\" cannot be used as value of FIX tag " + cls.getSimpleName() + " due to error " + t.getClass().getSimpleName() + ": " + t.getMessage());
+                        }
                     }
                 }
                 return problematicValue instanceof Number ? (Number) problematicValue : 0;

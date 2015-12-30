@@ -53,7 +53,7 @@ public class BuilderUtils {
         final QFFieldBlockDef BrickDouble1 = new QFFieldBlockDef(QFFieldElement.class, "QFField", Double.class, null, "Double.parseDouble(value)");
         final QFFieldBlockDef BrickBoolean1 = new QFFieldBlockDef(QFBooleanFieldElement.class, "QFField", Boolean.class, null, "Boolean.parseBoolean(value)");
         final QFFieldBlockDef BrickFloat1 = new QFFieldBlockDef(QFFieldElement.class, "QFField", Float.class, null, "Float.parseFloat(value)");
-        final QFFieldBlockDef BrickCurrency1 = new QFFieldBlockDef(QFCurrencyFieldElement.class, "QFField", Currency.class, null, "java.util.Currency.getInstance(value)");
+        final QFFieldBlockDef BrickCurrency1 = new QFFieldBlockDef(QFFieldElement.class, "QFField", Currency.class, null, "java.util.Currency.getInstance(value)");
 
         final QFFieldBlockDef BrickDateTime1 = new QFFieldBlockDef(QFDateFieldElement.class, "QFDateTimeField", LocalDateTime.class, "import java.time.LocalDateTime;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");
         final QFFieldBlockDef BrickDate1 = new QFFieldBlockDef(QFDateFieldElement.class, "QFDateField", LocalDate.class, "import java.time.LocalDate;\nimport java.time.format.DateTimeParseException;", "getDateFormat().parse(value)");

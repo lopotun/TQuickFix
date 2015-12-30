@@ -23,21 +23,32 @@ public class QFBooleanFieldElement extends QFFieldElement {
     @Override
     protected void generateMethodGetInstanceString() {
         /*
-        public static AggressorIndicator getInstance(String value) {
+        public static AggregatedBook getInstance(String value) {
+		    return getInstance(value, QFComponentValidator.getDefaultComponentValidator()););
+        }
+
+        public static AggregatedBook getInstance(String value, QFComponentValidator componentValidator) {
             if(value.length() == 1 && (value.charAt(0) == 'Y' || value.charAt(0) == 'y')) {
                 return getInstance(true);
+            } else {
+                final Boolean newValue = componentValidator.invalidFieldValue(AggregatedBook.class, Boolean.class, value, null);
+                return getInstance(newValue);
             }
-            return getInstance(Boolean.parseBoolean(value));
         }
         */
         if (def.typeToStringConversion != null) {
             sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
+                    .append("\t\treturn getInstance(value, QFComponentValidator.getDefaultComponentValidator());\n")
+                    .append("\t}\n\n");
+
+            sb.append("\tpublic static ").append(name).append(" getInstance(String value, QFComponentValidator componentValidator) {\n")
                     .append("\t\tif(value.length() == 1 && (value.charAt(0) == 'Y' || value.charAt(0) == 'y')) {\n")
                     .append("\t\t\treturn getInstance(true);\n")
+                    .append("\t\t} else {\n")
+                    .append("\t\t\tfinal Boolean newValue = componentValidator.invalidFieldValue(").append(name).append(".class, Boolean.class, value, null);")
+                    .append("\t\t\treturn getInstance(newValue);\n")
                     .append("\t\t}\n")
-                    .append("\t\treturn getInstance(")
-                    .append(def.typeToStringConversion)//"Integer.parseInt(value)"
-                    .append(");\n\t}\n\n");
+                    .append("\t}\n\n");
         }
     }
 }

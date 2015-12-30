@@ -59,12 +59,15 @@ public class ComponentC extends QFComponent {
     private ComponentC() {
     }
 
-    public static ComponentC getInstance(Stack<QFField> tags, ComponentC instance) {
-        return getInstance(tags, instance, ComponentC.class);
+    public static ComponentC getInstance(Stack<QFField> tags, ComponentC instance, QFComponentValidator componentValidator) {
+        return getInstance(tags, instance, ComponentC.class, componentValidator);
     }
 
     @Override
     public boolean validate() {
+        return true;
+    }
+    public boolean validate(QFComponentValidator componentValidator) {
         return true;
     }
 

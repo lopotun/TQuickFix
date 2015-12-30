@@ -119,6 +119,10 @@ public class QFComponentElement extends QFElement {
 
         // @Override
         // public boolean validate() {
+        //    return validate(componentValidator);
+        // }
+        // @Override
+        // public boolean validate(QFComponentValidator componentValidator) {
         //    Boolean valid = componentValidator.validateComponent(this);
         //    if(valid != null) {
         //      return valid;
@@ -126,10 +130,14 @@ public class QFComponentElement extends QFElement {
         //    if(allocReportID == null) {
         //        AllocReportID.getValidationErrorsHandler().invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null, ValidationErrorsHandler.ErrorType.MISSING);
         //    } else {
-        //      allocReportID.validate();
+        //      allocReportID.validate(componentValidator);
         //    }
         // }
-        sb.append(ident).append("\t@Override\n").append(ident).append("\tpublic boolean validate() {\n");
+        sb.append(ident).append("\t@Override\n").append(ident).append("\tpublic boolean validate() {\n")
+                .append(ident).append("\t\treturn validate(componentValidator);\n")
+                .append(ident).append("\t}\n");
+
+        sb.append(ident).append("\t@Override\n").append(ident).append("\tpublic boolean validate(QFComponentValidator componentValidator) {\n");
         sb.append(ident).append("\t\tBoolean valid = componentValidator.validateComponent(this);\n")
                 .append(ident).append("\t\tif(valid != null) {\n")
                 .append(ident).append("\t\t\treturn valid;\n")
@@ -157,21 +165,21 @@ public class QFComponentElement extends QFElement {
                                 .append(ident).append("\t\t}\n");
                     } else {
                         // if(standardTrailer != null) {
-                        //    standardTrailer.validate();
+                        //    standardTrailer.validate(componentValidator);
                         // }
                         //
                         // if(standardTrailer != null) {
                         //    	for(NoLegSecurityAltID groupMemeber: noLegSecurityAltID) {
-                        //          groupMemeber.validate();
+                        //          groupMemeber.validate(componentValidator);
                         //      }
                         // }
                         sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" != null) {\n");
                         if (member.getTagType() == QFMember.Type.GROUP) {
                             sb.append(ident).append("\t\t\t").append("for(").append(member.name).append(" groupMember: ").append(StringUtils.uncapitalize(member.name)).append(") {\n");
-                            sb.append(ident).append("\t\t\t\tvalid &= groupMember.validate();\n");
+                            sb.append(ident).append("\t\t\t\tvalid &= groupMember.validate(componentValidator);\n");
                             sb.append(ident).append("\t\t\t}\n");
                         } else {
-                            sb.append(ident).append("\t\t\tvalid &= ").append(StringUtils.uncapitalize(member.name)).append(".validate();\n");
+                            sb.append(ident).append("\t\t\tvalid &= ").append(StringUtils.uncapitalize(member.name)).append(".validate(componentValidator);\n");
                         }
                         sb.append(ident).append("\t\t}\n");
                     }
@@ -199,11 +207,11 @@ public class QFComponentElement extends QFElement {
                 .append(ident).append("\t\treturn new ").append(name).append("();\n")
                 .append(ident).append("\t}\n\n");
 
-        // public static ComponentMain getInstance(Stack<QFField> tags) {
-        //  return tags==null? new ComponentMain(): getInstance(tags, null, ComponentMain.class);
+        // public static ComponentMain getInstance(Stack<QFField> tags, QFComponentValidator componentValidator) {
+        //  return tags==null? new ComponentMain(): getInstance(tags, null, ComponentMain.class, QFComponentValidator componentValidator);
         // }
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags").append(") {\n")
-                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): getInstance(tags, null, ").append(name).append(".class);\n")
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags, QFComponentValidator componentValidator").append(") {\n")
+                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): getInstance(tags, null, ").append(name).append(".class, componentValidator);\n")
                 .append(ident).append("\t}\n\n");
     }
 

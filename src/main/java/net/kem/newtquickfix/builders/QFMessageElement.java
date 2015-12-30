@@ -91,18 +91,57 @@ public class QFMessageElement extends QFComponentElement {
     }
 
     protected void getConstructor() {
-        //private AllocationReportAck() {
-        //    standardHeader = StandardHeader.getInstance();
-        //    standardHeader.setBeginString(BeginString.getInstance("FIX50SP2"));
-        //    standardHeader.setMsgType(MsgType.getInstance("AT"));
-        //    standardTrailer = StandardTrailer.getInstance();
-        //}
+        /*
+        private AllocationReportAck() {
+		    this(QFComponentValidator.getDefaultComponentValidator());
+        }
+
+        private AllocationReportAck(QFComponentValidator componentValidator) {
+            standardHeader = StandardHeader.getInstance();
+            standardHeader.setBeginString(BeginString.getInstance("", componentValidator));
+            standardHeader.setMsgType(MsgType.getInstance("AT", componentValidator));
+
+            standardTrailer = StandardTrailer.getInstance();
+        }
+         */
         sb.append(ident).append("\tprivate ").append(name).append("() {\n")
+                .append("\t\tthis(QFComponentValidator.getDefaultComponentValidator());\n")
+                .append("\t}\n");
+        sb.append(ident).append("\tprivate ").append(name).append("(QFComponentValidator componentValidator) {\n")
                 .append("\t\tstandardHeader = StandardHeader.getInstance();\n")
-                .append("\t\tstandardHeader.setBeginString(BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSION).append("\"));\n")
-                .append("\t\tstandardHeader.setMsgType(MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\"));\n\n")
+                .append("\t\tstandardHeader.setBeginString(BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSION).append("\", componentValidator));\n")
+                .append("\t\tstandardHeader.setMsgType(MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\", componentValidator));\n\n")
                 .append("\t\tstandardTrailer = StandardTrailer.getInstance();\n")
                 .append("\t}\n\n");
+    }
+
+    protected void getMethodGetInstance() {
+        // public static ComponentMain getInstance() {
+        //  return new ComponentMain();
+        // }
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance() {\n")
+                .append(ident).append("\t\treturn new ").append(name).append("();\n")
+                .append(ident).append("\t}\n\n");
+
+        // public static ComponentMain getInstance(Stack<QFField> tags, QFComponentValidator componentValidator) {
+        //  return tags==null? new ComponentMain(): getInstance(tags, null, ComponentMain.class, QFComponentValidator componentValidator);
+        // }
+        /*
+        public static AllocationReportAck getInstance(QFComponentValidator componentValidator) {
+            return new AllocationReportAck(componentValidator);
+        }
+
+        public static AllocationReportAck getInstance(Stack<QFField> tags, QFComponentValidator componentValidator) {
+            return tags==null? new AllocationReportAck(componentValidator): getInstance(tags, null, AllocationReportAck.class, componentValidator);
+        }
+         */
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(QFComponentValidator componentValidator").append(") {\n")
+                .append(ident).append("\t\treturn new ").append(name).append("(componentValidator);\n")
+                .append(ident).append("\t}\n\n");
+
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags, QFComponentValidator componentValidator").append(") {\n")
+                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(componentValidator): getInstance(tags, null, ").append(name).append(".class, componentValidator);\n")
+                .append(ident).append("\t}\n\n");
     }
 
     /**
