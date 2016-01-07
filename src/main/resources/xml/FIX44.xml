@@ -1,4 +1,5 @@
 <fix major="4" minor="4">
+  <!--By LiteFIX. Added "header" tag.-->
   <header name="StandardHeader">
     <field name="BeginString" required="Y"/>
     <field name="BodyLength" required="Y"/>
@@ -32,7 +33,8 @@
       <field name="HopRefID" required="N"/>
     </group>
   </header>
-    <trailer name="StandardTrailer">
+  <!--By LiteFIX. Added "trailer" tag.-->
+  <trailer name="StandardTrailer">
     <field name="SignatureLength" required="N"/>
     <field name="Signature" required="N"/>
     <field name="CheckSum" required="Y"/>
@@ -4000,7 +4002,10 @@
     </field>
     <field number="6" name="AvgPx" type="PRICE"/>
     <field number="7" name="BeginSeqNo" type="SEQNUM"/>
-    <field number="8" name="BeginString" type="STRING"/>
+    <!--By LiteFIX. Optimization. Added predefined value to "BeginString" tag.-->
+    <field number="8" name="BeginString" type="STRING">
+      <value enum="FIX.4.4" description="VERSION_44"/>
+    </field>
     <field number="9" name="BodyLength" type="LENGTH"/>
     <field number="10" name="CheckSum" type="STRING"/>
     <field number="11" name="ClOrdID" type="STRING"/>

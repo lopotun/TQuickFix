@@ -33,6 +33,19 @@
             <artifactId>xstream</artifactId>
             <version>1.4.5</version>
         </dependency>
+        <!--These dependencies are for testing application only BEGIN-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>3.1.4.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle</groupId>
+            <artifactId>ojdbc6</artifactId>
+            <version>11.2.0.2.0</version>
+        </dependency>
+        <!--These dependencies are for testing application only END-->
     </dependencies>
 
     <build>

@@ -1,4 +1,6 @@
-<fix major="5" minor="0">
+<!--By LiteFIX. Added servicepack="2" attribute.-->
+<fix major="5" minor="0" servicepack="2">
+  <!--By LiteFIX. Added "header" tag.-->
   <header name="StandardHeader" required="Y">
       <field name="BeginString" required="Y"/>
       <field name="BodyLength" required="Y"/>
@@ -31,6 +33,7 @@
       <field name="LastMsgSeqNumProcessed" required="N"/>
       <component name="HopGrp" required="N"/>
   </header>
+  <!--By LiteFIX. Added "trailer" tag.-->
   <trailer name="StandardTrailer" required="Y">
       <field name="SignatureLength" required="N"/>
       <field name="Signature" required="N"/>
@@ -5432,7 +5435,10 @@
       <value enum="R" description="REPLACE"/>
     </field>
     <field number="6" name="AvgPx" type="PRICE"/>
-    <field number="8" name="BeginString" type="STRING"/>
+    <!--By LiteFIX. Optimization. Added predefined value to "BeginString" tag.-->
+    <field number="8" name="BeginString" type="STRING">
+      <value enum="FIX50SP2" description="VERSION_50SP2"/>
+    </field>
     <field number="9" name="BodyLength" type="LENGTH"/>
     <field number="10" name="CheckSum" type="STRING"/>
     <field number="11" name="ClOrdID" type="STRING"/>
@@ -6093,7 +6099,7 @@
       <value enum="BDN" description="BANK_DEPOSITORY_NOTE"/>
       <value enum="CMB" description="CANADIAN_MORTGAGE_BONDS"/>
       <value enum="COFO" description="CERTIFICATE_OF_OBLIGATION"/>
-      <value enum="MLEG" description="MULTILEG_INSTRUMENT"/>
+      <value enum="MLEG" description="MULTI_LEG_INSTRUMENT"/>
       <value enum="FXNDF" description="NON_DELIVERABLE_FORWARD"/>
       <value enum="FADN" description="FEDERAL_AGENCY_DISCOUNT_NOTE"/>
       <value enum="CB" description="CONVERTIBLE_BOND"/>

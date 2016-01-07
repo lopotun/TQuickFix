@@ -1,5 +1,6 @@
 package net.kem.newtquickfix.builders;
 
+import net.kem.newtquickfix.blocks.QFField;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
@@ -17,13 +18,27 @@ import org.w3c.dom.Element;
  * }
  */
 public class QFFieldBrick extends QFRequirable {
+    private Class<?> fieldClass;
+    private int tag;
     protected QFFieldBrick(Element startElement, StringBuilder sb, CharSequence ident) throws IllegalArgumentException {
         super(startElement, sb, ident);
+        try {
+            Class<?> fieldClass = Class.<QFField<?>>forName(BuilderUtils.PACKAGE_NAME_FIELDS + '.' + name);
+            tag = fieldClass.getField("TAG").getInt(null);
+        } catch (ClassNotFoundException | NoSuchFieldException | IllegalAccessException e) {
+            throw new IllegalArgumentException("Cannot access class " + name);
+        }
     }
 
     // @QFMember(type = QFMember.Type.FIELD)
     @Override
     protected void addAnnotation() {
+        /**
+         * BodyLength. Tag value is 9.
+         */
+        sb.append(ident).append("\t/**\n")
+                .append(ident).append("\t * ").append(name).append(isRequired()? " is mandatory": " is optional").append(" tag. Tag value is ").append(tag).append(".\n")
+                .append(ident).append("\t*/\n");
         sb.append(ident).append("\t@QFMember(type = QFMember.Type.FIELD)\n");
     }
 
@@ -49,6 +64,12 @@ public class QFFieldBrick extends QFRequirable {
      */
     @Override
     protected void addGetter() {
+        /**
+         * @return value of mandatory tag 9.
+         */
+        sb.append(ident).append("\t/**\n")
+                .append(ident).append("\t * @return value of ").append(isRequired()? "mandatory": "optional").append(" tag ").append(tag).append(".\n")
+                .append(ident).append("\t*/\n");
         if(useFQDN) {
             sb.append(ident).append("\tpublic ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(name).append(" get").append(name).append("() {\n")
                     .append(ident).append("\t\treturn ").append(StringUtils.uncapitalize(name)).append(";\n").append(ident).append("\t}\n");
@@ -64,6 +85,14 @@ public class QFFieldBrick extends QFRequirable {
      */
     @Override
     protected void addSetter() {
+        /**
+         * Assigns value to mandatory tag 9.
+         * @param bodyLength    tag value.
+         */
+        sb.append(ident).append("\t/**\n")
+                .append(ident).append("\t * Assigns value to ").append(isRequired()? "mandatory": "optional").append(" tag ").append(tag).append(".\n")
+                .append(ident).append("\t * @param ").append(StringUtils.uncapitalize(name)).append(" tag value.\n")
+                .append(ident).append("\t*/\n");
         if(useFQDN) {
             sb.append(ident).append("\tpublic void set").append(name).append("(").append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(name).append(' ').append(StringUtils.uncapitalize(name)).append(") {\n")
                     .append(ident).append("\t\tthis.").append(StringUtils.uncapitalize(name)).append(" = ").append(StringUtils.uncapitalize(name)).append(";\n").append(ident).append("\t}\n");

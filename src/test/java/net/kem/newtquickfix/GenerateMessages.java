@@ -1,5 +1,6 @@
 package net.kem.newtquickfix;
 
+import net.kem.newtquickfix.builders.BuilderUtils;
 import net.kem.newtquickfix.builders.QFMessageElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -28,8 +29,6 @@ import java.text.ParseException;
 public class GenerateMessages {
 
     public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException, ClassNotFoundException, ParseException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-        File dir = new File("./TQuickFix/src/main/java/net/kem/newtquickfix/messages");
-        dir.mkdirs();
 
         //Get the DOM Builder Factory
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -39,6 +38,11 @@ public class GenerateMessages {
 
         //Load and Parse the XML document
         Document document = builder.parse("./TQuickFix/src/main/resources/xml/FIX50SP2.xml");
+
+        GenerateFields.setFIXVersion(document);
+
+        File dir = new File("./TQuickFix/src/main/java/" + BuilderUtils.PACKAGE_NAME_MESSAGES.replace('.', '/'));// net.kem.newtquickfix.5_0_sp2.messages
+        dir.mkdirs();
 
         XPath xpath = XPathFactory.newInstance().newXPath();
 

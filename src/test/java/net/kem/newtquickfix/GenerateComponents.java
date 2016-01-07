@@ -38,6 +38,8 @@ public class GenerateComponents {
         //Load and Parse the XML document
         Document document = builder.parse("./TQuickFix/src/main/resources/xml/FIX50SP2.xml");
 
+        GenerateFields.setFIXVersion(document);
+
         XPath xpath = XPathFactory.newInstance().newXPath();
 
         XPathExpression expr;
@@ -80,9 +82,9 @@ public class GenerateComponents {
             }
         }
 
-        File dir = new File("./TQuickFix/src/main/java/net/kem/newtquickfix/components");
+        File dir = new File("./TQuickFix/src/main/java/" + BuilderUtils.PACKAGE_NAME_COMPONENTS.replace('.', '/'));// net.kem.newtquickfix.5_0_sp2.components
         dir.mkdirs();
-        File componentInterfacesDir = new File("./TQuickFix/src/main/java/net/kem/newtquickfix/messages");
+        File componentInterfacesDir = new File("./TQuickFix/src/main/java/" + BuilderUtils.PACKAGE_NAME_MESSAGES.replace('.', '/'));// net.kem.newtquickfix.5_0_sp2.messages
         componentInterfacesDir.mkdirs();
         expr = xpath.compile("/fix/components/component | /fix/header | /fix/trailer");// //person/*//*text()
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);

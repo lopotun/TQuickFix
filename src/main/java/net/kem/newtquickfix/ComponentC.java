@@ -59,8 +59,8 @@ public class ComponentC extends QFComponent {
     private ComponentC() {
     }
 
-    public static ComponentC getInstance(Stack<QFField> tags, ComponentC instance, QFComponentValidator componentValidator) {
-        return getInstance(tags, instance, ComponentC.class, componentValidator);
+    public static ComponentC getInstance(CharSequence fixVersion, Stack<QFField> tags, ComponentC instance, QFComponentValidator componentValidator) {
+        return getInstance(fixVersion, tags, instance, ComponentC.class, componentValidator);
     }
 
     @Override

@@ -11,6 +11,7 @@ import net.kem.newtquickfix.blocks.QFUtils;
 import net.kem.newtquickfix.blocks.SetterStructure;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Stack;
@@ -26,7 +27,7 @@ import java.util.Stack;
 @SuppressWarnings("unused")
 public class ComponentMain extends QFComponent {
 
-    public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, IOException {
+    public static void main(String[] args) throws NoSuchMethodException, NoSuchFieldException, IllegalAccessException, IOException, InvocationTargetException {
         QFUtils.fillMaps();
 
         Stack<QFTag> origTags = new Stack<>();
@@ -56,7 +57,7 @@ public class ComponentMain extends QFComponent {
         Stack<QFField> tags = new Stack<>();
         while (!origTags.empty()) {
             QFTag kv = origTags.pop();
-            QFField qfField = QFUtils.lookupField(kv, QFComponentValidator.getDefaultComponentValidator());
+            QFField qfField = QFUtils.lookupField("", kv, QFComponentValidator.getDefaultComponentValidator());
             tags.push(qfField);
         }
 //		QFComponent theRabbit0 = ComponentC.getInstance(tags, null);
@@ -125,7 +126,7 @@ public class ComponentMain extends QFComponent {
         }
 
         public static GroupA getInstance(Stack<QFField> tags, GroupA instance, QFComponentValidator componentValidator) {
-            return getInstance(tags, instance, GroupA.class, componentValidator);
+            return getInstance("", tags, instance, GroupA.class, componentValidator);
         }
 
         @Override
@@ -208,7 +209,7 @@ public class ComponentMain extends QFComponent {
     }
 
     public static ComponentMain getInstance(Stack<QFField> tags, ComponentMain instance, QFComponentValidator componentValidator) {
-        return getInstance(tags, instance, ComponentMain.class, componentValidator);
+        return getInstance("", tags, instance, ComponentMain.class, componentValidator);
     }
 
     @Override

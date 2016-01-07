@@ -52,8 +52,8 @@ public class ComponentD extends QFComponent {
         private GroupA() {
         }
 
-        public static GroupA getInstance(Stack<QFField> tags, GroupA instance, QFComponentValidator componentValidator) {
-            return getInstance(tags, instance, GroupA.class, componentValidator);
+        public static GroupA getInstance(CharSequence fixVersion, Stack<QFField> tags, GroupA instance, QFComponentValidator componentValidator) {
+            return getInstance(fixVersion, tags, instance, GroupA.class, componentValidator);
         }
 
         @Override
@@ -127,8 +127,8 @@ public class ComponentD extends QFComponent {
     private ComponentD() {
     }
 
-    public static ComponentD getInstance(Stack<QFField> tags, ComponentD instance, QFComponentValidator componentValidator) {
-        return getInstance(tags, instance, ComponentD.class, componentValidator);
+    public static ComponentD getInstance(CharSequence fixVersion, Stack<QFField> tags, ComponentD instance, QFComponentValidator componentValidator) {
+        return getInstance(fixVersion, tags, instance, ComponentD.class, componentValidator);
     }
 
     @Override

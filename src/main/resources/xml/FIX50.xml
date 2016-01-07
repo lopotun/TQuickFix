@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <fix minor="0" major="5">
+		<!--By LiteFIX. Added "header" tag.-->
     <header name="StandardHeader">
         <field name="BeginString" required="Y"/>
         <field name="BodyLength" required="Y"/>
@@ -31,6 +32,7 @@
         <field name="LastMsgSeqNumProcessed" required="N"/>
         <component name="HopGrp" required="N"/>
     </header>
+		<!--By LiteFIX. Added "trailer" tag.-->
     <trailer name="StandardTrailer">
         <field name="SignatureLength" required="N"/>
         <field name="Signature" required="N"/>
@@ -4470,7 +4472,10 @@
     </field>
     <field number="6" name="AvgPx" type="PRICE"/>
     <field number="7" name="BeginSeqNo" type="SEQNUM"/>
-    <field number="8" name="BeginString" type="STRING"/>
+		<!--By LiteFIX. Optimization. Added predefined value to "BeginString" tag.-->
+    <field number="8" name="BeginString" type="STRING">
+			<value enum="FIX.5.0" description="VERSION_50"/>
+		</field>
     <field number="9" name="BodyLength" type="LENGTH"/>
     <field number="10" name="CheckSum" type="STRING"/>
     <field number="11" name="ClOrdID" type="STRING"/>

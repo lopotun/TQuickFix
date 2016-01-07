@@ -28,7 +28,6 @@ public abstract class QFComponentValidator {
      * @return <em>true</em> if this validator has performed the component custom validation and found this component <strong>valid</strong>;
      * <em>false</em> if this validator has performed the component custom validation and found this component <strong>invalid</strong>;
      * <em>null</em> if there is no custom validation. In this case the default validation of the supplied component will be used.
-     * @see ValidationErrorsHandler#invalidValue(Class, Object, Throwable, ValidationErrorsHandler.ErrorType)
      */
     @Nullable
     public Boolean validateComponent(@SuppressWarnings("unused") QFComponent thisComponent) {
@@ -36,10 +35,10 @@ public abstract class QFComponentValidator {
     }
 
     /**
-     * *  (a) LiteFix Component when mandatory field is missing in this Component. In this case 'errorType' is {@linkplain net.kem.newtquickfix.ValidationErrorsHandler.ErrorType#MISSING};
+     * Mandatory field is missing in this Component.
      *
-     * @param thisComponent
-     * @param missingElement
+     * @param thisComponent     .
+     * @param missingElement    .
      */
     public void mandatoryElementMissing(QFComponent thisComponent, Class<?> missingElement) {
     }
@@ -57,7 +56,7 @@ public abstract class QFComponentValidator {
     public void duplicatedComponent(QFComponent childrenComponentInstance, QFComponent thisInstance) {
     }
 
-    public void invalidGroupCount(QFField qfField, List<? extends QFComponent> groupInstances, QFComponent thisInstance) {
+    public void invalidGroupCount(QFField qfField, List<? extends QFComponent> groupInstances, Class<? extends QFComponent> ownerClass) {
     }
 
     /**
@@ -71,14 +70,13 @@ public abstract class QFComponentValidator {
 
     /**
      * This method is called by a:
-     * (a) LiteFix Field when value of this field is not one of the its predefined values. In this case 'errorType' is {@linkplain net.kem.newtquickfix.ValidationErrorsHandler.ErrorType#NOT_PREDEFINED};
-     * (b) LiteFix Field when value of this field cannot be parsed to field type (e.g. when value "abcd" is given to an Integer or a Date/Time field). In this case 'errorType' is {@linkplain net.kem.newtquickfix.ValidationErrorsHandler.ErrorType#PARSING};
+     * (a) LiteFix Field when value of this field is not one of the its predefined values.
+     * (b) LiteFix Field when value of this field cannot be parsed to field type (e.g. when value "abcd" is given to an Integer or a Date/Time field).
      *
-     * @param fieldClass       in case of
-     *                         (a):
-     * @param problematicValue
-     * @param t
-     * @return
+     * @param fieldClass          .
+     * @param problematicValue    .
+     * @param t                   .
+     * @return value to use instead of invalid one. If there is no such a value, the method should throw an exception.
      * @throws UnsupportedOperationException
      */
     public <V> V invalidFieldValue(@NotNull Class<?> fieldClass, @NotNull Class<V> typeClass, @NotNull CharSequence problematicValue, @Nullable Throwable t) throws UnsupportedOperationException {
@@ -113,11 +111,11 @@ public abstract class QFComponentValidator {
             }
             break;
             case "Currency": {
-                res = Currency.getInstance("US");
+                res = Currency.getInstance("USD");
             }
             break;
             case "Double": {
-                res = 0;
+                res = 0d;
             }
             break;
             case "Boolean": {
@@ -160,8 +158,8 @@ public abstract class QFComponentValidator {
         }
 
         @Override
-        public void invalidGroupCount(QFField qfField, List<? extends QFComponent> groupInstances, QFComponent thisInstance) {
-            System.out.println("Declared number [" + qfField.getValue() + "] of group elements does not fit the real number [" + groupInstances.size() + "] in component \"" + thisInstance.getName() + "\". Please, check the incoming FIX message for data integrity.");
+        public void invalidGroupCount(QFField qfField, List<? extends QFComponent> groupInstances, Class<? extends QFComponent> ownerClass) {
+            System.out.println("Declared number [" + qfField.getValue() + "] of group elements does not fit the real number [" + groupInstances.size() + "] in component \"" + ownerClass.getSimpleName() + "\". Please, check the incoming FIX message for data integrity.");
         }
 
         /**
@@ -183,8 +181,8 @@ public abstract class QFComponentValidator {
             } else {
                 System.err.println("\"" + problematicValue + "\" should not be used as value of FIX tag " + fieldClass.getSimpleName() + " due to error " + t.getClass().getSimpleName() + ": " + t.getMessage());
             }
-            Object res = getDefaultValue(typeClass);
-            return (V) res;
+            V res = getDefaultValue(typeClass);
+            return res;
         }
 
         @Override

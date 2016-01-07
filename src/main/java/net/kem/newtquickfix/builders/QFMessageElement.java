@@ -8,8 +8,10 @@ import org.w3c.dom.Element;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class QFMessageElement extends QFComponentElement {
+    protected String messageCategory;
     public QFMessageElement(Element startElement, StringBuilder sb, CharSequence ident) throws IllegalArgumentException {
         super(startElement, sb, ident);
+        this.messageCategory = startElement.getAttribute("msgcat");
     }
 
     public void addHeader(Element header) {
@@ -46,11 +48,12 @@ public class QFMessageElement extends QFComponentElement {
         sb.append("{\n");
     }
 
-    protected void getImportSection() {
-        super.getImportSection();
-    }
+//    protected void getImportSection() {
+//        super.getImportSection();
+//    }
 
     protected void getImportSectionFromSubElements() {
+        super.getImportSectionFromSubElements();
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMessage;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".BeginString;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".MsgType;\n");
@@ -77,13 +80,36 @@ public class QFMessageElement extends QFComponentElement {
     protected void getCustomMethods() {
         super.getCustomMethods();
         // //	---- Message-specific methods BEGIN
-        // private static final ValidationErrorsHandler VALIDATION_HANDLER = QFUtils.getMessageValidationErrorsHandler(AllocationReportAck.class);
-        // public MsgType getMsgType() {
-        //    return standardHeader.getMsgType();
-        // }
+        /*
+        public static MsgType getMsgType() {
+            return MsgType.getInstance("BL");
+        }
+
+        @Override
+        public MsgType getMessageType() {
+            return getMsgType();
+        }
+
+        public static BeginString getVersion() {
+            return BeginString.getInstance("FIX50SP2");
+        }
+         */
         sb.append(ident).append("\t//\t---- Message-specific methods BEGIN\n");
-        sb.append(ident).append("\tpublic MsgType getMsgType() {\n")
-                .append(ident).append("\t\treturn standardHeader.getMsgType();\n")
+        sb.append(ident).append("\tpublic static MsgType getMsgType() {\n")
+                .append(ident).append("\t\treturn MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\");\n")
+                .append(ident).append("\t}\n\n");
+
+        sb.append(ident).append("\t@Override\n")
+                .append(ident).append("\tpublic MsgType getMessageType() {\n")
+                .append(ident).append("\t\treturn getMsgType();\n")
+                .append(ident).append("\t}\n\n");
+
+        sb.append(ident).append("\tpublic static BeginString getVersion() {\n")
+                .append(ident).append("\t\treturn BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSIONS.get(BuilderUtils.FIX_VERSION)).append("\");\n")
+                .append(ident).append("\t}\n\n");
+
+        sb.append(ident).append("\tpublic String getMessageCategory() {\n")
+                .append(ident).append("\t\treturn \"").append(messageCategory).append("\";\n")
                 .append(ident).append("\t}\n\n");
 
         // //	---- Message-specific methods END
@@ -108,10 +134,10 @@ public class QFMessageElement extends QFComponentElement {
                 .append("\t\tthis(QFComponentValidator.getDefaultComponentValidator());\n")
                 .append("\t}\n");
         sb.append(ident).append("\tprivate ").append(name).append("(QFComponentValidator componentValidator) {\n")
-                .append("\t\tstandardHeader = StandardHeader.getInstance();\n")
-                .append("\t\tstandardHeader.setBeginString(BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSION).append("\", componentValidator));\n")
-                .append("\t\tstandardHeader.setMsgType(MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\", componentValidator));\n\n")
-                .append("\t\tstandardTrailer = StandardTrailer.getInstance();\n")
+//                .append("\t\tstandardHeader = StandardHeader.getInstance();\n")
+//                .append("\t\tstandardHeader.setBeginString(BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSION).append("\", componentValidator));\n")
+//                .append("\t\tstandardHeader.setMsgType(MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\", componentValidator));\n\n")
+//                .append("\t\tstandardTrailer = StandardTrailer.getInstance();\n")
                 .append("\t}\n\n");
     }
 
@@ -123,9 +149,6 @@ public class QFMessageElement extends QFComponentElement {
                 .append(ident).append("\t\treturn new ").append(name).append("();\n")
                 .append(ident).append("\t}\n\n");
 
-        // public static ComponentMain getInstance(Stack<QFField> tags, QFComponentValidator componentValidator) {
-        //  return tags==null? new ComponentMain(): getInstance(tags, null, ComponentMain.class, QFComponentValidator componentValidator);
-        // }
         /*
         public static AllocationReportAck getInstance(QFComponentValidator componentValidator) {
             return new AllocationReportAck(componentValidator);
@@ -135,11 +158,11 @@ public class QFMessageElement extends QFComponentElement {
             return tags==null? new AllocationReportAck(componentValidator): getInstance(tags, null, AllocationReportAck.class, componentValidator);
         }
          */
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(QFComponentValidator componentValidator").append(") {\n")
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(QFComponentValidator componentValidator) {\n")
                 .append(ident).append("\t\treturn new ").append(name).append("(componentValidator);\n")
                 .append(ident).append("\t}\n\n");
 
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags, QFComponentValidator componentValidator").append(") {\n")
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags, QFComponentValidator componentValidator) {\n")
                 .append(ident).append("\t\treturn tags==null? new ").append(name).append("(componentValidator): getInstance(tags, null, ").append(name).append(".class, componentValidator);\n")
                 .append(ident).append("\t}\n\n");
     }

@@ -1,6 +1,8 @@
 package net.kem.newtquickfix.blocks;
 
 import net.kem.newtquickfix.QFComponentValidator;
+import net.kem.newtquickfix.builders.BuilderUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -55,7 +57,7 @@ public abstract class QFComponent {
         return getClass().getSimpleName();
     }
 
-    protected static <QFComp extends QFComponent> QFComp getInstance(Stack<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
+    protected static <QFComp extends QFComponent> QFComp getInstance(CharSequence fixVersion, Stack<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
         // I'll need to know whether the current component is an ordinal component or a group.
         // I rely on the fact that every group has QFGroupDef annotation.
         int groupDelimiterTag = 0;
@@ -73,17 +75,18 @@ public abstract class QFComponent {
             if(!qfField.isKnown()) {
                 return thisInstance;
             }
+            int stackSize = tags.size();
 
             // Look for fields.
-            QFUtils.ChildGetterSetter childGS = QFUtils.getFieldGetterSetter(qfField.getClass(), compClass);
-            if(childGS != null) {
+            QFUtils.ChildGetterSetter childGS = QFUtils.getFieldGetterSetter(fixVersion, qfField.getClass(), compClass);
+            if(childGS != null) { // i.e. this component can contain this field.
                 // Create instance of this component/group if needed.
                 if(thisInstance == null) {
                     thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
                 } else {
                     // This instance is a Group and this field is a group element delimiter ->
                     // 1. We're at beginning of next group element.
-                    // 2. Stop precessing this group element (and then go to next one).
+                    // 2. Stop processing this group element (and then go to next one).
                     if(groupDelimiterTag != 0 && qfField.getTag() == groupDelimiterTag) {
                         return thisInstance;
                     }
@@ -101,7 +104,7 @@ public abstract class QFComponent {
                         tags.pop();
                         continue;
                     } else {
-                        // The value has been already assigned to this member.
+                        // The value has been already assigned to this component member.
                         componentValidator.duplicatedTag(qfField, currentValue, thisInstance);
                     }
                 } catch (IllegalAccessException | InvocationTargetException e) {
@@ -110,28 +113,29 @@ public abstract class QFComponent {
             }
 
             // The current field does not belong to this component. Check if the filed belongs to one of its child components (if any).
-            List<QFUtils.ChildGetterSetter<? extends QFComponent>> childrenComponentGSs = QFUtils.getChildrenComponentClasses(compClass);
-            if(childrenComponentGSs != null) {
+            List<QFUtils.ChildGetterSetter<? extends QFComponent>> componentChildrenGSs = QFUtils.getChildrenComponentClasses(fixVersion, compClass);
+            if(componentChildrenGSs != null) {
                 // Get child component's metadata.
-                for (QFUtils.ChildGetterSetter<? extends QFComponent> childrenComponentGS : childrenComponentGSs) {
+                for (QFUtils.ChildGetterSetter<? extends QFComponent> componentChildrenGS : componentChildrenGSs) {
                     try {
-                        // Create (recursively) child component's instance.
-                        QFComp childrenComponentInstance = getInstance(tags, null, childrenComponentGS.getChildClass(), componentValidator);
-                        if (childrenComponentInstance != null) {
+                        // Try to create (recursively) child component's instance.
+                        QFComp componentChildInstance = getInstance(fixVersion, tags, null, componentChildrenGS.getChildClass(), componentValidator);
+                        if (componentChildInstance != null) {
                             // Child component instance has been created (that means that the current filed belongs to this child component (or to one of its descenders)).
                             // Create instance of this component if needed.
                             thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
                             // Check if the value was not assigned previously.
-                            Method fieldGetter = childrenComponentGS.getGetter();
+                            Method fieldGetter = componentChildrenGS.getGetter();
                             QFComponent currentValue = (QFComponent) fieldGetter.invoke(thisInstance);
                             if(currentValue == null) {
                                 // Assign the value of the newly created child component.
-                                childrenComponentGS.getSetter().invoke(thisInstance, childrenComponentInstance);
+                                componentChildrenGS.getSetter().invoke(thisInstance, componentChildInstance);
                                 // Set parent reference.
-                                childrenComponentInstance.parent = thisInstance;
+                                componentChildInstance.parent = thisInstance;
                             } else {
                                 // The value has been already assigned to this member.
-                                componentValidator.duplicatedComponent(childrenComponentInstance, thisInstance);
+                                //componentValidator.duplicatedComponent(componentChildInstance, thisInstance); //TODO warn about wrong placement of the current field.
+                                QFUtils.merge(componentChildInstance, currentValue);
                             }
                             // Proceed to next field. Note: do not pop stack since it has been already popped while child component creation.
                             continue NEXT_TAG;
@@ -143,35 +147,51 @@ public abstract class QFComponent {
             }
 
             // The current field belong neither to this component nor to one of its child components. Check if the filed belongs to one of child groups (if any).
-            List<QFUtils.ChildGetterSetterGroup<? extends QFComponent>> groupComponentGSs = QFUtils.getChildrenGroupClasses(compClass);
-            if(groupComponentGSs != null) {
+            List<QFUtils.ChildGetterSetterGroup<? extends QFComponent>> componentGroupsGSs = QFUtils.getChildrenGroupClasses(fixVersion, compClass);
+            if(componentGroupsGSs != null) {
                 // Get child group component metadata.
-                for (QFUtils.ChildGetterSetterGroup<? extends QFComponent> groupComponentGS : groupComponentGSs) {
+                for (QFUtils.ChildGetterSetterGroup<? extends QFComponent> componentGroupGS : componentGroupsGSs) {
                     try {
                         // Check if this field is a group count.
-                        if(qfField.getTag() == groupComponentGS.getGroupCount()) {
+                        if(qfField.getTag() == componentGroupGS.getGroupCount()) {
                             // This field is is a group count. Pop the stack and create list of group members.
                             tags.pop();
                             int numberOfGroupMembers = Integer.parseInt(qfField.getValue().toString());
                             List<QFComp> groupInstances = new ArrayList<>(numberOfGroupMembers);
                             for (int i=0; i<numberOfGroupMembers; i++) {
-                                // Create group instance.
-                                QFComp childrenGroupInstance = getInstance(tags, null, groupComponentGS.getChildClass(), componentValidator);
-                                if (childrenGroupInstance != null) {
-                                    groupInstances.add(childrenGroupInstance);
+                                // Try to create group instance.
+                                QFComp groupChildInstance = getInstance(fixVersion, tags, null, componentGroupGS.getChildClass(), componentValidator);
+                                if (groupChildInstance != null) {
+                                    groupInstances.add(groupChildInstance);
+                                } else {
+                                    // This field hasn't been consumed by this group (and any of its sub-members).
+                                    // Check whether this unclaimed tag was meant to belong to this group.
+                                    // To do so, I check if one of the next several (for example, up to 5) tags belongs to this group.
+                                    // If it is then, most probably, this unclaimed tag belongs to this group and, therefore, just remove it from stack and proceed to next tag within this group.
+                                    // Pop the stack and create list of group members.
+                                    final List<QFField> qfFields = tags.subList(Math.max(0, tags.size() - 5), tags.size());
+                                    for (QFField field : qfFields) {
+                                        QFUtils.ChildGetterSetter groupChildGS = QFUtils.getFieldGetterSetter(fixVersion, field.getClass(), componentGroupGS.getChildClass());
+                                        if(groupChildGS != null) {
+                                            // Keep this unclaimed tag for the future reference.
+                                            BuilderUtils.UNCLAIMED_TAGS.get().add(new ImmutablePair<>(tags.pop(), componentGroupGS.getChildClass()));
+                                            break;
+                                        }
+                                    }
                                 }
-                            }
-                            if(numberOfGroupMembers != groupInstances.size()) {
-                                componentValidator.invalidGroupCount(qfField, groupInstances, thisInstance);
                             }
                             // Assign the value of the newly created child group.
                             if (!groupInstances.isEmpty()) {
                                 thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
-                                groupComponentGS.getSetter().invoke(thisInstance, groupInstances);
+                                componentGroupGS.getSetter().invoke(thisInstance, groupInstances);
                                 // Set parent reference.
                                 for (QFComp groupInstance : groupInstances) {
                                     groupInstance.parent = thisInstance;
                                 }
+                            }
+                            // Warn about possible group size inconsistency.
+                            if(numberOfGroupMembers != groupInstances.size()) {
+                                componentValidator.invalidGroupCount(qfField, groupInstances, compClass);
                             }
                             // Proceed to next field. Note: do not pop stack since it has been already popped while child group creation.
                             continue NEXT_TAG;
@@ -181,6 +201,23 @@ public abstract class QFComponent {
                     }
                 }
             }
+//            // This component is Group and the current tag hasn't been processed by this group (and all its children components).
+//            if(groupDelimiterTag > 0 && stackSize == tags.size()) {
+//                // Keep this unclaimed tag for the future reference.
+//                BuilderUtils.UNCLAIMED_TAGS.get().add(new ImmutablePair<>(tags.peek(), compClass));
+//                // Check whether this unclaimed tag was meant to belong to this group.
+//                // To do so, I check if one of the next several (for example, up to 5) tags belongs to this group.
+//                // If it is then, most probably, this unclaimed tag belongs to this group and, therefore, just remove it from stack and proceed to next tag within this group.
+//                // Pop the stack and create list of group members.
+//                final List<QFField> qfFields = tags.subList(Math.max(0, tags.size() - 5), tags.size());
+//                for (QFField field : qfFields) {
+//                    QFUtils.ChildGetterSetter groupChildGS = QFUtils.getFieldGetterSetter(field.getClass(), compClass);
+//                    if(groupChildGS != null) {
+//                        tags.pop();
+//                        continue NEXT_TAG;
+//                    }
+//                }
+//            }
             return thisInstance;
         }
     }
@@ -189,7 +226,7 @@ public abstract class QFComponent {
         if (instance == null) {
             try {
                 if(QFMessage.class.isAssignableFrom(compClass)) {
-                    Method getInstance = compClass.getDeclaredMethod("getInstance", QFComponentValidator.class);
+                    Method getInstance = compClass.getDeclaredMethod("getInstance", QFComponentValidator.class);//TODO call getInstance that won't initialize header and trailer.
                     instance = (QFComp) getInstance.invoke(null, componentValidator);
                 } else {
                     Constructor constructor = compClass.getDeclaredConstructor();

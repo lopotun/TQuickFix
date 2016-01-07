@@ -13,30 +13,20 @@ import java.util.Stack;
 public abstract class QFMessage extends QFComponent {
 
     protected List<QFField<String>> unknownTags;
-    protected QFComponent standardHeader;
-    protected QFComponent standardTrailer;
 
-    protected String messageType;
-    public String getMessageType() {
-        return messageType;
-    }
-    public void setMessageType(CharSequence messageType) {
-        this.messageType = messageType.toString();
-    }
+    public abstract QFField<String> getMessageType();
+    public abstract String getMessageCategory();
 
+//    public abstract QFComponent getStandardHeader();
+//    public abstract void setStandardHeader(QFComponent standardHeader);
 
-    protected String messageCategory;
-    public String getMessageCategory() {
-        return messageCategory;
-    }
-    public void setMessageCategory(CharSequence messageCategory) {
-        this.messageCategory = messageCategory.toString();
-    }
-
+//    public abstract QFComponent getStandardTrailer();
+//    public abstract void setStandardTrailer(QFComponent standardTrailer);
 
     protected static <QFComp extends QFMessage> QFComp getInstance(Stack<QFField> tags, QFComp thisInstance, Class<? extends QFMessage> compClass, QFComponentValidator componentValidator) {
+        CharSequence fixVersion = (CharSequence) tags.get(tags.size()-1).getValue();
         while(true) {
-            thisInstance = QFComponent.getInstance(tags, thisInstance, compClass, componentValidator);
+            thisInstance = QFComponent.getInstance(fixVersion, tags, thisInstance, compClass, componentValidator);
             if (tags.isEmpty()) {
                 // All the tags were consumed. Stop the loop.
                 break;

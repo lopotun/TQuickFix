@@ -84,14 +84,12 @@ public class QFGroupElement extends QFComponentElement {
 
     protected void getImportSection() {
         for (QFRequirable member : members) {
-            if (member.getTagType() == QFMember.Type.FIELD) {
-                if(member.getName().equals(parent.getName())) {
-                    // In some cases (e.g. in net.kem.newtquickfix.components.RateSource) we have class member (of type QFField)
-                    // that has the same name as Component class. In this case we have to use full-specified name for this class member.
-                    member.useFQDN(true);
-                } else {
-                    member.getImportSectionPart(sb);
-                }
+            if(member.getName().equals(parent.getName())) {
+                // In some cases (e.g. in net.kem.newtquickfix.components.RateSource) we have class member (of type QFField)
+                // that has the same name as Component class. In this case we have to use full-specified name for this class member.
+                member.useFQDN(true);
+            } else {
+                member.getImportSectionPart(sb);
             }
         }
         sb.append('\n');

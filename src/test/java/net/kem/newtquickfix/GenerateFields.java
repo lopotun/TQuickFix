@@ -1,5 +1,6 @@
 package net.kem.newtquickfix;
 
+import net.kem.newtquickfix.builders.BuilderUtils;
 import net.kem.newtquickfix.builders.QFFieldElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,14 +50,18 @@ public class GenerateFields {
         DocumentBuilder builder = factory.newDocumentBuilder();
 
         //Load and Parse the XML document
-        Document document = builder.parse("./TQuickFix/src/main/resources/xml/FIX50SP2.xml");
+        //Document document = builder.parse("./TQuickFix/src/main/resources/xml/FIX50SP2.xml");
+        Document document = builder.parse("./TQuickFix/src/main/resources/xml/FIX44.xml");
+
+        setFIXVersion(document);
 
         XPath xpath = XPathFactory.newInstance().newXPath();
 
         XPathExpression expr;
         NodeList nodes;
         expr = xpath.compile("/fix/fields/field");// //person/*//*text()
-        File dir = new File("./TQuickFix/src/main/java/net/kem/newtquickfix/fields");
+        //File dir = new File("./TQuickFix/src/main/java/net/kem/newtquickfix/fields");// net.kem.newtquickfix.5_0_sp2.fields
+        File dir = new File("./TQuickFix/src/main/java/" + BuilderUtils.PACKAGE_NAME_FIELDS.replace('.', '/'));// net.kem.newtquickfix.5_0_sp2.fields
         dir.mkdirs();
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
         for (int j = 0; j < nodes.getLength(); j++) {
@@ -71,5 +76,23 @@ public class GenerateFields {
                 fileWriter.close();
             }
         }
+    }
+
+    static void setFIXVersion(Document document) {
+        // <fix major='5' type='FIX' servicepack='2' minor='0'>
+        String major = document.getDocumentElement().getAttribute("major");
+        String minor = document.getDocumentElement().getAttribute("minor");
+        String servicepack = document.getDocumentElement().getAttribute("servicepack");
+
+        StringBuilder version = new StringBuilder(8);
+        version.append("v").append(major).append("").append(minor);
+        if(!servicepack.equals("0")) {
+            version.append("sp").append(servicepack);
+        }
+        BuilderUtils.updatePackagePath(version);
+    }
+
+    static void setFIXVersion(CharSequence version) {
+        BuilderUtils.updatePackagePath(version);
     }
 }

@@ -1,11 +1,14 @@
 package net.kem.newtquickfix.blocks;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Table;
 import com.google.common.reflect.ClassPath;
+import com.sun.istack.internal.NotNull;
 import net.kem.newtquickfix.QFComponentValidator;
-import net.kem.newtquickfix.ValidationErrorsHandler;
 import net.kem.newtquickfix.builders.BuilderUtils;
+import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -16,22 +19,31 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
+import java.util.stream.Collectors;
+
+//import net.kem.newtquickfix.components.StandardHeader;
+//import net.kem.newtquickfix.components.StandardTrailer;
+//import net.kem.newtquickfix.fields.BeginString;
+//import net.kem.newtquickfix.fields.MsgType;
 
 /**
  * Created by Evgeny Kurtser on 12/27/2015 at 9:25 AM.
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class QFUtils {
-    private static final Map<Class<? extends QFField<?>>, ValidationErrorsHandler> FIELD_VALIDATORS = new HashMap<>();
     private static final Map<Class<? extends QFComponent>, QFComponentValidator> COMPONENT_VALIDATORS = new HashMap<>();
-    static final Map<Class<? extends QFComponent>, ValidationErrorsHandler> MESSAGE_VALIDATORS = new HashMap<>();
     static ClassPath classPath;
 
-    static final Map<Integer, Method> MAP = new HashMap<>();
-    private static final Map<Class<? extends QFField>, Map<Class<? extends QFComponent>, ChildGetterSetter>> FIELD_OWNERS = new HashMap<>();
-    private static final Map<Class<? extends QFComponent>, List<ChildGetterSetter<? extends QFComponent>>> COMPONENT_CHILDREN = new HashMap<>();
-    private static final Map<Class<? extends QFComponent>, List<ChildGetterSetterGroup<? extends QFComponent>>> GROUP_CHILDREN = new HashMap<>();
-
+//    static final Map<Integer, Method> MAP = new HashMap<>();
+    private static final Table<CharSequence, Integer, Method> MAP1 = HashBasedTable.create(5, 200);
+//    private static final Map<Class<? extends QFField>, Map<Class<? extends QFComponent>, ChildGetterSetter>> FIELD_OWNERS = new HashMap<>();
+    private static final Table<CharSequence, Class<? extends QFField>, Map<Class<? extends QFComponent>, ChildGetterSetter>> FIELD_OWNERS = HashBasedTable.create(5, 1350);
+//    private static final Map<Class<? extends QFComponent>, List<ChildGetterSetter<? extends QFComponent>>> COMPONENT_CHILDREN = new HashMap<>();
+    private static final Table<CharSequence, Class<? extends QFComponent>, List<ChildGetterSetter<? extends QFComponent>>> COMPONENT_CHILDREN = HashBasedTable.create(5, 240);
+//    private static final Map<Class<? extends QFComponent>, List<ChildGetterSetterGroup<? extends QFComponent>>> GROUP_CHILDREN = new HashMap<>();
+    private static final Table<CharSequence, Class<? extends QFComponent>, List<ChildGetterSetterGroup<? extends QFComponent>>> GROUP_CHILDREN = HashBasedTable.create(5, 150);
+    private static final Table<CharSequence, QFField<String>, Class<? extends QFMessage>> MESSAGE_TYPES = HashBasedTable.create(5, 120);
 
     static void init() throws IOException {
         if(classPath == null) {
@@ -39,106 +51,131 @@ public class QFUtils {
         }
     }
 
-    public static ChildGetterSetter getFieldGetterSetter(Class<? extends QFField> fieldClass, Class<? extends QFComponent> compClass) {
+    public static ChildGetterSetter getFieldGetterSetter(CharSequence fixVersion, Class<? extends QFField> fieldClass, Class<? extends QFComponent> compClass) {
         ChildGetterSetter getterSetter = null;
-        Map<Class<? extends QFComponent>, ChildGetterSetter> componentClasses = FIELD_OWNERS.get(fieldClass);
+        Map<Class<? extends QFComponent>, ChildGetterSetter> componentClasses = FIELD_OWNERS.get(fixVersion, fieldClass);
         if (componentClasses != null) {
             getterSetter = componentClasses.get(compClass);
         }
         return getterSetter;
     }
 
-    public static List<ChildGetterSetter<? extends QFComponent>> getChildrenComponentClasses(Class<? extends QFComponent> compClass) {
-        List<ChildGetterSetter<? extends QFComponent>> componentChildrenClasses = COMPONENT_CHILDREN.get(compClass);
-        return componentChildrenClasses;
+    public static List<ChildGetterSetter<? extends QFComponent>> getChildrenComponentClasses(CharSequence fixVersion, Class<? extends QFComponent> compClass) {
+        return COMPONENT_CHILDREN.get(fixVersion, compClass);
     }
 
-    public static List<ChildGetterSetterGroup<? extends QFComponent>> getChildrenGroupClasses(Class<? extends QFComponent> compClass) {
-        List<ChildGetterSetterGroup<? extends QFComponent>> groupChildrenClasses = GROUP_CHILDREN.get(compClass);
+    public static List<ChildGetterSetterGroup<? extends QFComponent>> getChildrenGroupClasses(CharSequence fixVersion, Class<? extends QFComponent> compClass) {
+        List<ChildGetterSetterGroup<? extends QFComponent>> groupChildrenClasses = GROUP_CHILDREN.get(fixVersion, compClass);
         return groupChildrenClasses;
     }
 
 
-    public static void fillMaps() throws NoSuchFieldException, NoSuchMethodException, IllegalAccessException, IOException {
+    public static void fillMaps() throws NoSuchFieldException, NoSuchMethodException, IllegalAccessException, IOException, InvocationTargetException {
         init();
-        ImmutableSet<ClassPath.ClassInfo> fieldClasses = classPath.getTopLevelClasses(String.valueOf(BuilderUtils.PACKAGE_NAME_FIELDS));
-        for (ClassPath.ClassInfo fieldClass : fieldClasses) {
-            Class<?> qfFieldClass = fieldClass.load();
-            int tagValue = qfFieldClass.getField("TAG").getInt(null);
-            Method instantiatorByString = qfFieldClass.getDeclaredMethod("getInstance", String.class, QFComponentValidator.class);
-            MAP.put(tagValue, instantiatorByString);
-        }
 
-        Set<ClassPath.ClassInfo> annotatedComponentClasses = QFUtils.classPath.getTopLevelClasses(String.valueOf(BuilderUtils.PACKAGE_NAME_COMPONENTS));
-        Set<ClassPath.ClassInfo> annotatedMessagesClasses = QFUtils.classPath.getTopLevelClasses(String.valueOf(BuilderUtils.PACKAGE_NAME_MESSAGES));
-        final Sets.SetView<ClassPath.ClassInfo> annotatedClasses = Sets.union(annotatedComponentClasses, annotatedMessagesClasses);
-        for (ClassPath.ClassInfo annotatedClass : annotatedClasses) {
-            Class<? extends QFComponent> newQFComponentClass = (Class<? extends QFComponent>) annotatedClass.load();
-            Field[] declaredFields = newQFComponentClass.getDeclaredFields();
-            for (Field declaredField : declaredFields) {
-                QFMember QFMember = declaredField.getAnnotation(QFMember.class);
-                if (QFMember != null) {
-                    switch (QFMember.type()) {
-                        case FIELD: {
-                            Class<? extends QFField> fieldClass = (Class<? extends QFField>) declaredField.getType();
-                            Map<Class<? extends QFComponent>, ChildGetterSetter> componentClasses = FIELD_OWNERS.get(fieldClass);
-                            if (componentClasses == null) {
-                                componentClasses = new HashMap<>();
-                                FIELD_OWNERS.put(fieldClass, componentClasses);
-                            }
-                            Method getter = newQFComponentClass.getDeclaredMethod("get" + fieldClass.getSimpleName());
-                            Method setter = newQFComponentClass.getDeclaredMethod("set" + fieldClass.getSimpleName(), fieldClass);
-                            ChildGetterSetter<? extends QFComponent> childGetterSetter = new ChildGetterSetter(fieldClass, getter, setter);
-                            componentClasses.put(newQFComponentClass, childGetterSetter);
-                        }
-                        break;
-                        // @QFMember(type = QFMember.Type.COMPONENT) public void setComponentC(ComponentC componentC)
-                        case COMPONENT: {
-                            Class<? extends QFComponent> componentChildClass = (Class<? extends QFComponent>) declaredField.getType();
-                            Method getter = newQFComponentClass.getDeclaredMethod("get" + componentChildClass.getSimpleName());
-                            Method setter = newQFComponentClass.getDeclaredMethod("set" + componentChildClass.getSimpleName(), componentChildClass);
-                            ChildGetterSetter<? extends QFComponent> childGetterSetter = new ChildGetterSetter(componentChildClass, getter, setter);
-                            List<ChildGetterSetter<? extends QFComponent>> componentChildrenSetters = COMPONENT_CHILDREN.get(newQFComponentClass);
-                            if (componentChildrenSetters == null) {
-                                componentChildrenSetters = new LinkedList<>();
-                                COMPONENT_CHILDREN.put(newQFComponentClass, componentChildrenSetters);
-                            }
-                            if (!componentChildrenSetters.contains(childGetterSetter)) {
-                                componentChildrenSetters.add(childGetterSetter);
-                            }
-                        }
-                        break;
-                        // @QFMember(type = QFMember.Type.GROUP, groupClass = ComponentMain.GroupA.class) public void setGroupA(List<GroupA> groupA)
-                        case GROUP: {
-                            Class<? extends QFComponent> groupChildClass = QFMember.groupClass();
-                            Method getter = newQFComponentClass.getDeclaredMethod("get" + groupChildClass.getSimpleName());
-                            Method setter = newQFComponentClass.getDeclaredMethod("set" + groupChildClass.getSimpleName(), List.class);
-                            // @QFGroupDef(count = FieldIntegerGroupCount.TAG, delimiter = FieldStringGroupDelimiter.TAG) public static class GroupA extends QFComponent
-                            QFGroupDef groupAnnotation = groupChildClass.getAnnotation(QFGroupDef.class);
-                            ChildGetterSetterGroup<? extends QFComponent> childGroupSetter = new ChildGetterSetterGroup(groupChildClass, getter, setter, groupAnnotation.count(), groupAnnotation.delimiter());
-                            List<ChildGetterSetterGroup<? extends QFComponent>> groupChildrenSetters = GROUP_CHILDREN.get(newQFComponentClass);
-                            if (groupChildrenSetters == null) {
-                                groupChildrenSetters = new LinkedList<>();
-                                GROUP_CHILDREN.put(newQFComponentClass, groupChildrenSetters);
-                            }
-                            if (!groupChildrenSetters.contains(childGroupSetter)) {
-                                groupChildrenSetters.add(childGroupSetter);
-                            }
-                        }
-                        break;
-                    }
+        for(Map.Entry<CharSequence, CharSequence> version : BuilderUtils.FIX_VERSIONS.entrySet()) {
+            BuilderUtils.updatePackagePath(version.getKey());
+
+            ImmutableSet<ClassPath.ClassInfo> fieldClasses = classPath.getTopLevelClasses(String.valueOf(BuilderUtils.PACKAGE_NAME_FIELDS));
+            for (ClassPath.ClassInfo fieldClass : fieldClasses) {
+                Class<?> qfFieldClass = fieldClass.load();
+                int tagValue = qfFieldClass.getField("TAG").getInt(null);
+                Method instantiatorByString = qfFieldClass.getDeclaredMethod("getInstance", String.class, QFComponentValidator.class);
+                MAP1.put(version.getValue(), tagValue, instantiatorByString);
+            }
+
+            Set<ClassPath.ClassInfo> componentsClasses = QFUtils.classPath.getAllClasses().parallelStream().filter(classInfo -> classInfo.getPackageName().equals(BuilderUtils.PACKAGE_NAME_COMPONENTS)).collect(Collectors.toSet());
+            Set<ClassPath.ClassInfo> messagesClasses = QFUtils.classPath.getAllClasses().parallelStream().filter(classInfo -> classInfo.getPackageName().equals(BuilderUtils.PACKAGE_NAME_MESSAGES)).collect(Collectors.toSet());
+            final Sets.SetView<ClassPath.ClassInfo> annotatedClasses = Sets.union(componentsClasses, messagesClasses);
+            for (ClassPath.ClassInfo annotatedClass : annotatedClasses) {
+                Class<? extends QFComponent> newQFComponentClass = (Class<? extends QFComponent>) annotatedClass.load();
+                mapFieldOwners(version.getValue(), newQFComponentClass);
+            }
+
+            // Create Message type mapping.
+            for (ClassPath.ClassInfo messageClass : messagesClasses) {
+                final Class<? extends QFMessage> load = (Class<? extends QFMessage>) messageClass.load();
+                if(!load.isInterface() && QFMessage.class.isAssignableFrom(load)) {
+                    final Method getMsgType = load.getDeclaredMethod("getMsgType");
+                    final QFField<String> msgType = (QFField<String>)getMsgType.invoke(null);
+                    MESSAGE_TYPES.put(version.getValue(), msgType, load);
                 }
             }
         }
     }
 
-    public static QFField lookupField(QFTag tag, QFComponentValidator componentValidator) {
+    private static void mapFieldOwners(CharSequence fixVersion, Class<? extends QFComponent> newQFComponentClass) throws NoSuchMethodException {
+        Field[] declaredFields = newQFComponentClass.getDeclaredFields();
+        for (Field declaredField : declaredFields) {
+            QFMember annotation = declaredField.getAnnotation(QFMember.class);
+            if (annotation != null) {
+                switch (annotation.type()) {
+                    case FIELD: {
+                        Class<? extends QFField> fieldClass = (Class<? extends QFField>) declaredField.getType();
+                        Map<Class<? extends QFComponent>, ChildGetterSetter> componentClasses = FIELD_OWNERS.get(fixVersion, fieldClass);
+                        if (componentClasses == null) {
+                            componentClasses = new HashMap<>();
+                            FIELD_OWNERS.put(fixVersion, fieldClass, componentClasses);
+                        }
+                        Method getter = newQFComponentClass.getDeclaredMethod("get" + fieldClass.getSimpleName());
+                        Method setter = newQFComponentClass.getDeclaredMethod("set" + fieldClass.getSimpleName(), fieldClass);
+                        ChildGetterSetter<? extends QFComponent> childGetterSetter = new ChildGetterSetter(fieldClass, getter, setter);
+                        componentClasses.put(newQFComponentClass, childGetterSetter);
+                    }
+                    break;
+                    // @annotation(type = annotation.Type.COMPONENT) public void setComponentC(ComponentC componentC)
+                    case COMPONENT: {
+                        Class<? extends QFComponent> componentChildClass = (Class<? extends QFComponent>) declaredField.getType();
+                        Method getter = newQFComponentClass.getDeclaredMethod("get" + componentChildClass.getSimpleName());
+                        Method setter = newQFComponentClass.getDeclaredMethod("set" + componentChildClass.getSimpleName(), componentChildClass);
+                        ChildGetterSetter<? extends QFComponent> childGetterSetter = new ChildGetterSetter(componentChildClass, getter, setter);
+                        List<ChildGetterSetter<? extends QFComponent>> componentChildrenSetters = COMPONENT_CHILDREN.get(fixVersion, newQFComponentClass);
+                        if (componentChildrenSetters == null) {
+                            componentChildrenSetters = new LinkedList<>();
+                            COMPONENT_CHILDREN.put(fixVersion, newQFComponentClass, componentChildrenSetters);
+                        }
+                        if (!componentChildrenSetters.contains(childGetterSetter)) {
+                            componentChildrenSetters.add(childGetterSetter);
+                        }
+                    }
+                    break;
+                    // @annotation(type = annotation.Type.GROUP, groupClass = ComponentMain.GroupA.class) public void setGroupA(List<GroupA> groupA)
+                    case GROUP: {
+                        Class<? extends QFComponent> groupChildClass = annotation.groupClass();
+                        mapFieldOwners(fixVersion, groupChildClass);
+                        Method getter = newQFComponentClass.getDeclaredMethod("get" + groupChildClass.getSimpleName());
+                        Method setter = newQFComponentClass.getDeclaredMethod("set" + groupChildClass.getSimpleName(), List.class);
+                        // @QFGroupDef(count = FieldIntegerGroupCount.TAG, delimiter = FieldStringGroupDelimiter.TAG) public static class GroupA extends QFComponent
+                        QFGroupDef groupAnnotation = groupChildClass.getAnnotation(QFGroupDef.class);
+                        ChildGetterSetterGroup<? extends QFComponent> childGroupSetter = new ChildGetterSetterGroup(groupChildClass, getter, setter, groupAnnotation.count(), groupAnnotation.delimiter());
+                        List<ChildGetterSetterGroup<? extends QFComponent>> groupChildrenSetters = GROUP_CHILDREN.get(fixVersion, newQFComponentClass);
+                        if (groupChildrenSetters == null) {
+                            groupChildrenSetters = new LinkedList<>();
+                            GROUP_CHILDREN.put(fixVersion, newQFComponentClass, groupChildrenSetters);
+                        }
+                        if (!groupChildrenSetters.contains(childGroupSetter)) {
+                            groupChildrenSetters.add(childGroupSetter);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    public static Class<? extends QFMessage> getMessageClass(Stack<QFField> tags) {
+        final QFField<String> beginString = (QFField<String>)tags.get(tags.size()-1);
+        final QFField<String> msgType = (QFField<String>)tags.get(tags.size()-3);
+        return MESSAGE_TYPES.get(beginString.getValue(), msgType);
+    }
+
+    public static QFField lookupField(CharSequence fixVersion, QFTag tag, QFComponentValidator componentValidator) {
         QFField res = null;
-        Method getInstance = MAP.get(tag.getTagKey());
+        Method getInstance = MAP1.get(fixVersion, tag.getTagKey());
         if (getInstance != null) {
             try {
                 res = (QFField) getInstance.invoke(null, tag.getTagValue(), componentValidator);
-            } catch (IllegalAccessException | InvocationTargetException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         } else {
@@ -148,39 +185,73 @@ public class QFUtils {
         return res;
     }
 
-    public static <V> ValidationErrorsHandler<V> getValidationErrorsHandler(Class<? extends QFField<?>> fieldClass) {
-        ValidationErrorsHandler<V> validationErrorsHandler = FIELD_VALIDATORS.get(fieldClass);
-        if(QFDateTimeField.class.isAssignableFrom(fieldClass)) {
-            validationErrorsHandler = ValidationErrorsHandler.Temporals.VALIDATION_HANDLER_WARNING;
+
+    static void merge(QFComponent from, QFComponent to) throws InvocationTargetException, IllegalAccessException {
+        Map<CharSequence, MutablePair<Method, Method>> methodMap = new HashMap<>();
+        final Method[] methodsFrom = from.getClass().getMethods();
+        for (Method method : methodsFrom) {
+            final String methodName = method.getName();
+            if(methodName.length() > 3) {
+                final String startsWith = methodName.substring(0, 3);
+                final String varName = methodName.substring(3);
+                if(!varName.equals("Instance")) {
+                    if(startsWith.equals("get")) {
+                        sss(methodMap, varName, method, true);
+                    } else {
+                        if(startsWith.equals("set") && method.getParameterCount()==1) {
+                            sss(methodMap, varName, method, false);
+                        }
+                    }
+                }
+            }
         }
-        if(QFDateField.class.isAssignableFrom(fieldClass)) {
-            validationErrorsHandler = ValidationErrorsHandler.Temporals.VALIDATION_HANDLER_WARNING;
+
+        for (Map.Entry<CharSequence, MutablePair<Method, Method>> methods : methodMap.entrySet()) {
+            Method getter = methods.getValue().getLeft();
+            Method setter = methods.getValue().getRight();
+
+            final Object newValue = getter.invoke(from);
+            if(newValue != null) {
+                final Object currentValue = getter.invoke(to);
+                if(currentValue == null) {
+                    setter.invoke(to, newValue);
+                } else {
+                    final Class<?> returnType = getter.getReturnType();
+                    if(QFComponent.class.isAssignableFrom(returnType)) {
+                        merge((QFComponent)newValue, (QFComponent)currentValue);
+                    }
+                }
+            }
         }
-        if(QFTimeField.class.isAssignableFrom(fieldClass)) {
-            validationErrorsHandler = ValidationErrorsHandler.Temporals.VALIDATION_HANDLER_WARNING;
-        }
-        if(QFMonthYearField.class.isAssignableFrom(fieldClass)) {
-            validationErrorsHandler = ValidationErrorsHandler.Temporals.VALIDATION_HANDLER_WARNING;
-        }
-        return validationErrorsHandler ==null? ValidationErrorsHandler.Numbers.VALIDATION_HANDLER_WARNING: validationErrorsHandler;
     }
 
+    private static void sss(@NotNull final Map<CharSequence, MutablePair<Method, Method>> methodMap, @NotNull final String varName, @NotNull final Method method, boolean isGetter) {
+        MutablePair<Method, Method> getterSetterPair = methodMap.get(varName);
+        if(getterSetterPair == null) {
+            getterSetterPair = new MutablePair<>();
+            methodMap.put(varName, getterSetterPair);
+        }
+        if(isGetter) {
+            getterSetterPair.setLeft(method);
+        } else {
+            getterSetterPair.setRight(method);
+        }
+    }
 
     public static QFComponentValidator getComponentValidator(Class<? extends QFComponent> componentClass) {
         QFComponentValidator validationErrorsHandler = COMPONENT_VALIDATORS.get(componentClass);
         return validationErrorsHandler ==null? QFComponentValidator.getDefaultComponentValidator(): validationErrorsHandler;
     }
 
-    // final Integer integer = QFFieldUtils.<Integer>handleError(AllocTransType.class, "abcd", new NumberFormatException("Bad abcd"));
-    public static <V> V handleError(Class<? extends QFField<?>> fieldClass, Object problematicValue, Throwable t) {
-        return null;
-    }
-
-    public static <V> ValidationErrorsHandler<V> getMessageValidationErrorsHandler(Class<? extends QFComponent> fieldClass) {
-        final ValidationErrorsHandler<V> validationErrorsHandler = MESSAGE_VALIDATORS.get(fieldClass);
-        return validationErrorsHandler ==null? ValidationErrorsHandler.Numbers.VALIDATION_HANDLER_WARNING: validationErrorsHandler;
-    }
-
+//    public static void setDefaultMessageHeaderTariler(QFMessage message, QFComponentValidator componentValidator) {
+//        StandardHeader standardHeader = StandardHeader.getInstance();
+//        standardHeader.setBeginString(BeginString.getInstance("", componentValidator));
+//        standardHeader.setMsgType(MsgType.getInstance("BL", componentValidator));
+//        message.setStandardHeader(standardHeader);
+//
+//        StandardTrailer standardTrailer = StandardTrailer.getInstance();
+//        message.setStandardTrailer(standardTrailer);
+//    }
 
 
     public static class ChildGetterSetter<T> {

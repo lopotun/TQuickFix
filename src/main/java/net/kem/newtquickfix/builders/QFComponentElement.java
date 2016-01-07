@@ -207,11 +207,11 @@ public class QFComponentElement extends QFElement {
                 .append(ident).append("\t\treturn new ").append(name).append("();\n")
                 .append(ident).append("\t}\n\n");
 
-        // public static ComponentMain getInstance(Stack<QFField> tags, QFComponentValidator componentValidator) {
-        //  return tags==null? new ComponentMain(): getInstance(tags, null, ComponentMain.class, QFComponentValidator componentValidator);
+        // public static ComponentMain getInstance(CharSequence fixVersion, Stack<QFField> tags, QFComponentValidator componentValidator) {
+        //  return tags==null? new ComponentMain(): getInstance(fixVersion, tags, null, ComponentMain.class, QFComponentValidator componentValidator);
         // }
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags, QFComponentValidator componentValidator").append(") {\n")
-                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): getInstance(tags, null, ").append(name).append(".class, componentValidator);\n")
+        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(CharSequence fixVersion, Stack<QFField> tags, QFComponentValidator componentValidator").append(") {\n")
+                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): getInstance(fixVersion, tags, null, ").append(name).append(".class, componentValidator);\n")
                 .append(ident).append("\t}\n\n");
     }
 

@@ -1,6 +1,10 @@
 package net.kem.newtquickfix.builders;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMember;
+import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
 
 import java.math.BigDecimal;
@@ -9,6 +13,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Currency;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,14 +23,34 @@ import java.util.Map;
  */
 public class BuilderUtils {
     public static final CharSequence PACKAGE_NAME = "net.kem.newtquickfix.";
-    public static final CharSequence PACKAGE_NAME_BLOCKS = PACKAGE_NAME + "blocks.";
+    public static CharSequence PACKAGE_NAME_BLOCKS;
 
-    public static CharSequence FIX_VERSION = "";
-    public static CharSequence PACKAGE_NAME_COMPONENTS = PACKAGE_NAME + "components";
-    public static CharSequence PACKAGE_NAME_FIELDS = PACKAGE_NAME + "fields";
-    public static CharSequence PACKAGE_NAME_MESSAGES = PACKAGE_NAME + "messages";
+    public static CharSequence FIX_VERSION;
+    public static String PACKAGE_NAME_COMPONENTS;
+    public static String PACKAGE_NAME_FIELDS;
+    public static String PACKAGE_NAME_MESSAGES;
 
     public static final Map<CharSequence, CharSequence> COMPONENTS_FIRST_FIELD = new HashMap<>(64);
+
+    public static final BiMap<CharSequence, CharSequence> FIX_VERSIONS = ImmutableBiMap.<CharSequence, CharSequence>builder()
+            .put("v50sp2", "FIX50SP2")
+            .put("v50", "FIX.5.0")
+            .put("v44", "FIX.4.4")
+            .put("v40", "FIX.4.0")
+            .put("v50sp1", "FIX50SP1")
+            .put("vfixt11", "FIXT.1.1").build();
+
+
+
+    public static void updatePackagePath(CharSequence fixVersion) {
+        FIX_VERSION = fixVersion.toString();
+        CharSequence base = PACKAGE_NAME.toString() + FIX_VERSION + ".";
+        PACKAGE_NAME_BLOCKS = PACKAGE_NAME.toString() + "blocks.";
+        PACKAGE_NAME_COMPONENTS = base + "components";
+        PACKAGE_NAME_FIELDS = base + "fields";
+        PACKAGE_NAME_MESSAGES = base + "messages";
+    }
+    public static final ThreadLocal<List<Pair<QFField<?>, Class<?>>>> UNCLAIMED_TAGS = ThreadLocal.withInitial(LinkedList::new);
 
     public static class QFFieldBlockDef {
         protected final Class thisClass;
@@ -186,7 +212,8 @@ public class BuilderUtils {
                 return new QFComponentBrick(startElement, sb, ident);
             case TRAILER:
                 return new QFComponentBrick(startElement, sb, ident);
-            default: return null;
+            default:
+                return null;
         }
     }
 
