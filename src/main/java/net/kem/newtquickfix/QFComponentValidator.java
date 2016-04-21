@@ -5,11 +5,14 @@ import com.sun.istack.internal.Nullable;
 import net.kem.newtquickfix.blocks.QFComponent;
 import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMessage;
+import net.kem.newtquickfix.builders.BuilderUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
 
@@ -18,6 +21,9 @@ import java.util.List;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public abstract class QFComponentValidator {
+
+    public enum NotificationSeverity {TRACE, DEBUG, INFO, WARNING, ERROR, FATAL}
+
     /**
      * This method is called by a LiteFix Component validation mechanism to allow custom validation for this Component.
      * Validates the supplied LiteFix Component: {@link QFMessage} and {@link QFComponent}.
@@ -35,37 +41,45 @@ public abstract class QFComponentValidator {
     }
 
     /**
-     * Mandatory field is missing in this Component.
+     * This method is called by a LiteFix Component validation mechanism when it detects missing mandatory field in this Component.
+     * This implementation returns <em>false</em> meaning that this missing mandatory field should cause validation error.
      *
-     * @param thisComponent     .
-     * @param missingElement    .
+     * @param thisComponent     LiteFix Component being validated.
+     * @param missingElement    missing mandatory field.
+     * @return <em>true</em> if this component should be considered as valid although missing mandatory field;
+     * <em>false</em> if this missing mandatory field should cause validation error.
      */
-    public void mandatoryElementMissing(QFComponent thisComponent, Class<?> missingElement) {
+    @NotNull
+    public Boolean mandatoryElementMissing(QFComponent thisComponent, Class<?> missingElement) {
+        return false;
     }
 
     /**
-     * This method is called while FIX data parsing when tag 'qfField' has been already present previously by the 'currentValue' in component 'component'
+     * This method is called while FIX data parsing when tag 'qfField' has been already present previously by the 'currentValue' in component 'component'.
+     * In most cases this situation indicated about structure error in incoming FIX message.
      *
      * @param qfField      duplicated tag.
      * @param currentValue current tag.
-     * @param component    component that contains the tag
+     * @param component    component that contains the tag.
      */
     public void duplicatedTag(QFField qfField, QFField currentValue, QFComponent component) {
     }
 
+    /**
+     * Currently not in use.
+     * @param childrenComponentInstance .
+     * @param thisInstance              .
+     */
     public void duplicatedComponent(QFComponent childrenComponentInstance, QFComponent thisInstance) {
     }
 
-    public void invalidGroupCount(QFField qfField, List<? extends QFComponent> groupInstances, Class<? extends QFComponent> ownerClass) {
-    }
-
     /**
-     * This method is called while FIX data parsing when tag 'unknownTag' is recognized neither by 'message' not by any of its components.
-     *
-     * @param unknownTag unknown tag.
-     * @param message    message being parsed.
+     * This method is called while FIX data parsing when the actual number of group elements does not fix the declared number of group elements.
+     * @param numOfElementsField    contains declared number of group elements.
+     * @param groupInstances        list of actually parsed group elements.
+     * @param ownerClass            group class.
      */
-    public void unknownTag(QFField unknownTag, QFMessage message) {
+    public void invalidGroupCount(QFField numOfElementsField, List<? extends QFComponent> groupInstances, Class<? extends QFComponent> ownerClass) {
     }
 
     /**
@@ -85,6 +99,31 @@ public abstract class QFComponentValidator {
 
     public <V> V notPredefinedFieldValue(@NotNull Class<?> fieldClass, @NotNull Class<V> typeClass, @NotNull V problematicValue) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("Value " + problematicValue + " is not pre-defined in field " + fieldClass.getSimpleName());
+    }
+
+    /**
+     * This method is called while FIX data parsing when tag 'unprocessedTag' is recognized neither by 'message' (misplaced tag) not by any of its components (unknown tag).
+     * @param unprocessedTag unprocessed tag.
+     * @see #getUnprocessedTags()
+     */
+    public void unprocessedTag(@NotNull QFField unprocessedTag, @NotNull Class<? extends QFComponent> ownerClass) {
+    }
+
+    /**
+     * Retrieves    list of unprocessed tags.
+     * @return      list of unprocessed tags. If there is no unprocessed tags, then an empty list is returned.
+     * @see #getUnprocessedTags()
+     */
+    public List<QFField<String>> getUnprocessedTags() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * Collects auxiliary notifications that LiteFix parser/validator may produce.
+     * @param notification    notification message.
+     * @param severity        message severity level.
+     */
+    public void notify(@NotNull CharSequence notification, @NotNull NotificationSeverity severity) {
     }
 
     protected <V> V getDefaultValue(Class<V> typeClass) {
@@ -143,8 +182,9 @@ public abstract class QFComponentValidator {
 
     private static QFComponentValidator DEFAULT_COMPONENT_VALIDATOR = new QFComponentValidator() {
         @Override
-        public void mandatoryElementMissing(@SuppressWarnings("unused") QFComponent thisComponent, @SuppressWarnings("unused") Class<?> missingElement) {
+        public Boolean mandatoryElementMissing(@SuppressWarnings("unused") QFComponent thisComponent, @SuppressWarnings("unused") Class<?> missingElement) {
             System.err.println("Mandatory tag " + missingElement.getSimpleName() + " is missing in its parent component " + thisComponent.getName());
+            return false;
         }
 
         @Override
@@ -158,20 +198,8 @@ public abstract class QFComponentValidator {
         }
 
         @Override
-        public void invalidGroupCount(QFField qfField, List<? extends QFComponent> groupInstances, Class<? extends QFComponent> ownerClass) {
-            System.out.println("Declared number [" + qfField.getValue() + "] of group elements does not fit the real number [" + groupInstances.size() + "] in component \"" + ownerClass.getSimpleName() + "\". Please, check the incoming FIX message for data integrity.");
-        }
-
-        /**
-         * This implementation adds the unknown tag to list of unknown tags.
-         * @param unknownTag    unknown tag.
-         * @param message       message being parsed.
-         * @see QFMessage#addUnknownTag(QFField)
-         */
-        @Override
-        public void unknownTag(QFField unknownTag, QFMessage message) {
-            // add this tag to list of unknown tags (this list will be used when the message will be "serialized" to a String)
-            message.addUnknownTag(unknownTag);
+        public void invalidGroupCount(QFField numOfElementsField, List<? extends QFComponent> groupInstances, Class<? extends QFComponent> ownerClass) {
+            System.out.println(numOfElementsField.getName() + " declares " + numOfElementsField.getValue() + " group elements. However, actual number of group elements does not fit this number in component \"" + ownerClass.getSimpleName() + "\". Please, check the incoming FIX message for data integrity.");
         }
 
         @Override
@@ -189,6 +217,35 @@ public abstract class QFComponentValidator {
         public <V> V notPredefinedFieldValue(@NotNull Class<?> fieldClass, @NotNull Class<V> typeClass, @NotNull V problematicValue) throws UnsupportedOperationException {
             System.err.println("Value " + problematicValue + " is not pre-defined in field " + fieldClass.getSimpleName());
             return problematicValue;
+        }
+
+        /**
+         * This implementation adds the unprocessed tag to list of unprocessed tags.
+         * @param unprocessedTag    unknown tag.
+         * @see BuilderUtils#UNCLAIMED_TAGS
+         */
+        @Override
+        public void unprocessedTag(@NotNull QFField unprocessedTag, @NotNull Class<? extends QFComponent> ownerClass) {
+            // add this tag to list of unknown tags (this list will be used when the message will be "serialized" to a String)
+            BuilderUtils.UNCLAIMED_TAGS.get().add(unprocessedTag);
+            if(unprocessedTag.isKnown()) {
+                System.out.println("Tag \"" + unprocessedTag + "\" should not appear in message \"" + ownerClass.getSimpleName() + "\"");
+            } else {
+                System.out.println("Undefined tag \"" + unprocessedTag + "\" has been detected while processing component \"" + ownerClass.getSimpleName() + "\"");
+            }
+        }
+
+        @Override
+        public List<QFField<String>> getUnprocessedTags() {
+            return BuilderUtils.UNCLAIMED_TAGS.get();
+        }
+
+
+        @Override
+        public void notify(@NotNull CharSequence notification, @NotNull NotificationSeverity severity) {
+            // add this tag to list of unknown tags (this list will be used when the message will be "serialized" to a String)
+            BuilderUtils.NOTIFICATIONS.get().add(new ImmutablePair<>(notification, severity));
+            System.out.println(severity + ":\t" + notification);
         }
     };
 

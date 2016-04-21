@@ -148,8 +148,7 @@ public class QFComponentElement extends QFElement {
                 case FIELD: { // AllocReportID.getValidationErrorsHandler().invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null);
                     if (member.isRequired()) {
                         sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n")
-                                .append(ident).append("\t\t\tvalid = false;\n")
-                                .append(ident).append("\t\t\tcomponentValidator.mandatoryElementMissing(this, ").append(member.name).append(".class);\n")
+                                .append(ident).append("\t\t\tvalid = componentValidator.mandatoryElementMissing(this, ").append(member.name).append(".class);\n")
                                 .append(ident).append("\t\t}\n");
                     }
                 }
@@ -160,8 +159,7 @@ public class QFComponentElement extends QFElement {
                 case TRAILER: { // componentValidator.mandatoryElementMissing(this, NoMDEntries.class);
                     if (member.isRequired()) {
                         sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n")
-                                .append(ident).append("\t\t\tvalid = false;\n")
-                                .append(ident).append("\t\t\tcomponentValidator.mandatoryElementMissing(this, ").append(member.name).append(".class);\n")
+                                .append(ident).append("\t\t\tvalid = componentValidator.mandatoryElementMissing(this, ").append(member.name).append(".class);\n")
                                 .append(ident).append("\t\t}\n");
                     } else {
                         // if(standardTrailer != null) {

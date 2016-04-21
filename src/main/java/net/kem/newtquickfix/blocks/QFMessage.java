@@ -2,7 +2,6 @@ package net.kem.newtquickfix.blocks;
 
 import net.kem.newtquickfix.QFComponentValidator;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Stack;
 
@@ -35,18 +34,12 @@ public abstract class QFMessage extends QFComponent {
                 // Remove this tag from the stack,
                 final QFField qfField = tags.pop();
                 // [most probably] add it to list of unknown tags (this list will be used when the message will be "serialized" to a String)
-                componentValidator.unknownTag(qfField, thisInstance);
+                componentValidator.unprocessedTag(qfField, compClass);
                 // and proceed to next field.
             }
         }
+        thisInstance.unknownTags = componentValidator.getUnprocessedTags();
         return thisInstance;
-    }
-
-    public void addUnknownTag(QFField<String> unknownTag) {
-        if(unknownTags == null) {
-            unknownTags = new LinkedList<>();
-        }
-        unknownTags.add(unknownTag);
     }
 
     public void toFIXString(StringBuilder sb) {

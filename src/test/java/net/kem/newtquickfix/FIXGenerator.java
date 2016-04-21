@@ -46,6 +46,11 @@ public class FIXGenerator {
         return res;
     }
 
+    public FIXGenerator init() {
+        BuilderUtils.COMPONENTS_FIRST_FIELD.clear();
+        return this;
+    }
+
     protected FIXGenerator fields() throws XPathExpressionException, ClassNotFoundException, NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException, IOException {
         XPathExpression expr;
         expr = xpath.compile("/fix/fields/field");// //person/*//*text()
@@ -72,6 +77,25 @@ public class FIXGenerator {
         XPathExpression expr;
         NodeList nodes;
 
+//        /*
+//        <group name="NoUnderlyings">
+//            <component name="UnderlyingInstrument" required="N">
+//                <XXX name="UnderlyingSymbol" required="N"/>
+//         */
+//        expr = xpath.compile("/fix/messages/message/group/component");
+//        nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
+//        for (int j = 0; j < nodes.getLength(); j++) {
+//            Node node = nodes.item(j);
+//            if (node instanceof Element) {
+//                Element child = (Element) node;
+//                if(child.getTagName().equals("field")) {
+//                    Element parentNode = (Element)child.getParentNode().getParentNode();
+//                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentNode.getAttribute("name"), child.getAttribute("name"));
+//                }
+//
+//            }
+//        }
+//
         /*
         <component name="PegInstructions">
             <XXX name="PegOffsetValue" required="N"/>
@@ -83,29 +107,56 @@ public class FIXGenerator {
             Node node = nodes.item(j);
             if (node instanceof Element) {
                 Element child = (Element) node;
-                if(child.getTagName().equals("field")) {
-                    Element parentNode = (Element)child.getParentNode();
-                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentNode.getAttribute("name"), child.getAttribute("name"));
+                final CharSequence parentName = ((Element)child.getParentNode()).getAttribute("name");
+                CharSequence childName = child.getAttribute("name");
+                switch(child.getTagName()) {
+                    case "field":
+                        break;
+                    case "group": {
+                        CharSequence storedChildName = BuilderUtils.COMPONENTS_FIRST_FIELD.get(childName);
+                        if(storedChildName != null) {
+                            childName = storedChildName;
+                        }
+                        break;
+                    }
+                }
+                if(childName != null) {
+                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentName, childName);
+                } else {
+                    System.out.println("No " + child.getAttribute("name") + " for " + parentName);
                 }
             }
         }
 
         /*
-        <component name="RgstDistInstGrp">
-            <group name="NoDistribInsts" required="N">
+        <group name="RgstDistInstGrp">
+            <component name="NoDistribInsts" required="N">
                 <XXX name="DistribPaymentMethod" required="N"/>
          */
-        expr = xpath.compile("//component/group/*[1]");
+        expr = xpath.compile("//group/*[1]");
         nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
         for (int j = 0; j < nodes.getLength(); j++) {
             Node node = nodes.item(j);
             if (node instanceof Element) {
                 Element child = (Element) node;
-                if(child.getTagName().equals("field")) {
-                    Element parentNode = (Element)child.getParentNode().getParentNode();
-                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentNode.getAttribute("name"), child.getAttribute("name"));
+                final CharSequence parentName = ((Element)child.getParentNode()).getAttribute("name");
+                CharSequence childName = child.getAttribute("name");
+                switch(child.getTagName()) {
+                    case "field":
+                        break;
+                    case "component": {
+                        CharSequence storedChildName = BuilderUtils.COMPONENTS_FIRST_FIELD.get(childName);
+                        if(storedChildName != null) {
+                            childName = storedChildName;
+                        }
+                        break;
+                    }
                 }
-
+                if(childName != null) {
+                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentName, childName);
+                } else {
+                    System.out.println("No " + child.getAttribute("name") + " for " + parentName);
+                }
             }
         }
 
@@ -184,22 +235,27 @@ public class FIXGenerator {
 
     public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, NoSuchMethodException, InstantiationException, XPathExpressionException, IllegalAccessException, InvocationTargetException, ClassNotFoundException {
         FIXGenerator.of("./TQuickFix/src/main/resources/xml/FIX40.xml")
+                .init()
                 .fields()
                 .components()
                 .messages();
         FIXGenerator.of("./TQuickFix/src/main/resources/xml/FIX44.xml")
+                .init()
                 .fields()
                 .components()
                 .messages();
         FIXGenerator.of("./TQuickFix/src/main/resources/xml/FIX50.xml")
+                .init()
                 .fields()
                 .components()
                 .messages();
         FIXGenerator.of("./TQuickFix/src/main/resources/xml/FIX50SP1.xml")
+                .init()
                 .fields()
                 .components()
                 .messages();
         FIXGenerator.of("./TQuickFix/src/main/resources/xml/FIX50SP2.xml")
+                .init()
                 .fields()
                 .components()
                 .messages();
