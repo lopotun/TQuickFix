@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -33,7 +35,7 @@ import java.util.stream.Collectors;
  */
 public class QFUtils {
     private static final Map<Class<? extends QFComponent>, QFComponentValidator> COMPONENT_VALIDATORS = new HashMap<>();
-    static ClassPath classPath;
+    private static ClassPath classPath;
 
 //    static final Map<Integer, Method> MAP = new HashMap<>();
     private static final Table<CharSequence, Integer, Method> MAP1 = HashBasedTable.create(5, 200);
@@ -188,7 +190,9 @@ public class QFUtils {
 
     static void merge(QFComponent from, QFComponent to) throws InvocationTargetException, IllegalAccessException {
         Map<CharSequence, MutablePair<Method, Method>> methodMap = new HashMap<>();
-        final Method[] methodsFrom = from.getClass().getMethods();
+        List<Method> methodsFrom = new ArrayList<>(Arrays.asList(from.getClass().getMethods()));
+        List<Method> superClassMethodsFrom = new ArrayList<>(Arrays.asList(from.getClass().getSuperclass().getMethods()));
+        methodsFrom.removeAll(superClassMethodsFrom);
         for (Method method : methodsFrom) {
             final String methodName = method.getName();
             if(methodName.length() > 3) {
@@ -196,10 +200,10 @@ public class QFUtils {
                 final String varName = methodName.substring(3);
                 if(!varName.equals("Instance")) {
                     if(startsWith.equals("get")) {
-                        sss(methodMap, varName, method, true);
+                        fillMethodsMap(methodMap, varName, method, true);
                     } else {
                         if(startsWith.equals("set") && method.getParameterCount()==1) {
-                            sss(methodMap, varName, method, false);
+                            fillMethodsMap(methodMap, varName, method, false);
                         }
                     }
                 }
@@ -225,7 +229,7 @@ public class QFUtils {
         }
     }
 
-    private static void sss(@NotNull final Map<CharSequence, MutablePair<Method, Method>> methodMap, @NotNull final String varName, @NotNull final Method method, boolean isGetter) {
+    private static void fillMethodsMap(@NotNull final Map<CharSequence, MutablePair<Method, Method>> methodMap, @NotNull final String varName, @NotNull final Method method, boolean isGetter) {
         MutablePair<Method, Method> getterSetterPair = methodMap.get(varName);
         if(getterSetterPair == null) {
             getterSetterPair = new MutablePair<>();

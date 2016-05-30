@@ -45,43 +45,6 @@ public class GenerateComponents {
         XPathExpression expr;
         NodeList nodes;
 
-        /*
-        <component name="PegInstructions">
-            <XXX name="PegOffsetValue" required="N"/>
-            |
-         */
-        expr = xpath.compile("//component/*[1]");
-        nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
-        for (int j = 0; j < nodes.getLength(); j++) {
-            Node node = nodes.item(j);
-            if (node instanceof Element) {
-                Element child = (Element) node;
-                if(child.getTagName().equals("field")) {
-                    Element parentNode = (Element)child.getParentNode();
-                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentNode.getAttribute("name"), child.getAttribute("name"));
-                }
-            }
-        }
-
-        /*
-        <component name="RgstDistInstGrp">
-            <group name="NoDistribInsts" required="N">
-                <XXX name="DistribPaymentMethod" required="N"/>
-         */
-        expr = xpath.compile("//component/group/*[1]");
-        nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
-        for (int j = 0; j < nodes.getLength(); j++) {
-            Node node = nodes.item(j);
-            if (node instanceof Element) {
-                Element child = (Element) node;
-                if(child.getTagName().equals("field")) {
-                    Element parentNode = (Element)child.getParentNode().getParentNode();
-                    BuilderUtils.COMPONENTS_FIRST_FIELD.put(parentNode.getAttribute("name"), child.getAttribute("name"));
-                }
-
-            }
-        }
-
         File dir = new File("./TQuickFix/src/main/java/" + BuilderUtils.PACKAGE_NAME_COMPONENTS.replace('.', '/'));// net.kem.newtquickfix.5_0_sp2.components
         dir.mkdirs();
         File componentInterfacesDir = new File("./TQuickFix/src/main/java/" + BuilderUtils.PACKAGE_NAME_MESSAGES.replace('.', '/'));// net.kem.newtquickfix.5_0_sp2.messages
