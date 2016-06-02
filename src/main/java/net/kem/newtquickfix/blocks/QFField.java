@@ -1,5 +1,8 @@
 package net.kem.newtquickfix.blocks;
 
+import net.kem.newtquickfix.LiteFixMessageParser;
+import net.kem.newtquickfix.QFComponentValidator;
+
 import java.io.Serializable;
 
 /**
@@ -20,6 +23,7 @@ import java.io.Serializable;
 public abstract class QFField<V> implements Serializable {
 	private transient int $hashCode;
 	protected transient String $fixString;
+	protected QFComponentValidator componentValidator;
 
 	protected V value;
 
@@ -35,6 +39,16 @@ public abstract class QFField<V> implements Serializable {
 
 	public boolean isKnown() {
 		return true;
+	}
+
+	public QFComponentValidator getComponentValidator() {
+		if(componentValidator == null) {
+			setComponentValidator(LiteFixMessageParser.getInstance().getComponentValidator());
+		}
+		return componentValidator;
+	}
+	public void setComponentValidator(QFComponentValidator newComponentValidator) {
+		componentValidator = newComponentValidator;
 	}
 
 	public void toFIXString(StringBuilder sb) {

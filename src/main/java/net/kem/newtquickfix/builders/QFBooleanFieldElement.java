@@ -24,7 +24,7 @@ public class QFBooleanFieldElement extends QFFieldElement {
     protected void generateMethodGetInstanceString() {
         /*
         public static AggregatedBook getInstance(String value) {
-		    return getInstance(value, QFComponentValidator.getDefaultComponentValidator()););
+		    return getInstance(value, LiteFixMessageParser.getInstance().getComponentValidator()););
         }
 
         public static AggregatedBook getInstance(String value, QFComponentValidator componentValidator) {
@@ -38,7 +38,7 @@ public class QFBooleanFieldElement extends QFFieldElement {
         */
         if (def.typeToStringConversion != null) {
             sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
-                    .append("\t\treturn getInstance(value, QFComponentValidator.getDefaultComponentValidator());\n")
+                    .append("\t\treturn getInstance(value, LiteFixMessageParser.getInstance().getComponentValidator());\n")
                     .append("\t}\n\n");
 
             sb.append("\tpublic static ").append(name).append(" getInstance(String value, QFComponentValidator componentValidator) {\n")

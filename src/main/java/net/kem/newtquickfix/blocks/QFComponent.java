@@ -1,6 +1,7 @@
 package net.kem.newtquickfix.blocks;
 
 import com.sun.istack.internal.Nullable;
+import net.kem.newtquickfix.LiteFixMessageParser;
 import net.kem.newtquickfix.QFComponentValidator;
 
 import java.lang.reflect.Constructor;
@@ -47,9 +48,7 @@ import java.util.Stack;
 public abstract class QFComponent {
 
     protected QFComponent parent;
-    public QFComponent getParent() {
-        return parent;
-    }
+    protected QFComponentValidator componentValidator;
 
     public String getName() {
         return getClass().getSimpleName();
@@ -238,6 +237,19 @@ public abstract class QFComponent {
             }
         }
         return instance;
+    }
+
+    public QFComponentValidator getComponentValidator() {
+	    if(componentValidator == null) {
+		    setComponentValidator(null);
+	    }
+        return componentValidator;
+    }
+    public void setComponentValidator(QFComponentValidator newComponentValidator) {
+	    if(newComponentValidator == null) {
+		    newComponentValidator = LiteFixMessageParser.getInstance().getComponentValidator();
+	    }
+        componentValidator = newComponentValidator;
     }
 
     public abstract boolean validate();

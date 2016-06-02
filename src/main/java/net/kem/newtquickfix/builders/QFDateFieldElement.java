@@ -31,7 +31,7 @@ public class QFDateFieldElement extends QFFieldElement {
     protected void generateMethodGetInstanceString() {
         if (def.typeToStringConversion != null) {
             sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
-                    .append("\t\treturn getInstance(value, QFComponentValidator.getDefaultComponentValidator());\n")
+                    .append("\t\treturn getInstance(value, LiteFixMessageParser.getInstance().getComponentValidator());\n")
                     .append("\t}\n\n");
 
             sb.append("\tpublic static ").append(name).append(" getInstance(String value, QFComponentValidator componentValidator) {\n")

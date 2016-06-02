@@ -57,6 +57,7 @@ public abstract class QFElement {
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFField;\n")
                 .append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFUtils;\n")
                 .append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMember;\n")
+                .append("import ").append(BuilderUtils.PACKAGE_NAME).append("LiteFixMessageParser;\n")
                 .append("import ").append(BuilderUtils.PACKAGE_NAME).append("QFComponentValidator;\n")
                 .append("import java.util.Stack;\n\n");
     }

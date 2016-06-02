@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.reflect.ClassPath;
 import com.sun.istack.internal.NotNull;
+import net.kem.newtquickfix.LiteFixMessageParser;
 import net.kem.newtquickfix.QFComponentValidator;
 import net.kem.newtquickfix.builders.BuilderUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -76,14 +77,14 @@ public class QFUtils {
         init();
 
         for(Map.Entry<CharSequence, CharSequence> version : BuilderUtils.FIX_VERSIONS.entrySet()) {
-            BuilderUtils.updatePackagePath(version.getKey());
+            BuilderUtils.updatePackagePath(version.getValue());
 
             ImmutableSet<ClassPath.ClassInfo> fieldClasses = classPath.getTopLevelClasses(String.valueOf(BuilderUtils.PACKAGE_NAME_FIELDS));
             for (ClassPath.ClassInfo fieldClass : fieldClasses) {
                 Class<?> qfFieldClass = fieldClass.load();
                 int tagValue = qfFieldClass.getField("TAG").getInt(null);
                 Method instantiatorByString = qfFieldClass.getDeclaredMethod("getInstance", String.class, QFComponentValidator.class);
-                MAP1.put(version.getValue(), tagValue, instantiatorByString);
+                MAP1.put(version.getKey(), tagValue, instantiatorByString);
             }
 
             Set<ClassPath.ClassInfo> componentsClasses = QFUtils.classPath.getAllClasses().parallelStream().filter(classInfo -> classInfo.getPackageName().equals(BuilderUtils.PACKAGE_NAME_COMPONENTS)).collect(Collectors.toSet());
@@ -91,7 +92,7 @@ public class QFUtils {
             final Sets.SetView<ClassPath.ClassInfo> annotatedClasses = Sets.union(componentsClasses, messagesClasses);
             for (ClassPath.ClassInfo annotatedClass : annotatedClasses) {
                 Class<? extends QFComponent> newQFComponentClass = (Class<? extends QFComponent>) annotatedClass.load();
-                mapFieldOwners(version.getValue(), newQFComponentClass);
+                mapFieldOwners(version.getKey(), newQFComponentClass);
             }
 
             // Create Message type mapping.
@@ -100,7 +101,7 @@ public class QFUtils {
                 if(!load.isInterface() && QFMessage.class.isAssignableFrom(load)) {
                     final Method getMsgType = load.getDeclaredMethod("getMsgType");
                     final QFField<String> msgType = (QFField<String>)getMsgType.invoke(null);
-                    MESSAGE_TYPES.put(version.getValue(), msgType, load);
+                    MESSAGE_TYPES.put(version.getKey(), msgType, load);
                 }
             }
         }
@@ -244,19 +245,8 @@ public class QFUtils {
 
     public static QFComponentValidator getComponentValidator(Class<? extends QFComponent> componentClass) {
         QFComponentValidator validationErrorsHandler = COMPONENT_VALIDATORS.get(componentClass);
-        return validationErrorsHandler ==null? QFComponentValidator.getDefaultComponentValidator(): validationErrorsHandler;
+        return validationErrorsHandler ==null? LiteFixMessageParser.getInstance().getComponentValidator(): validationErrorsHandler;
     }
-
-//    public static void setDefaultMessageHeaderTariler(QFMessage message, QFComponentValidator componentValidator) {
-//        StandardHeader standardHeader = StandardHeader.getInstance();
-//        standardHeader.setBeginString(BeginString.getInstance("", componentValidator));
-//        standardHeader.setMsgType(MsgType.getInstance("BL", componentValidator));
-//        message.setStandardHeader(standardHeader);
-//
-//        StandardTrailer standardTrailer = StandardTrailer.getInstance();
-//        message.setStandardTrailer(standardTrailer);
-//    }
-
 
     public static class ChildGetterSetter<T> {
         enum ElementType {FIELD, COMPONENT, GROUP}

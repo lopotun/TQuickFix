@@ -119,25 +119,22 @@ public class QFMessageElement extends QFComponentElement {
     protected void getConstructor() {
         /*
         private AllocationReportAck() {
-		    this(QFComponentValidator.getDefaultComponentValidator());
+		    this(null);
         }
 
         private AllocationReportAck(QFComponentValidator componentValidator) {
-            standardHeader = StandardHeader.getInstance();
-            standardHeader.setBeginString(BeginString.getInstance("", componentValidator));
-            standardHeader.setMsgType(MsgType.getInstance("AT", componentValidator));
-
-            standardTrailer = StandardTrailer.getInstance();
+            setComponentValidator(componentValidator);
         }
          */
         sb.append(ident).append("\tprivate ").append(name).append("() {\n")
-                .append("\t\tthis(QFComponentValidator.getDefaultComponentValidator());\n")
+                .append("\t\tthis(null);\n")
                 .append("\t}\n");
         sb.append(ident).append("\tprivate ").append(name).append("(QFComponentValidator componentValidator) {\n")
 //                .append("\t\tstandardHeader = StandardHeader.getInstance();\n")
 //                .append("\t\tstandardHeader.setBeginString(BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSION).append("\", componentValidator));\n")
 //                .append("\t\tstandardHeader.setMsgType(MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\", componentValidator));\n\n")
 //                .append("\t\tstandardTrailer = StandardTrailer.getInstance();\n")
+                .append("\t\tsetComponentValidator(componentValidator);\n")
                 .append("\t}\n\n");
     }
 

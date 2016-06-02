@@ -107,19 +107,9 @@ public class QFComponentElement extends QFElement {
 
     protected void getCustomMethods() {
         // //	---- Component-specific methods BEGIN
-        // private static final QFComponentValidator componentValidator = QFUtils.getComponentValidator(AllocationReportAck.class);
-        sb.append(ident).append("\t//\t---- Component-specific methods BEGIN\n");
-        sb.append(ident).append("\tprivate static QFComponentValidator componentValidator = QFUtils.getComponentValidator(").append(name).append(".class);\n");
-        sb.append(ident).append("\tpublic static QFComponentValidator getComponentValidator() {\n")
-                .append(ident).append("\t\treturn componentValidator;\n")
-                .append(ident).append("\t}\n");
-        sb.append(ident).append("\tpublic static void setComponentValidator(QFComponentValidator newComponentValidator) {\n")
-                .append(ident).append("\t\tcomponentValidator = newComponentValidator;\n")
-                .append(ident).append("\t}\n\n");
-
         // @Override
         // public boolean validate() {
-        //    return validate(componentValidator);
+        //    return validate(getComponentValidator());
         // }
         // @Override
         // public boolean validate(QFComponentValidator componentValidator) {
@@ -134,7 +124,7 @@ public class QFComponentElement extends QFElement {
         //    }
         // }
         sb.append(ident).append("\t@Override\n").append(ident).append("\tpublic boolean validate() {\n")
-                .append(ident).append("\t\treturn validate(componentValidator);\n")
+                .append(ident).append("\t\treturn validate(getComponentValidator());\n")
                 .append(ident).append("\t}\n");
 
         sb.append(ident).append("\t@Override\n").append(ident).append("\tpublic boolean validate(QFComponentValidator componentValidator) {\n");

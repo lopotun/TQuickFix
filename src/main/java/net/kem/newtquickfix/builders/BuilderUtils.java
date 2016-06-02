@@ -33,13 +33,39 @@ public class BuilderUtils {
 
     public static final Map<CharSequence, CharSequence> COMPONENTS_FIRST_FIELD = new HashMap<>(64);
 
+    public enum FIXVersion {
+        VER50SP2("v50sp2", "FIX50SP2"),
+        VER50("v50", "FIX.5.0"),
+        VER44("v44", "FIX.4.4"),
+        VER40("v40", "FIX.4.0"),
+        VER50SP1("v50sp1", "FIX50SP1"),
+        VERFIXT11("vfixt11", "FIXT.1.1");
+
+        private final CharSequence packageVersion;
+        private final CharSequence fixVersion;
+        FIXVersion(CharSequence packageVersion, CharSequence fixVersion) {
+            this.packageVersion = packageVersion;
+            this.fixVersion = fixVersion;
+        }
+        public CharSequence getPackageVersion() {
+            return packageVersion;
+        }
+
+        public CharSequence getFixVersion() {
+            return fixVersion;
+        }
+    }
+
+    public static FIXVersion forcedFixVersion;
+
     public static final BiMap<CharSequence, CharSequence> FIX_VERSIONS = ImmutableBiMap.<CharSequence, CharSequence>builder()
-            .put("v50sp2", "FIX50SP2")
-            .put("v50", "FIX.5.0")
-            .put("v44", "FIX.4.4")
-            .put("v40", "FIX.4.0")
-            .put("v50sp1", "FIX50SP1")
-            .put("vfixt11", "FIXT.1.1").build();
+            .put(FIXVersion.VER50SP2.fixVersion, FIXVersion.VER50SP2.packageVersion)
+            .put(FIXVersion.VER50.fixVersion, FIXVersion.VER50.packageVersion)
+            .put(FIXVersion.VER44.fixVersion, FIXVersion.VER44.packageVersion)
+            .put(FIXVersion.VER40.fixVersion, FIXVersion.VER40.packageVersion)
+            .put(FIXVersion.VER50SP1.fixVersion, FIXVersion.VER50SP1.packageVersion)
+            .put(FIXVersion.VERFIXT11.fixVersion, FIXVersion.VERFIXT11.packageVersion)
+            .build();
 
 
 
