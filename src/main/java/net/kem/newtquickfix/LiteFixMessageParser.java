@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 public class LiteFixMessageParser {
     private static final Pattern PATTERN = Pattern.compile("(\\d+)=(.*)");
 
-    public LiteFixMessageParser() {
+    private LiteFixMessageParser() {
         try {
             QFUtils.fillMaps();
         } catch (NoSuchFieldException | InvocationTargetException | IOException | IllegalAccessException | NoSuchMethodException e) {
@@ -28,18 +28,26 @@ public class LiteFixMessageParser {
         }
     }
 
-    private ThreadLocal<QFComponentValidator> componentValidator = new ThreadLocal<QFComponentValidator>() {
+    private void init() {
+        try {
+            QFUtils.fillMaps();
+        } catch (NoSuchFieldException | InvocationTargetException | IOException | IllegalAccessException | NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static ThreadLocal<QFComponentValidator> componentValidator = new ThreadLocal<QFComponentValidator>() {
         @Override
         protected QFComponentValidator initialValue() {
             return new DefaultQFComponentValidator();
         }
     };
 
-    public QFComponentValidator getComponentValidator() {
+    public static QFComponentValidator getComponentValidator() {
         return componentValidator.get();
     }
 
-    public void setComponentValidator(QFComponentValidator defaultComponentValidator) {
+    public static void setComponentValidator(QFComponentValidator defaultComponentValidator) {
         componentValidator.set(defaultComponentValidator);
     }
 

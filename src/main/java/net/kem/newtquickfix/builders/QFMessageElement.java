@@ -119,23 +119,19 @@ public class QFMessageElement extends QFComponentElement {
     protected void getConstructor() {
         /*
         private AllocationReportAck() {
-		    this(null);
+//		    this(null);
         }
 
-        private AllocationReportAck(QFComponentValidator componentValidator) {
-            setComponentValidator(componentValidator);
-        }
+//        private AllocationReportAck(QFComponentValidator componentValidator) {
+//            setComponentValidator(componentValidator);
+//        }
          */
         sb.append(ident).append("\tprivate ").append(name).append("() {\n")
-                .append("\t\tthis(null);\n")
+//                .append("\t\tthis(null);\n")
                 .append("\t}\n");
-        sb.append(ident).append("\tprivate ").append(name).append("(QFComponentValidator componentValidator) {\n")
-//                .append("\t\tstandardHeader = StandardHeader.getInstance();\n")
-//                .append("\t\tstandardHeader.setBeginString(BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSION).append("\", componentValidator));\n")
-//                .append("\t\tstandardHeader.setMsgType(MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\", componentValidator));\n\n")
-//                .append("\t\tstandardTrailer = StandardTrailer.getInstance();\n")
-                .append("\t\tsetComponentValidator(componentValidator);\n")
-                .append("\t}\n\n");
+//        sb.append(ident).append("\tprivate ").append(name).append("(QFComponentValidator componentValidator) {\n")
+//                .append("\t\tsetComponentValidator(componentValidator);\n")
+//                .append("\t}\n\n");
     }
 
     protected void getMethodGetInstance() {
@@ -147,20 +143,20 @@ public class QFMessageElement extends QFComponentElement {
                 .append(ident).append("\t}\n\n");
 
         /*
-        public static AllocationReportAck getInstance(QFComponentValidator componentValidator) {
-            return new AllocationReportAck(componentValidator);
-        }
+//        public static AllocationReportAck getInstance(QFComponentValidator componentValidator) {
+//            return new AllocationReportAck(componentValidator);
+//        }
 
         public static AllocationReportAck getInstance(Stack<QFField> tags, QFComponentValidator componentValidator) {
             return tags==null? new AllocationReportAck(componentValidator): getInstance(tags, null, AllocationReportAck.class, componentValidator);
         }
          */
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(QFComponentValidator componentValidator) {\n")
-                .append(ident).append("\t\treturn new ").append(name).append("(componentValidator);\n")
-                .append(ident).append("\t}\n\n");
+//        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(QFComponentValidator componentValidator) {\n")
+//                .append(ident).append("\t\treturn new ").append(name).append("(componentValidator);\n")
+//                .append(ident).append("\t}\n\n");
 
         sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Stack<QFField> tags, QFComponentValidator componentValidator) {\n")
-                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(componentValidator): getInstance(tags, null, ").append(name).append(".class, componentValidator);\n")
+                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): getInstance(tags, null, ").append(name).append(".class, componentValidator);\n")
                 .append(ident).append("\t}\n\n");
     }
 

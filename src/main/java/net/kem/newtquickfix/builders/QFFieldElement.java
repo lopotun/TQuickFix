@@ -165,7 +165,7 @@ public class QFFieldElement extends QFElement {
 
     /*
     public static AccountType getInstance(String value) {
-		return getInstance(value, LiteFixMessageParser.getInstance().getComponentValidator());
+		return getInstance(value, LiteFixMessageParser.getComponentValidator());
 	}
 
 	public static AccountType getInstance(String value, QFComponentValidator componentValidator) {
@@ -180,7 +180,7 @@ public class QFFieldElement extends QFElement {
     protected void generateMethodGetInstanceString() {
         if (def.typeToStringConversion != null) {
             sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
-                    .append("\t\treturn getInstance(value, LiteFixMessageParser.getInstance().getComponentValidator());\n")
+                    .append("\t\treturn getInstance(value, LiteFixMessageParser.getComponentValidator());\n")
                     .append("\t}\n\n");
 
             CharSequence typeClassName = def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName();
@@ -212,7 +212,7 @@ public class QFFieldElement extends QFElement {
 
 
     public static AccountType getInstance(Integer value) {
-		return getInstance(value, LiteFixMessageParser.getInstance().getComponentValidator());
+		return getInstance(value, LiteFixMessageParser.getComponentValidator());
 	}
 
 	public static AccountType getInstance(Integer value, QFComponentValidator componentValidator) {
@@ -226,7 +226,7 @@ public class QFFieldElement extends QFElement {
     */
     protected void generateMethodGetInstanceType() {
         sb.append("\tpublic static ").append(name).append(" getInstance(").append(typeClassName).append(" value) {\n")
-                .append("\t\treturn getInstance(value, LiteFixMessageParser.getInstance().getComponentValidator());\n")
+                .append("\t\treturn getInstance(value, LiteFixMessageParser.getComponentValidator());\n")
                 .append("\t}\n\n");
 
         sb.append("\tpublic static ").append(name).append(" getInstance(").append(typeClassName).append(" value, QFComponentValidator componentValidator) {\n");

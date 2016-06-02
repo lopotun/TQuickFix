@@ -38,13 +38,9 @@ public class QFUtils {
     private static final Map<Class<? extends QFComponent>, QFComponentValidator> COMPONENT_VALIDATORS = new HashMap<>();
     private static ClassPath classPath;
 
-//    static final Map<Integer, Method> MAP = new HashMap<>();
-    private static final Table<CharSequence, Integer, Method> MAP1 = HashBasedTable.create(5, 200);
-//    private static final Map<Class<? extends QFField>, Map<Class<? extends QFComponent>, ChildGetterSetter>> FIELD_OWNERS = new HashMap<>();
+    private static final Table<CharSequence, Integer, Method> FIX_VERSION_AND_TAG_TO_GETINSTANCE = HashBasedTable.create(5, 200);
     private static final Table<CharSequence, Class<? extends QFField>, Map<Class<? extends QFComponent>, ChildGetterSetter>> FIELD_OWNERS = HashBasedTable.create(5, 1350);
-//    private static final Map<Class<? extends QFComponent>, List<ChildGetterSetter<? extends QFComponent>>> COMPONENT_CHILDREN = new HashMap<>();
     private static final Table<CharSequence, Class<? extends QFComponent>, List<ChildGetterSetter<? extends QFComponent>>> COMPONENT_CHILDREN = HashBasedTable.create(5, 240);
-//    private static final Map<Class<? extends QFComponent>, List<ChildGetterSetterGroup<? extends QFComponent>>> GROUP_CHILDREN = new HashMap<>();
     private static final Table<CharSequence, Class<? extends QFComponent>, List<ChildGetterSetterGroup<? extends QFComponent>>> GROUP_CHILDREN = HashBasedTable.create(5, 150);
     private static final Table<CharSequence, QFField<String>, Class<? extends QFMessage>> MESSAGE_TYPES = HashBasedTable.create(5, 120);
 
@@ -84,7 +80,7 @@ public class QFUtils {
                 Class<?> qfFieldClass = fieldClass.load();
                 int tagValue = qfFieldClass.getField("TAG").getInt(null);
                 Method instantiatorByString = qfFieldClass.getDeclaredMethod("getInstance", String.class, QFComponentValidator.class);
-                MAP1.put(version.getKey(), tagValue, instantiatorByString);
+                FIX_VERSION_AND_TAG_TO_GETINSTANCE.put(version.getKey(), tagValue, instantiatorByString);
             }
 
             Set<ClassPath.ClassInfo> componentsClasses = QFUtils.classPath.getAllClasses().parallelStream().filter(classInfo -> classInfo.getPackageName().equals(BuilderUtils.PACKAGE_NAME_COMPONENTS)).collect(Collectors.toSet());
@@ -174,7 +170,7 @@ public class QFUtils {
 
     public static QFField lookupField(CharSequence fixVersion, QFTag tag, QFComponentValidator componentValidator) {
         QFField res = null;
-        Method getInstance = MAP1.get(fixVersion, tag.getTagKey());
+        Method getInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, tag.getTagKey());
         if (getInstance != null) {
             try {
                 res = (QFField) getInstance.invoke(null, tag.getTagValue(), componentValidator);

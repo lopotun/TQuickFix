@@ -76,7 +76,7 @@ public abstract class QFComponent {
             if(childGS != null) { // i.e. this component can contain this field.
                 // Create instance of this component/group if needed.
                 if(thisInstance == null) {
-                    thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
+                    thisInstance = createThisInstance(thisInstance, compClass);
                 } else {
                     // This instance is a Group and this field is a group element delimiter ->
                     // 1. We're at beginning of next group element.
@@ -117,7 +117,7 @@ public abstract class QFComponent {
                         if (componentChildInstance != null) {
                             // Child component instance has been created (that means that the current filed belongs to this child component (or to one of its descenders)).
                             // Create instance of this component if needed.
-                            thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
+                            thisInstance = createThisInstance(thisInstance, compClass);
                             // Check if the value was not assigned previously.
                             Method fieldGetter = componentChildrenGS.getGetter();
                             QFComponent currentValue = (QFComponent) fieldGetter.invoke(thisInstance);
@@ -169,7 +169,7 @@ public abstract class QFComponent {
                             }
                             // Assign the value of the newly created child group.
                             if (!groupInstances.isEmpty()) {
-                                thisInstance = createThisInstance(thisInstance, compClass, componentValidator);
+                                thisInstance = createThisInstance(thisInstance, compClass);
                                 componentGroupGS.getSetter().invoke(thisInstance, groupInstances);
                                 // Set parent reference.
                                 for (QFComp groupInstance : groupInstances) {
@@ -221,12 +221,12 @@ public abstract class QFComponent {
         }
     }
 
-    private static <QFComp extends QFComponent> QFComp createThisInstance(@Nullable QFComp instance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
+    private static <QFComp extends QFComponent> QFComp createThisInstance(@Nullable QFComp instance, Class<? extends QFComponent> compClass) {
         if (instance == null) {
             try {
                 if(QFMessage.class.isAssignableFrom(compClass)) {
-                    Method getInstance = compClass.getDeclaredMethod("getInstance", QFComponentValidator.class);//TODO call getInstance that won't initialize header and trailer.
-                    instance = (QFComp) getInstance.invoke(null, componentValidator);
+                    Method getInstance = compClass.getDeclaredMethod("getInstance");//TODO call getInstance that won't initialize header and trailer.
+                    instance = (QFComp) getInstance.invoke(null);
                 } else {
                     final Constructor<? extends QFComponent> constructor = compClass.getDeclaredConstructor();
                     constructor.setAccessible(true);
