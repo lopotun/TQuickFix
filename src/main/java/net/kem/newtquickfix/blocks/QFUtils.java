@@ -6,7 +6,6 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
 import com.google.common.reflect.ClassPath;
 import com.sun.istack.internal.NotNull;
-import net.kem.newtquickfix.LiteFixMessageParser;
 import net.kem.newtquickfix.QFComponentValidator;
 import net.kem.newtquickfix.builders.BuilderUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
@@ -35,7 +34,7 @@ import java.util.stream.Collectors;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class QFUtils {
-    private static final Map<Class<? extends QFComponent>, QFComponentValidator> COMPONENT_VALIDATORS = new HashMap<>();
+//    private static final Map<Class<? extends QFComponent>, QFComponentValidator> COMPONENT_VALIDATORS = new HashMap<>();
     private static ClassPath classPath;
 
     private static final Table<CharSequence, Integer, Method> FIX_VERSION_AND_TAG_TO_GETINSTANCE = HashBasedTable.create(5, 200);
@@ -239,10 +238,10 @@ public class QFUtils {
         }
     }
 
-    public static QFComponentValidator getComponentValidator(Class<? extends QFComponent> componentClass) {
-        QFComponentValidator validationErrorsHandler = COMPONENT_VALIDATORS.get(componentClass);
-        return validationErrorsHandler ==null? LiteFixMessageParser.getInstance().getComponentValidator(): validationErrorsHandler;
-    }
+//    public static QFComponentValidator getComponentValidator(Class<? extends QFComponent> componentClass) {
+//        QFComponentValidator validationErrorsHandler = COMPONENT_VALIDATORS.get(componentClass);
+//        return validationErrorsHandler ==null? LiteFixMessageParser.getComponentValidator(): validationErrorsHandler;
+//    }
 
     public static class ChildGetterSetter<T> {
         enum ElementType {FIELD, COMPONENT, GROUP}

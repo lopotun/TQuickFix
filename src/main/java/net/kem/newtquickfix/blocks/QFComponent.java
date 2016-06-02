@@ -247,7 +247,7 @@ public abstract class QFComponent {
     }
     public void setComponentValidator(QFComponentValidator newComponentValidator) {
 	    if(newComponentValidator == null) {
-		    newComponentValidator = LiteFixMessageParser.getInstance().getComponentValidator();
+		    newComponentValidator = LiteFixMessageParser.getComponentValidator();
 	    }
         componentValidator = newComponentValidator;
     }

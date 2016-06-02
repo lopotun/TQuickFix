@@ -18,53 +18,26 @@ import java.util.regex.Pattern;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class LiteFixMessageParser {
-    private static final Pattern PATTERN = Pattern.compile("(\\d+)=(.*)");
+	private static final Pattern PATTERN = Pattern.compile("(\\d+)=(.*)");
 
-    private LiteFixMessageParser() {
-        try {
-            QFUtils.fillMaps();
-        } catch (NoSuchFieldException | InvocationTargetException | IOException | IllegalAccessException | NoSuchMethodException e) {
-            e.printStackTrace();
-        }
+	private static ThreadLocal<QFComponentValidator> componentValidator = new ThreadLocal<>();
+
+	public static LiteFixMessageParser of(QFComponentValidator componentValidator) throws InvocationTargetException, NoSuchMethodException, IOException, IllegalAccessException, NoSuchFieldException {
+        LiteFixMessageParser res = new LiteFixMessageParser();
+        setComponentValidator(componentValidator);
+        QFUtils.fillMaps();
+        return res;
     }
-
-    private void init() {
-        try {
-            QFUtils.fillMaps();
-        } catch (NoSuchFieldException | InvocationTargetException | IOException | IllegalAccessException | NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static ThreadLocal<QFComponentValidator> componentValidator = new ThreadLocal<QFComponentValidator>() {
-        @Override
-        protected QFComponentValidator initialValue() {
-            return new DefaultQFComponentValidator();
-        }
-    };
 
     public static QFComponentValidator getComponentValidator() {
+	    if(componentValidator.get() == null) {
+		    setComponentValidator(new DefaultQFComponentValidator());
+	    }
         return componentValidator.get();
     }
 
     public static void setComponentValidator(QFComponentValidator defaultComponentValidator) {
         componentValidator.set(defaultComponentValidator);
-    }
-
-
-    private static final LiteFixMessageParser INSTANCE = new LiteFixMessageParser();
-
-    public static LiteFixMessageParser getInstance() {
-        if(INSTANCE == null) {
-            throw new NullPointerException("LiteFixMessageParser hasn't been initialized successfully. See application log for details.");
-        }
-        return INSTANCE;
-    }
-
-
-    public LiteFixMessageParser with(QFComponentValidator componentValidator) {
-        setComponentValidator(componentValidator);
-        return this;
     }
 
     public QFMessage parse(CharSequence src) {
@@ -93,7 +66,7 @@ public class LiteFixMessageParser {
         return message.validate(componentValidator.get());
     }
 
-    private Stack<QFField> toFieldsStack(CharSequence src, QFComponentValidator componentValidator) {
+    private static Stack<QFField> toFieldsStack(CharSequence src, QFComponentValidator componentValidator) {
         Stack<QFTag> origTags = new Stack<>();
         final String[] rawTags = src.toString().split("\u0001");// \u0001|\n
         if(componentValidator.getDefaultFIXVersion() != null) {

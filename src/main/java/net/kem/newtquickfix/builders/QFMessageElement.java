@@ -48,12 +48,8 @@ public class QFMessageElement extends QFComponentElement {
         sb.append("{\n");
     }
 
-//    protected void getImportSection() {
-//        super.getImportSection();
-//    }
-
     protected void getImportSectionFromSubElements() {
-        super.getImportSectionFromSubElements();
+        super.getImportSectionFromSubElements(); // We still need to import QFComponent since a Message can directly contain a Group in FIX v40.
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMessage;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".BeginString;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".MsgType;\n");

@@ -20,7 +20,7 @@ public class QFDateFieldElement extends QFFieldElement {
     /*
     public static OrigTime getInstance(String value, QFComponentValidator componentValidator) {
         try {
-        return getInstance(LocalDateTime.parse(value, getDateFormat()), componentValidator);
+        return getInstance(LocalDateTime.parse(value, getDateFormat()), LiteFixMessageParser.getComponentValidator());
         } catch (Exception e) {
             final java.time.LocalDateTime newValue = componentValidator.invalidFieldValue(MDEntryDate.class, LocalDate.class, value, e);
             return getInstance(newValue);
@@ -31,7 +31,7 @@ public class QFDateFieldElement extends QFFieldElement {
     protected void generateMethodGetInstanceString() {
         if (def.typeToStringConversion != null) {
             sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
-                    .append("\t\treturn getInstance(value, LiteFixMessageParser.getInstance().getComponentValidator());\n")
+                    .append("\t\treturn getInstance(value, LiteFixMessageParser.getComponentValidator());\n")
                     .append("\t}\n\n");
 
             sb.append("\tpublic static ").append(name).append(" getInstance(String value, QFComponentValidator componentValidator) {\n")

@@ -43,7 +43,7 @@ public abstract class QFField<V> implements Serializable {
 
 	public QFComponentValidator getComponentValidator() {
 		if(componentValidator == null) {
-			setComponentValidator(LiteFixMessageParser.getInstance().getComponentValidator());
+			setComponentValidator(LiteFixMessageParser.getComponentValidator());
 		}
 		return componentValidator;
 	}

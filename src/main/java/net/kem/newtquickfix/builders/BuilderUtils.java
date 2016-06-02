@@ -56,8 +56,6 @@ public class BuilderUtils {
         }
     }
 
-    public static FIXVersion forcedFixVersion;
-
     public static final BiMap<CharSequence, CharSequence> FIX_VERSIONS = ImmutableBiMap.<CharSequence, CharSequence>builder()
             .put(FIXVersion.VER50SP2.fixVersion, FIXVersion.VER50SP2.packageVersion)
             .put(FIXVersion.VER50.fixVersion, FIXVersion.VER50.packageVersion)

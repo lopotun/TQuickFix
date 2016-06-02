@@ -57,7 +57,7 @@ public class ComponentMain extends QFComponent {
         Stack<QFField> tags = new Stack<>();
         while (!origTags.empty()) {
             QFTag kv = origTags.pop();
-            QFField qfField = QFUtils.lookupField("", kv, LiteFixMessageParser.getInstance().getComponentValidator());
+            QFField qfField = QFUtils.lookupField("", kv, LiteFixMessageParser.getComponentValidator());
             tags.push(qfField);
         }
 //		QFComponent theRabbit0 = ComponentC.getInstance(tags, null);

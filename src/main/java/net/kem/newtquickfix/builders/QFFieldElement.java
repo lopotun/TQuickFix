@@ -54,6 +54,11 @@ public class QFFieldElement extends QFElement {
         return valueEnum;
     }
 
+    protected void getImportSection() {
+        sb.append("import ").append(BuilderUtils.PACKAGE_NAME).append("LiteFixMessageParser;\n");
+        super.getImportSection();
+    }
+
     @Override
     public void toJavaSource() {
         generatePackageSection();
