@@ -149,6 +149,13 @@ public interface QFComponentValidator {
     default void notify(@NotNull CharSequence notification, @NotNull NotificationSeverity severity) {
     }
 
+	/**
+     * This method is called while FIX data parser initialization when it's needed to "narrow" any FIX version of incoming messages to a single parser FIX version.
+     * the given tag is recognized neither by LiteFix Message (misplaced tag) nor by any of its components (unknown tag).
+     * This implementation returns <em>null</em>.
+     * @return FIX version of the parser that will be user to parse any incoming message.
+     * If the method returns <em>null</em>, then the parser version will be picked automatically according to FIX version of incoming message.
+     */
     default BuilderUtils.FIXVersion getDefaultFIXVersion() {
         return null;
     }

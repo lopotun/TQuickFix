@@ -40,6 +40,7 @@ public class ParseMessages {
         // Uncomment when all incoming messages processing should be narrowed to specific FIX version definition. Optional setting.
 	    messageParser = LiteFixMessageParser.of(new DefaultQFComponentValidator() {
 		    @Override
+            // Force parser to use 50SP2 FIX version to parse any incoming messages regardless their real FIX version.
 		    public BuilderUtils.FIXVersion getDefaultFIXVersion() {
 			    return BuilderUtils.FIXVersion.VER50SP2;
 		    }
