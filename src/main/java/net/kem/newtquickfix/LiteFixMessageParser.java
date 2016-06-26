@@ -50,11 +50,8 @@ public class LiteFixMessageParser {
         if(tags.size() < 4) {
             throw new UnsupportedOperationException("Too few recognized tags in message " + src);
         }
-        final Class<? extends QFMessage> messageClass = QFUtils.getMessageClass(tags);
-        if(messageClass == null) {
-            throw new UnsupportedOperationException("Unrecognized message");
-        }
         try {
+            final Class<? extends QFMessage> messageClass = QFUtils.getMessageClass(tags);
             final Method getInstanceMethod = messageClass.getMethod("getInstance", Stack.class, QFComponentValidator.class);
             return (QFMessage) getInstanceMethod.invoke(null, tags, componentValidator);
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
@@ -70,7 +67,7 @@ public class LiteFixMessageParser {
         Stack<QFTag> origTags = new Stack<>();
         final String[] rawTags = src.toString().split("\u0001");// \u0001|\n
         if(componentValidator.getDefaultFIXVersion() != null) {
-            rawTags[0] = "8=" + componentValidator.getDefaultFIXVersion().getFixVersion();
+            rawTags[0] = "8=" + componentValidator.getDefaultFIXVersion();
         }
         for (String rawTag : rawTags) {
             final Matcher matcher = PATTERN.matcher(rawTag);

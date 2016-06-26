@@ -101,7 +101,7 @@ public class QFMessageElement extends QFComponentElement {
                 .append(ident).append("\t}\n\n");
 
         sb.append(ident).append("\tpublic static BeginString getVersion() {\n")
-                .append(ident).append("\t\treturn BeginString.getInstance(\"").append(BuilderUtils.FIX_VERSIONS.get(BuilderUtils.FIX_VERSION)).append("\");\n")
+                .append(ident).append("\t\treturn BeginString.getInstance(\"").append(BuilderUtils.FIXVersion.getFixVersionByPackageVersion(BuilderUtils.PACKAGE_FIX_VERSION)).append("\");\n")
                 .append(ident).append("\t}\n\n");
 
         sb.append(ident).append("\tpublic String getMessageCategory() {\n")

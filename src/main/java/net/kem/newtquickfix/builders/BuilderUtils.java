@@ -26,50 +26,58 @@ public class BuilderUtils {
     public static final CharSequence PACKAGE_NAME = "net.kem.newtquickfix.";
     public static CharSequence PACKAGE_NAME_BLOCKS;
 
-    public static CharSequence FIX_VERSION;
+    public static String PACKAGE_FIX_VERSION;
     public static String PACKAGE_NAME_COMPONENTS;
     public static String PACKAGE_NAME_FIELDS;
     public static String PACKAGE_NAME_MESSAGES;
 
     public static final Map<CharSequence, CharSequence> COMPONENTS_FIRST_FIELD = new HashMap<>(64);
 
+    /**
+     * List of well-known FIX versions (along with their mapping to Java class packages)
+     */
     public enum FIXVersion {
-        VER50SP2("v50sp2", "FIX50SP2"),
-        VER50("v50", "FIX.5.0"),
-        VER44("v44", "FIX.4.4"),
         VER40("v40", "FIX.4.0"),
+        VER44("v44", "FIX.4.4"),
+        VER50("v50", "FIX.5.0"),
         VER50SP1("v50sp1", "FIX50SP1"),
+        VER50SP2("v50sp2", "FIX50SP2"),
         VERFIXT11("vfixt11", "FIXT.1.1");
 
-        private final CharSequence packageVersion;
-        private final CharSequence fixVersion;
-        FIXVersion(CharSequence packageVersion, CharSequence fixVersion) {
-            this.packageVersion = packageVersion;
-            this.fixVersion = fixVersion;
-        }
-        public CharSequence getPackageVersion() {
-            return packageVersion;
-        }
+        private final String packageVersion;
+        private final String fixVersion;
 
-        public CharSequence getFixVersion() {
+        FIXVersion(CharSequence packageVersion, CharSequence fixVersion) {
+            this.packageVersion = packageVersion.toString();
+            this.fixVersion = fixVersion.toString();
+        }
+//        public CharSequence getPackageVersion() {
+//            return packageVersion;
+//        }
+
+        public String getFixVersion() {
             return fixVersion;
         }
+
+        public static String getFixVersionByPackageVersion(String packageVersion) {
+            String res = FIX_VERSIONS.inverse().get(packageVersion);
+            return res == null? packageVersion: res;
+        }
+
+        private static final BiMap<String, String> FIX_VERSIONS = ImmutableBiMap.<String, String>builder()
+                .put(FIXVersion.VER50SP2.fixVersion, FIXVersion.VER50SP2.packageVersion)
+                .put(FIXVersion.VER50.fixVersion, FIXVersion.VER50.packageVersion)
+                .put(FIXVersion.VER44.fixVersion, FIXVersion.VER44.packageVersion)
+                .put(FIXVersion.VER40.fixVersion, FIXVersion.VER40.packageVersion)
+                .put(FIXVersion.VER50SP1.fixVersion, FIXVersion.VER50SP1.packageVersion)
+                .put(FIXVersion.VERFIXT11.fixVersion, FIXVersion.VERFIXT11.packageVersion)
+                .build();
     }
 
-    public static final BiMap<CharSequence, CharSequence> FIX_VERSIONS = ImmutableBiMap.<CharSequence, CharSequence>builder()
-            .put(FIXVersion.VER50SP2.fixVersion, FIXVersion.VER50SP2.packageVersion)
-            .put(FIXVersion.VER50.fixVersion, FIXVersion.VER50.packageVersion)
-            .put(FIXVersion.VER44.fixVersion, FIXVersion.VER44.packageVersion)
-            .put(FIXVersion.VER40.fixVersion, FIXVersion.VER40.packageVersion)
-            .put(FIXVersion.VER50SP1.fixVersion, FIXVersion.VER50SP1.packageVersion)
-            .put(FIXVersion.VERFIXT11.fixVersion, FIXVersion.VERFIXT11.packageVersion)
-            .build();
 
-
-
-    public static void updatePackagePath(CharSequence fixVersion) {
-        FIX_VERSION = fixVersion.toString();
-        CharSequence base = PACKAGE_NAME.toString() + FIX_VERSION + ".";
+    public static void updatePackagePath(CharSequence packageFIXVersion) {
+        PACKAGE_FIX_VERSION = packageFIXVersion.toString();
+        CharSequence base = PACKAGE_NAME.toString() + PACKAGE_FIX_VERSION + ".";
         PACKAGE_NAME_BLOCKS = PACKAGE_NAME.toString() + "blocks.";
         PACKAGE_NAME_COMPONENTS = base + "components";
         PACKAGE_NAME_FIELDS = base + "fields";

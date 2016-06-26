@@ -71,15 +71,26 @@ public class QFUtils {
     public static void fillMaps() throws NoSuchFieldException, NoSuchMethodException, IllegalAccessException, IOException, InvocationTargetException {
         init();
 
-        for(Map.Entry<CharSequence, CharSequence> version : BuilderUtils.FIX_VERSIONS.entrySet()) {
-            BuilderUtils.updatePackagePath(version.getValue());
+        // Look at classes in classpath to find supported LiteFix versions.
+        Set<String> packageLFVersions = classPath.getTopLevelClasses().parallelStream().filter(classInfo -> classInfo.getPackageName().startsWith("net.kem.newtquickfix.v"))
+                .map(ClassPath.ClassInfo::getPackageName)
+                .map(s -> s.substring("net.kem.newtquickfix.v".length()-1))
+                .map(s -> s.substring(0, s.indexOf('.')))
+                .collect(Collectors.toSet());
+
+        for(String packageVersion : packageLFVersions) {
+            CharSequence liteFixVersion = BuilderUtils.FIXVersion.getFixVersionByPackageVersion(packageVersion);
+            if(liteFixVersion == null) {
+                liteFixVersion = packageVersion;
+            }
+            BuilderUtils.updatePackagePath(packageVersion);
 
             ImmutableSet<ClassPath.ClassInfo> fieldClasses = classPath.getTopLevelClasses(String.valueOf(BuilderUtils.PACKAGE_NAME_FIELDS));
             for (ClassPath.ClassInfo fieldClass : fieldClasses) {
                 Class<?> qfFieldClass = fieldClass.load();
                 int tagValue = qfFieldClass.getField("TAG").getInt(null);
                 Method instantiatorByString = qfFieldClass.getDeclaredMethod("getInstance", String.class, QFComponentValidator.class);
-                FIX_VERSION_AND_TAG_TO_GETINSTANCE.put(version.getKey(), tagValue, instantiatorByString);
+                FIX_VERSION_AND_TAG_TO_GETINSTANCE.put(liteFixVersion, tagValue, instantiatorByString);
             }
 
             Set<ClassPath.ClassInfo> componentsClasses = QFUtils.classPath.getAllClasses().parallelStream().filter(classInfo -> classInfo.getPackageName().equals(BuilderUtils.PACKAGE_NAME_COMPONENTS)).collect(Collectors.toSet());
@@ -87,7 +98,7 @@ public class QFUtils {
             final Sets.SetView<ClassPath.ClassInfo> annotatedClasses = Sets.union(componentsClasses, messagesClasses);
             for (ClassPath.ClassInfo annotatedClass : annotatedClasses) {
                 Class<? extends QFComponent> newQFComponentClass = (Class<? extends QFComponent>) annotatedClass.load();
-                mapFieldOwners(version.getKey(), newQFComponentClass);
+                mapFieldOwners(liteFixVersion, newQFComponentClass);
             }
 
             // Create Message type mapping.
@@ -96,7 +107,7 @@ public class QFUtils {
                 if(!load.isInterface() && QFMessage.class.isAssignableFrom(load)) {
                     final Method getMsgType = load.getDeclaredMethod("getMsgType");
                     final QFField<String> msgType = (QFField<String>)getMsgType.invoke(null);
-                    MESSAGE_TYPES.put(version.getKey(), msgType, load);
+                    MESSAGE_TYPES.put(liteFixVersion, msgType, load);
                 }
             }
         }
@@ -164,7 +175,11 @@ public class QFUtils {
     public static Class<? extends QFMessage> getMessageClass(Stack<QFField> tags) {
         final QFField<String> beginString = (QFField<String>)tags.get(tags.size()-1);
         final QFField<String> msgType = (QFField<String>)tags.get(tags.size()-3);
-        return MESSAGE_TYPES.get(beginString.getValue(), msgType);
+        Class<? extends QFMessage> res = MESSAGE_TYPES.get(beginString.getValue(), msgType);
+        if(res == null) {
+            throw new UnsupportedOperationException("Unrecognized FIX version " + beginString.getValue());
+        }
+        return res;
     }
 
     public static QFField lookupField(CharSequence fixVersion, QFTag tag, QFComponentValidator componentValidator) {

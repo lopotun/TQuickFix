@@ -5,7 +5,6 @@ import com.sun.istack.internal.Nullable;
 import net.kem.newtquickfix.blocks.QFComponent;
 import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMessage;
-import net.kem.newtquickfix.builders.BuilderUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -156,7 +155,7 @@ public interface QFComponentValidator {
      * @return FIX version of the parser that will be user to parse any incoming message.
      * If the method returns <em>null</em>, then the parser version will be picked automatically according to FIX version of incoming message.
      */
-    default BuilderUtils.FIXVersion getDefaultFIXVersion() {
+    default String getDefaultFIXVersion() {
         return null;
     }
 
