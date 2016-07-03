@@ -43,7 +43,7 @@ public class LoggerUtil {
 	static {
 		Logger.getLogger(LOGGERNAME).setUseParentHandlers(false);
 		Handler handler = new ConsoleHandler();
-		handler.setLevel(Level.INFO);
+		handler.setLevel(Level.FINE);
 		Logger.getLogger(LOGGERNAME).addHandler(handler);
 	}
 	

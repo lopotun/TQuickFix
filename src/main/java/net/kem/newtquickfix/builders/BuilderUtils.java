@@ -3,7 +3,6 @@ package net.kem.newtquickfix.builders;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import net.kem.newtquickfix.QFComponentValidator;
-import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMember;
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
@@ -83,7 +82,6 @@ public class BuilderUtils {
         PACKAGE_NAME_FIELDS = base + "fields";
         PACKAGE_NAME_MESSAGES = base + "messages";
     }
-    public static final ThreadLocal<List<QFField<String>>> UNCLAIMED_TAGS = ThreadLocal.withInitial(LinkedList::new);
     public static final ThreadLocal<List<Pair<CharSequence, QFComponentValidator.NotificationSeverity>>> NOTIFICATIONS = ThreadLocal.withInitial(LinkedList::new);
 
     public static class QFFieldBlockDef {

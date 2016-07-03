@@ -47,8 +47,8 @@ import java.util.Stack;
  */
 public abstract class QFComponent {
 
-    protected QFComponent parent;
-    protected QFComponentValidator componentValidator;
+    protected transient QFComponent parent;
+    protected transient QFComponentValidator componentValidator;
 
     public String getName() {
         return getClass().getSimpleName();
@@ -180,7 +180,7 @@ public abstract class QFComponent {
                                 // I rely on the fact that every group has QFGroupDef annotation.
                                 int groupDlm = 0;
                                 QFGroupDef grpAnnotation = groupInstances.get(0).getClass().getAnnotation(QFGroupDef.class);
-                                if(grpAnnotation != null) {
+                                if(grpAnnotation != null && !tags.isEmpty()) {
                                     groupDlm = grpAnnotation.delimiter();
                                     final QFField nextVal = tags.peek();
                                     if(nextVal.getTag() == groupDlm) {

@@ -11,7 +11,7 @@ import java.util.Stack;
  */
 public abstract class QFMessage extends QFComponent {
 
-    protected List<QFField<String>> unknownTags;
+    protected List<QFUtils.UnknownTag> unknownTags;
 
     public abstract QFField<String> getMessageType();
     public abstract String getMessageCategory();

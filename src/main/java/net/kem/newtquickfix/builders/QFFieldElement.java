@@ -157,6 +157,12 @@ public class QFFieldElement extends QFElement {
         sb.append("\tprivate ").append(name).append('(').append(typeClassName).append(" value) {\n")
                 .append("\t\tthis.value = value;\n")
                 .append("\t}\n\n");
+        // Add default constructor.
+        sb.append("\t@SuppressWarnings(\"unused\")\n")
+                .append("\tprivate ")
+                .append(name).append("() {\n")
+                .append("\t\t// This default constructor is added solely to conform the most of JSON frameworks' requirement.\n")
+                .append("\t}\n\n");
     }
 
     /*
@@ -196,7 +202,7 @@ public class QFFieldElement extends QFElement {
                     .append("\t\t\tfinal ").append(typeClassName)
                         .append(" newValue = componentValidator.invalidFieldValue(")
                         .append(name).append(".class, ").append(typeClassName).append(".class, value, e);\n")
-                    .append("\t\t\treturn getInstance(newValue);\n")
+                    .append("\t\t\treturn getInstance(newValue, componentValidator);\n")
                     .append("\t\t}\n")
             .append("\t}\n\n");
         }

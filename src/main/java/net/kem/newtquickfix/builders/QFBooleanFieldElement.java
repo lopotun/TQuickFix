@@ -46,7 +46,7 @@ public class QFBooleanFieldElement extends QFFieldElement {
                     .append("\t\t\treturn getInstance(true);\n")
                     .append("\t\t} else {\n")
                     .append("\t\t\tfinal Boolean newValue = componentValidator.invalidFieldValue(").append(name).append(".class, Boolean.class, value, null);")
-                    .append("\t\t\treturn getInstance(newValue);\n")
+                    .append("\t\t\treturn getInstance(newValue, componentValidator);\n")
                     .append("\t\t}\n")
                     .append("\t}\n\n");
         }

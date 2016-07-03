@@ -5,6 +5,7 @@ import com.sun.istack.internal.Nullable;
 import net.kem.newtquickfix.blocks.QFComponent;
 import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMessage;
+import net.kem.newtquickfix.blocks.QFUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -135,7 +136,7 @@ public interface QFComponentValidator {
      * @return list of unprocessed tags. If there is no unprocessed tags, then an empty list is returned.
      * @see #getUnprocessedTags()
      */
-    default List<QFField<String>> getUnprocessedTags() {
+    default List<QFUtils.UnknownTag> getUnprocessedTags() {
         return Collections.emptyList();
     }
 

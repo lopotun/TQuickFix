@@ -4,7 +4,6 @@ import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMessage;
 import net.kem.newtquickfix.blocks.QFTag;
 import net.kem.newtquickfix.blocks.QFUtils;
-import net.kem.newtquickfix.builders.BuilderUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -23,9 +22,14 @@ public class LiteFixMessageParser {
 	private static ThreadLocal<QFComponentValidator> componentValidator = new ThreadLocal<>();
 
 	public static LiteFixMessageParser of(QFComponentValidator componentValidator) throws InvocationTargetException, NoSuchMethodException, IOException, IllegalAccessException, NoSuchFieldException {
-        LiteFixMessageParser res = new LiteFixMessageParser();
+        LiteFixMessageParser res = create();
         setComponentValidator(componentValidator);
-        QFUtils.fillMaps();
+        return res;
+    }
+
+	public static LiteFixMessageParser create() throws NoSuchMethodException, NoSuchFieldException, IOException, IllegalAccessException, InvocationTargetException {
+        LiteFixMessageParser res = new LiteFixMessageParser();
+        QFUtils.initMaps();
         return res;
     }
 
@@ -45,7 +49,7 @@ public class LiteFixMessageParser {
     }
 
     public QFMessage parse(CharSequence src, QFComponentValidator componentValidator) {
-        BuilderUtils.UNCLAIMED_TAGS.get().clear();
+        componentValidator.getUnprocessedTags().clear();
         Stack<QFField> tags = toFieldsStack(src, componentValidator);
         if(tags.size() < 4) {
             throw new UnsupportedOperationException("Too few recognized tags in message " + src);
@@ -59,8 +63,8 @@ public class LiteFixMessageParser {
         }
     }
 
-    public boolean validate(QFMessage message) {
-        return message.validate(componentValidator.get());
+    public boolean validate(QFMessage message, QFComponentValidator componentValidator) {
+        return message.validate(componentValidator);
     }
 
     private static Stack<QFField> toFieldsStack(CharSequence src, QFComponentValidator componentValidator) {

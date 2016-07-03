@@ -4,9 +4,11 @@ import com.sun.istack.internal.NotNull;
 import com.sun.istack.internal.Nullable;
 import net.kem.newtquickfix.blocks.QFComponent;
 import net.kem.newtquickfix.blocks.QFField;
+import net.kem.newtquickfix.blocks.QFUtils;
 import net.kem.newtquickfix.builders.BuilderUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -14,6 +16,8 @@ import java.util.List;
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
 public class DefaultQFComponentValidator implements QFComponentValidator {
+    private static final ThreadLocal<List<QFUtils.UnknownTag>> UNCLAIMED_TAGS = ThreadLocal.withInitial(LinkedList::new);
+
     @Override
     public Boolean mandatoryElementMissing(@SuppressWarnings("unused") QFComponent thisComponent, @SuppressWarnings("unused") Class<?> missingElement) {
         System.err.println("Mandatory tag " + missingElement.getSimpleName() + " is missing in its parent component " + thisComponent.getName());
@@ -54,12 +58,12 @@ public class DefaultQFComponentValidator implements QFComponentValidator {
     /**
      * This implementation adds the unprocessed tag to list of unprocessed tags.
      * @param unprocessedTag    unknown tag.
-     * @see BuilderUtils#UNCLAIMED_TAGS
+     * @see DefaultQFComponentValidator#UNCLAIMED_TAGS
      */
     @Override
     public void unprocessedTag(@NotNull QFField unprocessedTag, @NotNull Class<? extends QFComponent> ownerClass) {
         // add this tag to list of unknown tags (this list will be used when the message will be "serialized" to a String)
-        BuilderUtils.UNCLAIMED_TAGS.get().add(unprocessedTag);
+        UNCLAIMED_TAGS.get().add(new QFUtils.UnknownTag(unprocessedTag));
         if(unprocessedTag.isKnown()) {
             System.out.println("Tag \"" + unprocessedTag + "\" should not appear in message \"" + ownerClass.getSimpleName() + "\"");
         } else {
@@ -68,8 +72,8 @@ public class DefaultQFComponentValidator implements QFComponentValidator {
     }
 
     @Override
-    public List<QFField<String>> getUnprocessedTags() {
-        return BuilderUtils.UNCLAIMED_TAGS.get();
+    public List<QFUtils.UnknownTag> getUnprocessedTags() {
+        return UNCLAIMED_TAGS.get();
     }
 
 
