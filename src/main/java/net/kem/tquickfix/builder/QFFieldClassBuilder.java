@@ -149,8 +149,8 @@ public class QFFieldClassBuilder {
         FIX_TYPE_TO_JAVA_TYPE.put("MULTIPLECHARVALUE", TMD_String);
         FIX_TYPE_TO_JAVA_TYPE.put("EXCHANGE", TMD_String);
         FIX_TYPE_TO_JAVA_TYPE.put("DATA", TMD_String);
-        FIX_TYPE_TO_JAVA_TYPE.put("LOCALMKTDATE", TMD_String);
-        FIX_TYPE_TO_JAVA_TYPE.put("MONTHYEAR", TMD_String);
+        FIX_TYPE_TO_JAVA_TYPE.put("LOCALMKTDATE", TMD_Date);
+        FIX_TYPE_TO_JAVA_TYPE.put("MONTHYEAR", TMD_Date);
         FIX_TYPE_TO_JAVA_TYPE.put("MULTIPLESTRINGVALUE", TMD_String);
         FIX_TYPE_TO_JAVA_TYPE.put("MULTIPLEVALUESTRING", TMD_String); // In FIX v4.4 only.
         FIX_TYPE_TO_JAVA_TYPE.put("COUNTRY", TMD_String);
