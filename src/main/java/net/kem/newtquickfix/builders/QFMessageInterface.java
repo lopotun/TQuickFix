@@ -19,12 +19,16 @@ public class QFMessageInterface {
             " */\n" +
             "public interface I$CCN {\n" +
             "\t$CCN get$CCN();\n" +
-            "\tvoid set$CCN($CCN " + StringUtils.uncapitalize("$CCN") + ");\n" +
+            "\tvoid set$CCN($CCN $UNCAPITALIZED_CCN);\n" +
+            "\tdefault void set$CCN(I$CCN $UNCAPITALIZED_CCN) {\n" +
+            "\t\tset$CCN($UNCAPITALIZED_CCN.get$CCN());\n" +
+            "\t}\n" +
             "}";
 
     public static String buildInterfaceSource(CharSequence componentName) {
         return TEMPLATE
                 .replace("$CCN", componentName)
+                .replace("$UNCAPITALIZED_CCN", StringUtils.uncapitalize(componentName.toString()))
                 .replace("$PACKAGE_NAME_MESSAGES", BuilderUtils.PACKAGE_NAME_MESSAGES)
                 .replace("$PACKAGE_NAME_COMPONENTS", BuilderUtils.PACKAGE_NAME_COMPONENTS);
     }
