@@ -49,7 +49,7 @@ public abstract class QFElement {
                 .append(" * Eugene Kurtzer\n")
                 .append(" * Date: ").append(now.format(DateTimeFormatter.ISO_LOCAL_DATE)).append("\n")
                 .append(" * Time: ").append(now.format(DateTimeFormatter.ISO_TIME)).append("\n")
-                .append(" * <a href=mailto:Lopotun@gmail.com>Eugene Kurtzer</a>\n")
+                .append(" * <a href=\"mailto:Lopotun@gmail.com?subject=Regarding%20LiteFix\">Eugene Kurtzer</a>\n")
                 .append(" */\n");
     }
 

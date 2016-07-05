@@ -23,6 +23,11 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 
 /**
  * Created by Evgeny Kurtser on 1/5/2016 at 5:04 PM.
@@ -148,6 +153,15 @@ public class FIXGenerator {
 
         File dirMessages = new File("./TQuickFix/src/main/java/" + BuilderUtils.PACKAGE_NAME_MESSAGES.replace('.', '/'));// net.kem.newtquickfix.5_0_sp2.messages
         dirMessages.mkdirs();
+
+        Path from = Paths.get("./TQuickFix/src/main/resources/java/" + BuilderUtils.PACKAGE_FIX_VERSION + "/AMessage.jav");
+        Path to = Paths.get(dirMessages.getPath(), "AMessage.java");
+        //overwrite existing file, if exists
+        CopyOption[] options = new CopyOption[]{
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.COPY_ATTRIBUTES
+        };
+        Files.copy(from, to, options);
 
         expr = xpath.compile("/fix/header | /fix/trailer");// //person/*//*text()
         NodeList nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);

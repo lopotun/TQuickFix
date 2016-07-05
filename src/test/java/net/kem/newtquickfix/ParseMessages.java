@@ -154,7 +154,8 @@ public class ParseMessages {
 		msgJ.validate();
 		msgJ.toFIXString(sb);
 		System.out.println(sb.toString());
-//		System.out.println(msgJ.seal());
+		System.out.println(msgJ.seal());
+		msgJ.validate();
 
 		final QFComponentValidator componentValidator = LiteFixMessageParser.getComponentValidator();
 		System.out.println(componentValidator);

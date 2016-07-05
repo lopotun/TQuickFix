@@ -43,15 +43,13 @@ public class QFMessageElement extends QFComponentElement {
     */
     protected void getClassTitle() {
         sb.append("\t@SuppressWarnings(\"unused\")\n")
-                .append("public class ").append(name).append(" extends QFMessage ");
+                .append("public class ").append(name).append(" extends AMessage ");
         generateImplementsSection();
         sb.append("{\n");
     }
 
     protected void getImportSectionFromSubElements() {
         super.getImportSectionFromSubElements(); // We still need to import QFComponent since a Message can directly contain a Group in FIX v40.
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_BLOCKS).append("QFMessage;\n");
-        sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".BeginString;\n");
         sb.append("import ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append(".MsgType;\n");
     }
 
@@ -72,9 +70,20 @@ public class QFMessageElement extends QFComponentElement {
         }
     }
 
+    protected void getValidateMethodNoParams() {
+    }
+
+    protected void preValidate() {
+        // Boolean valid = super.validate(componentValidator);
+        sb.append(ident).append("\t\tBoolean valid = super.validate(componentValidator);\n");
+    }
+
+    protected boolean shouldIncludeMember(QFRequirable member) {
+        return !(member.getName().equals("StandardHeader") || member.getName().equals("StandardTrailer"));
+    }
+
     @Override
     protected void getCustomMethods() {
-        super.getCustomMethods();
         // //	---- Message-specific methods BEGIN
         /*
         public static MsgType getMsgType() {
@@ -85,11 +94,7 @@ public class QFMessageElement extends QFComponentElement {
         public MsgType getMessageType() {
             return getMsgType();
         }
-
-        public static BeginString getVersion() {
-            return BeginString.getInstance("FIX50SP2");
-        }
-         */
+        */
         sb.append(ident).append("\t//\t---- Message-specific methods BEGIN\n");
         sb.append(ident).append("\tpublic static MsgType getMsgType() {\n")
                 .append(ident).append("\t\treturn MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\");\n")
@@ -99,16 +104,6 @@ public class QFMessageElement extends QFComponentElement {
                 .append(ident).append("\tpublic MsgType getMessageType() {\n")
                 .append(ident).append("\t\treturn getMsgType();\n")
                 .append(ident).append("\t}\n\n");
-
-        sb.append(ident).append("\tpublic static BeginString getVersion() {\n")
-                .append(ident).append("\t\treturn BeginString.getInstance(\"").append(BuilderUtils.FIXVersion.getFixVersionByPackageVersion(BuilderUtils.PACKAGE_FIX_VERSION)).append("\");\n")
-                .append(ident).append("\t}\n\n");
-
-        sb.append(ident).append("\tpublic String getMessageCategory() {\n")
-                .append(ident).append("\t\treturn \"").append(messageCategory).append("\";\n")
-                .append(ident).append("\t}\n\n");
-
-        // //	---- Message-specific methods END
         sb.append(ident).append("\t//\t---- Message-specific methods END\n\n");
     }
 

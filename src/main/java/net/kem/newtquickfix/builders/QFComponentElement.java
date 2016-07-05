@@ -40,6 +40,7 @@ public class QFComponentElement extends QFElement {
         generateCreditsSection();
         getClassTitle();
         getMembers();
+        getValidateMethods();
         getCustomMethods();
         getConstructor();
         getMethodGetInstance();
@@ -63,6 +64,9 @@ public class QFComponentElement extends QFElement {
     protected void getImportSection() {
         super.getImportSection();
         for (QFRequirable member : members) {
+	        if(!shouldIncludeMember(member)) {
+		        continue;
+	        }
             // In some cases (e.g. in net.kem.newtquickfix.components.RateSource) we have class member (of type QFField)
             // that has the same name as Component class. In this case we have to use full-specified name for this class member.
             if (member.getName().equals(name)) {
@@ -100,17 +104,16 @@ public class QFComponentElement extends QFElement {
      */
     protected void getMembers() {
         for (QFRequirable member : members) {
+	        if(!shouldIncludeMember(member)) {
+		        continue;
+	        }
             member.ident = ident;
             member.toJavaSource();
         }
     }
 
-    protected void getCustomMethods() {
-        // //	---- Component-specific methods BEGIN
-        // @Override
-        // public boolean validate() {
-        //    return validate(getComponentValidator());
-        // }
+    protected void getValidateMethods() {
+        getValidateMethodNoParams();
         // @Override
         // public boolean validate(QFComponentValidator componentValidator) {
         //    Boolean valid = componentValidator.validateComponent(this);
@@ -123,22 +126,20 @@ public class QFComponentElement extends QFElement {
         //      allocReportID.validate(componentValidator);
         //    }
         // }
-        sb.append(ident).append("\t@Override\n").append(ident).append("\tpublic boolean validate() {\n")
-                .append(ident).append("\t\treturn validate(getComponentValidator());\n")
-                .append(ident).append("\t}\n");
-
         sb.append(ident).append("\t@Override\n").append(ident).append("\tpublic boolean validate(QFComponentValidator componentValidator) {\n");
-        sb.append(ident).append("\t\tBoolean valid = componentValidator.validateComponent(this);\n")
-                .append(ident).append("\t\tif(valid != null) {\n")
-                .append(ident).append("\t\t\treturn valid;\n")
-                .append(ident).append("\t\t}\n");
-        sb.append(ident).append("\t\tvalid = true;\n");
+        preValidate();
+
         for (QFRequirable member : members) {
+            // Some components should not be included in validation here.
+            // For example, in Messages both "StandardHeader" and "StandardTrailer" are validated in its superclass AMessage.
+            if(!shouldIncludeMember(member)) {
+                continue;
+            }
             switch (member.type) {
                 case FIELD: { // AllocReportID.getValidationErrorsHandler().invalidValue(OrderMassActionRequest.class, "ClOrdID[+ " + ClOrdID.TAG + "]", null);
                     if (member.isRequired()) {
                         sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n")
-                                .append(ident).append("\t\t\tvalid = componentValidator.mandatoryElementMissing(this, ").append(member.name).append(".class);\n")
+                                .append(ident).append("\t\t\tvalid &= componentValidator.mandatoryElementMissing(this, ").append(member.name).append(".class);\n")
                                 .append(ident).append("\t\t}\n");
                     }
                 }
@@ -149,9 +150,10 @@ public class QFComponentElement extends QFElement {
                 case TRAILER: { // componentValidator.mandatoryElementMissing(this, NoMDEntries.class);
                     if (member.isRequired()) {
                         sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" == null) {\n")
-                                .append(ident).append("\t\t\tvalid = componentValidator.mandatoryElementMissing(this, ").append(member.name).append(".class);\n")
+                                .append(ident).append("\t\t\tvalid &= componentValidator.mandatoryElementMissing(this, ").append(member.name).append(".class);\n")
                                 .append(ident).append("\t\t}\n");
-                    } else {
+                    }
+//                    else {
                         // if(standardTrailer != null) {
                         //    standardTrailer.validate(componentValidator);
                         // }
@@ -163,6 +165,8 @@ public class QFComponentElement extends QFElement {
                         // }
                         sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" != null) {\n");
                         if (member.getTagType() == QFMember.Type.GROUP) {
+	                        //noSides.forEach((g) -> g.validate(componentValidator));
+	                        //valid &= noSides.validate(componentValidator);
                             sb.append(ident).append("\t\t\t").append("for(").append(member.name).append(" groupMember: ").append(StringUtils.uncapitalize(member.name)).append(") {\n");
                             sb.append(ident).append("\t\t\t\tvalid &= groupMember.validate(componentValidator);\n");
                             sb.append(ident).append("\t\t\t}\n");
@@ -170,16 +174,43 @@ public class QFComponentElement extends QFElement {
                             sb.append(ident).append("\t\t\tvalid &= ").append(StringUtils.uncapitalize(member.name)).append(".validate(componentValidator);\n");
                         }
                         sb.append(ident).append("\t\t}\n");
-                    }
+//                    }
                 }
                 break;
             }
         }
         sb.append(ident).append("\t\treturn valid;\n");
         sb.append(ident).append("\t}\n");
+    }
 
-        // //	---- Component-specific methods END
-        sb.append(ident).append("\t//\t---- Component-specific methods END\n\n");
+    protected void getValidateMethodNoParams() {
+        // @Override
+        // public boolean validate() {
+        //    return validate(getComponentValidator());
+        // }
+        sb.append(ident).append("\t@Override\n").append(ident).append("\tpublic boolean validate() {\n")
+                .append(ident).append("\t\treturn validate(getComponentValidator());\n")
+                .append(ident).append("\t}\n");
+    }
+
+    protected void preValidate() {
+        // Boolean valid = componentValidator.validateComponent(this);
+        // if(valid != null) {
+        //     return valid;
+        // }
+        // valid = true;
+        sb.append(ident).append("\t\tBoolean valid = componentValidator.validateComponent(this);\n")
+                .append(ident).append("\t\tif(valid != null) {\n")
+                .append(ident).append("\t\t\treturn valid;\n")
+                .append(ident).append("\t\t}\n");
+        sb.append(ident).append("\t\tvalid = true;\n");
+    }
+
+    protected boolean shouldIncludeMember(QFRequirable member) {
+        return true;
+    }
+
+    protected void getCustomMethods() {
     }
 
     protected void getConstructor() {

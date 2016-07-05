@@ -75,6 +75,7 @@ public class QFGroupElement extends QFComponentElement {
         getClassTitle();
         getStaticSection();
         getMembers();
+        getValidateMethods();
         getCustomMethods();
         getConstructor();
         getMethodGetInstance();
