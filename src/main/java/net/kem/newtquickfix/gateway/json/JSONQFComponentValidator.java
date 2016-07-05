@@ -21,6 +21,7 @@ import java.util.Map;
  * Created by Evgeny Kurtser on 31-May-16 at 11:55 AM.
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
  */
+@SuppressWarnings("unused")
 public class JSONQFComponentValidator implements QFComponentValidator {
 	private List<QFUtils.UnknownTag> UNCLAIMED_TAGS;
 
@@ -43,11 +44,15 @@ public class JSONQFComponentValidator implements QFComponentValidator {
 		return failures.asMap();
 	}
 
-	public boolean isFailed(Failures failure) {
+	public Collection<String> getFailure(Failures failure) {
+		return failures.get(failure);
+	}
+
+	public boolean hasFailure(Failures failure) {
 		return failures.containsKey(failure);
 	}
 
-	public boolean isFailed() {
+	public boolean hasFailure() {
 		return !failures.isEmpty();
 	}
 
@@ -55,7 +60,6 @@ public class JSONQFComponentValidator implements QFComponentValidator {
 	public Boolean mandatoryElementMissing(@SuppressWarnings("unused") QFComponent thisComponent, @SuppressWarnings("unused") Class<?> missingElement) {
 		String out = "Mandatory tag " + missingElement.getSimpleName() + " is missing in its parent component " + thisComponent.getName();
 		failures.put(Failures.MANDATORY_ELEMENT_MISSING, out);
-//        System.err.println("Mandatory tag " + missingElement.getSimpleName() + " is missing in its parent component " + thisComponent.getName());
 		return false;
 	}
 
@@ -63,21 +67,18 @@ public class JSONQFComponentValidator implements QFComponentValidator {
 	public void duplicatedTag(QFField qfField, QFField currentValue, QFComponent component) {
 		String out = "Tag \"" + qfField + "\" will not replace value \"" + currentValue + "\" in class \"" + component.getName() + "\". This tag will be used in some other component.";
 		failures.put(Failures.DUPLICATED_TAG, out);
-//        System.out.println("Tag \"" + qfField + "\" will not replace value \"" + currentValue + "\" in class \"" + component.getName() + "\". This tag will be used in some other component.");
 	}
 
 	@Override
 	public void duplicatedComponent(QFComponent childrenComponentInstance, QFComponent thisInstance) {
 		String out = "Component \"" + childrenComponentInstance.getName() + "\" already exists in class \"" + thisInstance.getName() + "\". Please, check the incoming FIX message for data integrity.";
 		failures.put(Failures.DUPLICATED_COMPONENT, out);
-//	    System.out.println("Component \"" + childrenComponentInstance.getName() + "\" already exists in class \"" + thisInstance.getName() + "\". Please, check the incoming FIX message for data integrity.");
 	}
 
 	@Override
 	public void invalidGroupCount(QFField numOfElementsField, List<? extends QFComponent> groupInstances, Class<? extends QFComponent> ownerClass) {
 		String out = numOfElementsField.getName() + " declares " + numOfElementsField.getValue() + " group elements. However, actual number of group elements does not fit this number in component \"" + ownerClass.getSimpleName() + "\". Please, check the incoming FIX message for data integrity.";
 		failures.put(Failures.INVALID_GROUP_COUNT, out);
-//        System.out.println(numOfElementsField.getName() + " declares " + numOfElementsField.getValue() + " group elements. However, actual number of group elements does not fit this number in component \"" + ownerClass.getSimpleName() + "\". Please, check the incoming FIX message for data integrity.");
 	}
 
 	@Override
@@ -85,10 +86,8 @@ public class JSONQFComponentValidator implements QFComponentValidator {
 		String out;
 		if(t == null) {
 			out = "\"" + problematicValue + "\" should not be used as value of FIX tag " + fieldClass.getSimpleName();
-//            System.err.println("\"" + problematicValue + "\" should not be used as value of FIX tag " + fieldClass.getSimpleName());
 		} else {
 			out = "\"" + problematicValue + "\" should not be used as value of FIX tag " + fieldClass.getSimpleName() + " due to error " + t.getClass().getSimpleName() + ": " + t.getMessage();
-//            System.err.println("\"" + problematicValue + "\" should not be used as value of FIX tag " + fieldClass.getSimpleName() + " due to error " + t.getClass().getSimpleName() + ": " + t.getMessage());
 		}
 		failures.put(Failures.INVALID_FIELD_VALUE, out);
 		return getDefaultValue(typeClass);
@@ -98,7 +97,6 @@ public class JSONQFComponentValidator implements QFComponentValidator {
 	public <V> V notPredefinedFieldValue(@NotNull Class<?> fieldClass, @NotNull Class<V> typeClass, @NotNull V problematicValue) throws UnsupportedOperationException {
 		String out = "Value " + problematicValue + " is not pre-defined in field " + fieldClass.getSimpleName();
 		failures.put(Failures.NOT_PREDEFINED_FIELD_VALUE, out);
-//        System.err.println("Value " + problematicValue + " is not pre-defined in field " + fieldClass.getSimpleName());
 		return problematicValue;
 	}
 
@@ -117,10 +115,8 @@ public class JSONQFComponentValidator implements QFComponentValidator {
 		String out;
 		if(unprocessedTag.isKnown()) {
 			out = "Tag \"" + unprocessedTag + "\" should not appear in message \"" + ownerClass.getSimpleName() + "\"";
-//		    System.out.println("Tag \"" + unprocessedTag + "\" should not appear in message \"" + ownerClass.getSimpleName() + "\"");
 		} else {
 			out = "Undefined tag \"" + unprocessedTag + "\" has been detected while processing component \"" + ownerClass.getSimpleName() + "\"";
-//		    System.out.println("Undefined tag \"" + unprocessedTag + "\" has been detected while processing component \"" + ownerClass.getSimpleName() + "\"");
 		}
 		failures.put(Failures.UNPROCESSED_TAG, out);
 	}

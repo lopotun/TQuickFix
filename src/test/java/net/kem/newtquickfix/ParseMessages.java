@@ -9,6 +9,14 @@ import net.kem.newtquickfix.gateway.json.JSONGateway;
 import net.kem.newtquickfix.gateway.json.JSONQFComponentValidator;
 import net.kem.newtquickfix.gateway.json.JSONResponceHolder;
 import net.kem.newtquickfix.gateway.json.MultimapTypeAdapterFactory;
+import net.kem.newtquickfix.v50sp2.components.Instrument;
+import net.kem.newtquickfix.v50sp2.fields.MaturityDate;
+import net.kem.newtquickfix.v50sp2.fields.SecurityID;
+import net.kem.newtquickfix.v50sp2.fields.SecuritySubType;
+import net.kem.newtquickfix.v50sp2.fields.Side;
+import net.kem.newtquickfix.v50sp2.fields.Symbol;
+import net.kem.newtquickfix.v50sp2.messages.AllocationInstruction;
+import net.kem.newtquickfix.v50sp2.messages.TradeCaptureReport;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -39,8 +47,9 @@ public class ParseMessages {
 		ParseMessages theRabbit = new ParseMessages();
 //		theRabbit.init();
 //		theRabbit.testParseMessages();
-		theRabbit.testJSONParseMessages();
+//		theRabbit.testJSONParseMessages();
 //        theRabbit.testParseMessage(src);
+        theRabbit.testCreateMessage();
 		theRabbit.shutdown();
 	}
 
@@ -111,12 +120,14 @@ public class ParseMessages {
 
 					// Show JSON response.
 //					System.out.println(String.valueOf(count++) + '\t' + sb.toString() + "\n");
-//					if(componentValidator.isFailed()) {
+//					if(componentValidator.hasFailure()) {
 //						System.out.println(componentValidator.getFailures().entrySet().stream().count() + " failures");
 //					}
 
 					// Validation
-					message.validate(componentValidator);
+					componentValidator.hasFailure(JSONQFComponentValidator.Failures.INVALID_FIELD_VALUE);
+					componentValidator.getFailure(JSONQFComponentValidator.Failures.MANDATORY_ELEMENT_MISSING);
+					//message.validate(componentValidator);
 				} else {
 					System.err.println("Parsing error: " + responceHolder.getException());
 				}
@@ -127,5 +138,33 @@ public class ParseMessages {
 			}
 		}
 		br.close();
+	}
+
+	private void testCreateMessage() throws IOException, ClassNotFoundException {
+		StringBuilder sb = new StringBuilder();
+		AllocationInstruction msgJ = AllocationInstruction.getInstance();
+		msgJ.setSide(Side.BUY);
+		// Instrument
+		final Instrument instrument = Instrument.getInstance();
+		instrument.setSymbol(Symbol.getInstance("ACME"));
+		instrument.setSecurityID(SecurityID.getInstance("1234"));
+		instrument.setSecuritySubType(SecuritySubType.getInstance("1B2D"));
+		instrument.setMaturityDate(MaturityDate.getInstance());
+		msgJ.setInstrument(instrument);
+		msgJ.validate();
+		msgJ.toFIXString(sb);
+		System.out.println(sb.toString());
+//		System.out.println(msgJ.seal());
+
+		final QFComponentValidator componentValidator = LiteFixMessageParser.getComponentValidator();
+		System.out.println(componentValidator);
+
+		TradeCaptureReport msgAE = TradeCaptureReport.getInstance();
+		// The following two lines have the same effect.
+		msgAE.setInstrument(msgJ.getInstrument());
+		msgAE.setInstrument(msgJ);
+		sb.setLength(0);
+		msgAE.toFIXString(sb);
+		System.out.println(sb.toString());
 	}
 }

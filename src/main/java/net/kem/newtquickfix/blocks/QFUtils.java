@@ -455,4 +455,13 @@ public class QFUtils {
 			return false;
 		}
 	}
+
+
+	public static int calculateCheckSum(CharSequence sb) {
+		int total = 0;
+		for(int i=0; i<sb.length(); i++) {
+			total += sb.charAt(i);
+		}
+		return total % 256;
+	}
 }
