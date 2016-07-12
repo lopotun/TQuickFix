@@ -49,7 +49,7 @@ public class LiteFixMessageParser {
     }
 
     public QFMessage parse(CharSequence src, QFComponentValidator componentValidator) {
-        componentValidator.getUnprocessedTags().clear();
+        componentValidator.cleanup();
         Stack<QFField> tags = toFieldsStack(src, componentValidator);
         if(tags.size() < 4) {
             throw new UnsupportedOperationException("Too few recognized tags in message " + src);

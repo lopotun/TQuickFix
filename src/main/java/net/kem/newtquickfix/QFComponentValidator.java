@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.Collections;
 import java.util.Currency;
 import java.util.List;
@@ -22,6 +23,12 @@ import java.util.List;
 public interface QFComponentValidator {
 
     enum NotificationSeverity {TRACE, DEBUG, INFO, WARNING, ERROR, FATAL}
+
+	/**
+     * Since QFComponentValidator can be reused in a Thread pool, it's necessary to provide a cleanup mechanism that clears the QFComponentValidator instance to its initial state.
+	 * This method should be called before the QFComponentValidator instance is being reused.
+     */
+    void cleanup();
 
     //  ------------------------------------
     //  ----    Validation callbacks    ----
@@ -205,6 +212,10 @@ public interface QFComponentValidator {
             break;
             case "LocalTime": {
                 res = LocalTime.now();
+            }
+            break;
+            case "YearMonth": {
+                res = YearMonth.now();
             }
             break;
             default:

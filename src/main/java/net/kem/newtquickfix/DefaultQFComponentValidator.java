@@ -18,6 +18,11 @@ import java.util.List;
 public class DefaultQFComponentValidator implements QFComponentValidator {
     private static final ThreadLocal<List<QFUtils.UnknownTag>> UNCLAIMED_TAGS = ThreadLocal.withInitial(LinkedList::new);
 
+	/**
+	 * Since DefaultQFComponentValidator is stateless, there is nothing to cleanup.
+	 */
+	public void cleanup() {}
+
     @Override
     public Boolean mandatoryElementMissing(@SuppressWarnings("unused") QFComponent thisComponent, @SuppressWarnings("unused") Class<?> missingElement) {
         System.err.println("Mandatory tag " + missingElement.getSimpleName() + " is missing in its parent component " + thisComponent.getName());

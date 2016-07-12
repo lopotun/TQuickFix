@@ -56,6 +56,13 @@ public class JSONQFComponentValidator implements QFComponentValidator {
 		return !failures.isEmpty();
 	}
 
+	public void cleanup() {
+		failures.clear();
+		if(UNCLAIMED_TAGS != null) {
+			UNCLAIMED_TAGS.clear();
+		}
+	}
+
 	@Override
 	public Boolean mandatoryElementMissing(@SuppressWarnings("unused") QFComponent thisComponent, @SuppressWarnings("unused") Class<?> missingElement) {
 		String out = "Mandatory tag " + missingElement.getSimpleName() + " is missing in its parent component " + thisComponent.getName();
