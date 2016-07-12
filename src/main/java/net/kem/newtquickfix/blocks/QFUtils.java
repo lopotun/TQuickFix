@@ -23,6 +23,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -206,7 +207,7 @@ public class QFUtils {
 				// Create Message type mapping.
 				for (ClassPath.ClassInfo messageClass : messagesClasses) {
 					final Class<? extends QFMessage> load = (Class<? extends QFMessage>) messageClass.load();
-					if(!load.isInterface() && QFMessage.class.isAssignableFrom(load)) {
+					if(!load.isInterface() && !load.getSimpleName().equals("AMessage") && QFMessage.class.isAssignableFrom(load)) {
 						final Method getMsgType = load.getDeclaredMethod("getMsgType");
 						final QFField<String> msgType = (QFField<String>) getMsgType.invoke(null);
 						MESSAGE_TYPES.put(liteFixVersion, msgType, load);
@@ -218,7 +219,9 @@ public class QFUtils {
 	}
 
 	private static void mapFieldOwners(CharSequence fixVersion, Class<? extends QFComponent> newQFComponentClass) throws NoSuchMethodException {
-		Field[] declaredFields = newQFComponentClass.getDeclaredFields();
+//		Field[] declaredFields = newQFComponentClass.getDeclaredFields();
+		Set<Field> declaredFields = getAllFields(newQFComponentClass);
+
 		for (Field declaredField : declaredFields) {
 			QFMember annotation = declaredField.getAnnotation(QFMember.class);
 			if(annotation != null) {
@@ -237,10 +240,11 @@ public class QFUtils {
 					}
 					break;
 					// @annotation(type = annotation.Type.COMPONENT) public void setComponentC(ComponentC componentC)
-					case COMPONENT: {
+					case COMPONENT:
+					case MESSAGE: {
 						Class<? extends QFComponent> componentChildClass = (Class<? extends QFComponent>) declaredField.getType();
-						Method getter = newQFComponentClass.getDeclaredMethod("get" + componentChildClass.getSimpleName());
-						Method setter = newQFComponentClass.getDeclaredMethod("set" + componentChildClass.getSimpleName(), componentChildClass);
+						Method getter = newQFComponentClass.getMethod("get" + componentChildClass.getSimpleName());
+						Method setter = newQFComponentClass.getMethod("set" + componentChildClass.getSimpleName(), componentChildClass);
 						ChildGetterSetter<? extends QFComponent> childGetterSetter = new ChildGetterSetter(componentChildClass, getter, setter);
 						List<ChildGetterSetter<? extends QFComponent>> componentChildrenSetters = COMPONENT_CHILDREN.get(fixVersion, newQFComponentClass);
 						if(componentChildrenSetters == null) {
@@ -276,12 +280,25 @@ public class QFUtils {
 		}
 	}
 
+	private static Set<Field> getAllFields(Class<?> type) {
+		Set<Field> fields = new HashSet<>(Arrays.asList(type.getDeclaredFields()));
+		final Class<?> superclass = type.getSuperclass();
+		if (superclass != null && QFMessage.class.isAssignableFrom(superclass)) {
+			final Set<Field> headerTrailer =
+					Sets.newHashSet(superclass.getDeclaredFields()).parallelStream().
+					filter(field -> (field.getName().equals("standardHeader") || field.getName().equals("standardTrailer")))
+					.collect(Collectors.toSet());
+			fields.addAll(headerTrailer);
+		}
+		return fields;
+	}
+
 	public static Class<? extends QFMessage> getMessageClass(Stack<QFField> tags) {
 		final QFField<String> beginString = (QFField<String>) tags.get(tags.size() - 1);
 		final QFField<String> msgType = (QFField<String>) tags.get(tags.size() - 3);
 		Class<? extends QFMessage> res = MESSAGE_TYPES.get(beginString.getValue(), msgType);
 		if(res == null) {
-			throw new UnsupportedOperationException("Unrecognized FIX version " + beginString.getValue());
+			throw new UnsupportedOperationException("Message type " + msgType.toString() + " is not defined in FIX version " + beginString.getValue());
 		}
 		return res;
 	}

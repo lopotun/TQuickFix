@@ -166,6 +166,7 @@ public class QFComponentElement extends QFElement {
                         sb.append(ident).append("\t\tif(").append(StringUtils.uncapitalize(member.name)).append(" != null) {\n");
                         if (member.getTagType() == QFMember.Type.GROUP) {
 	                        //noSides.forEach((g) -> g.validate(componentValidator));
+                            //valid &= noSides.stream().map(member -> member.validate(componentValidator)).allMatch(validationResult -> validationResult);
 	                        //valid &= noSides.validate(componentValidator);
                             sb.append(ident).append("\t\t\t").append("for(").append(member.name).append(" groupMember: ").append(StringUtils.uncapitalize(member.name)).append(") {\n");
                             sb.append(ident).append("\t\t\t\tvalid &= groupMember.validate(componentValidator);\n");

@@ -13,8 +13,11 @@ import net.kem.newtquickfix.v50sp2.components.Instrument;
 import net.kem.newtquickfix.v50sp2.fields.MaturityDate;
 import net.kem.newtquickfix.v50sp2.fields.SecurityID;
 import net.kem.newtquickfix.v50sp2.fields.SecuritySubType;
+import net.kem.newtquickfix.v50sp2.fields.SenderCompID;
 import net.kem.newtquickfix.v50sp2.fields.Side;
 import net.kem.newtquickfix.v50sp2.fields.Symbol;
+import net.kem.newtquickfix.v50sp2.fields.TargetCompID;
+import net.kem.newtquickfix.v50sp2.fields.TradeDate;
 import net.kem.newtquickfix.v50sp2.messages.AllocationInstruction;
 import net.kem.newtquickfix.v50sp2.messages.TradeCaptureReport;
 
@@ -22,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDate;
 import java.util.regex.Pattern;
 
 //import net.kem.newtquickfix.v50sp2.components.StandardHeader;
@@ -47,9 +51,9 @@ public class ParseMessages {
 		ParseMessages theRabbit = new ParseMessages();
 //		theRabbit.init();
 //		theRabbit.testParseMessages();
-//		theRabbit.testJSONParseMessages();
+		theRabbit.testJSONParseMessages();
 //        theRabbit.testParseMessage(src);
-        theRabbit.testCreateMessage();
+//        theRabbit.testCreateMessage();
 		theRabbit.shutdown();
 	}
 
@@ -95,41 +99,50 @@ public class ParseMessages {
 	}
 
 	private void testJSONParseMessages() throws IOException, ClassNotFoundException {
-		BufferedReader br = new BufferedReader(new FileReader("FIXMessages.txt"));//export.txt
-		StringBuilder sb = new StringBuilder();
 
+		// Configure JSON parser.
 		GsonBuilder gsonBuilder = new GsonBuilder();
-//		gsonBuilder.registerTypeAdapter(Multimap.class, JSONGateway.MultimapSerializer.INSTANCE);
 		gsonBuilder.registerTypeAdapterFactory(new MultimapTypeAdapterFactory());
 		Gson gson = gsonBuilder.create();
 
+		// Take the reference to JSONGateway.
 		JSONGateway gw = JSONGateway.getInstance();
 
 		int count = 0;
 		String src;
+		StringBuilder sb = new StringBuilder();
+		BufferedReader br = new BufferedReader(new FileReader("FIXMessages.txt"));//export.txt
 		while ((src = br.readLine()) != null) {
+			if(src.length() == 0) {
+				continue;
+			}
+			sb.setLength(0);
 			try {
+				// Pass to JSONGateway the FIX message along with class name of QFComponentValidator
+				// that should be used by the JSONGateway to trace after parsing progress (this class must be present on the JSONGateway side).
 				// Get JSON response.
 				String jsonResponse = gw.parse(src, JSONQFComponentValidator.class.getName());
 
 				// Parse JSON response.
 				JSONResponceHolder responceHolder = JSONResponceHolder.fromJSON(jsonResponse, gson);
+				// The response can contain either parsed Message (along with populated QFComponentValidator) or error.
 				if(responceHolder.isMessage()) {
 					final JSONQFComponentValidator componentValidator = responceHolder.getComponentValidator();
-					final QFMessage message = responceHolder.getMessage();
+					if(componentValidator.hasFailure()) {
+						System.out.println(componentValidator.getFailures().entrySet().stream().count() + " failures");
+					}
 
+					final QFMessage message = responceHolder.getMessage();
 					// Show JSON response.
-//					System.out.println(String.valueOf(count++) + '\t' + sb.toString() + "\n");
-//					if(componentValidator.hasFailure()) {
-//						System.out.println(componentValidator.getFailures().entrySet().stream().count() + " failures");
-//					}
+					message.toFIXString(sb);
+					System.out.println(String.valueOf(count++) + '\t' + sb.toString() + "\n");
 
 					// Validation
 					componentValidator.hasFailure(JSONQFComponentValidator.Failures.INVALID_FIELD_VALUE);
 					componentValidator.getFailure(JSONQFComponentValidator.Failures.MANDATORY_ELEMENT_MISSING);
 					//message.validate(componentValidator);
 				} else {
-					System.err.println("Parsing error: " + responceHolder.getException());
+					System.err.println("Parsing severe error: " + responceHolder.getException());
 				}
 			} catch (Exception e) {
 				System.err.println("ERROR IN LINE " + count);
@@ -141,31 +154,51 @@ public class ParseMessages {
 	}
 
 	private void testCreateMessage() throws IOException, ClassNotFoundException {
-		StringBuilder sb = new StringBuilder();
+		// Get reference to Component Validator.
+		final QFComponentValidator componentValidator = LiteFixMessageParser.getComponentValidator();
+		// The same can be done with this code:
+//		final QFComponentValidator componentValidator = new DefaultQFComponentValidator();
+//		 LiteFixMessageParser.setComponentValidator(componentValidator);
+
+		// Create message.
 		AllocationInstruction msgJ = AllocationInstruction.getInstance();
+		// Fill it with some fields.
 		msgJ.setSide(Side.BUY);
-		// Instrument
+		msgJ.setTradeDate(TradeDate.getInstance()); // This will set current date.
+		msgJ.setTradeDate(TradeDate.getInstance(LocalDate.of(2015, 11, 23))); // Alternatively, the date can be set in this way.
+		msgJ.setTradeDate(TradeDate.getInstance("20151123")); // Or even in this way in "yyyyMMdd" format.
+
+		// Define and populate some Message Component (for example, "Instrument").
 		final Instrument instrument = Instrument.getInstance();
 		instrument.setSymbol(Symbol.getInstance("ACME"));
 		instrument.setSecurityID(SecurityID.getInstance("1234"));
 		instrument.setSecuritySubType(SecuritySubType.getInstance("1B2D"));
 		instrument.setMaturityDate(MaturityDate.getInstance());
+		// Attach it to the Massage.
 		msgJ.setInstrument(instrument);
-		msgJ.validate();
-		msgJ.toFIXString(sb);
-		System.out.println(sb.toString());
-		System.out.println(msgJ.seal());
-		msgJ.validate();
 
-		final QFComponentValidator componentValidator = LiteFixMessageParser.getComponentValidator();
-		System.out.println(componentValidator);
+		// Now, let's validate our Message.
+		System.out.println("Our " + msgJ.getMessageType().getValue() + " message is " + (msgJ.validate()? "valid :-)": "invalid :-("));
+		// Well, if you want to get more details about validation failures, you can either
+		// implement more sophisticated QFComponentValidator or just take a look at log :-)
 
+		// OK. I want to see the message. NOW!!
+		// Here it comes...
+		CharSequence asFIX = msgJ.seal();
+		System.out.println(asFIX);
+
+
+		// Let's create another Message.
 		TradeCaptureReport msgAE = TradeCaptureReport.getInstance();
-		// The following two lines have the same effect.
+
+		// Let's assume that we want to have in this Message the same Instrument as previous message has.
+		// That's simple!
 		msgAE.setInstrument(msgJ.getInstrument());
+		// Or, even more simple!
+		// The LiteFix is aware that 'msgJ' contains the Instrument instance and it is smart enough to extract this instance automatically.
 		msgAE.setInstrument(msgJ);
-		sb.setLength(0);
-		msgAE.toFIXString(sb);
-		System.out.println(sb.toString());
+		// (how would you implement it with QuickFix?..)
+
+		System.out.println(msgAE.seal(SenderCompID.getInstance("The Sender"), TargetCompID.getInstance("The Target")));
 	}
 }

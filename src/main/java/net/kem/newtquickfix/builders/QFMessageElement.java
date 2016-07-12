@@ -87,7 +87,7 @@ public class QFMessageElement extends QFComponentElement {
         // //	---- Message-specific methods BEGIN
         /*
         public static MsgType getMsgType() {
-            return MsgType.getInstance("BL");
+            return MsgType.getInstance("BL", null);
         }
 
         @Override
@@ -97,7 +97,7 @@ public class QFMessageElement extends QFComponentElement {
         */
         sb.append(ident).append("\t//\t---- Message-specific methods BEGIN\n");
         sb.append(ident).append("\tpublic static MsgType getMsgType() {\n")
-                .append(ident).append("\t\treturn MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\");\n")
+                .append(ident).append("\t\treturn MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\", null);\n")
                 .append(ident).append("\t}\n\n");
 
         sb.append(ident).append("\t@Override\n")

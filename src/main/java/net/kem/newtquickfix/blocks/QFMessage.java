@@ -42,6 +42,12 @@ public abstract class QFMessage extends QFComponent {
         return thisInstance;
     }
 
+    public StringBuilder toFIXString() {
+        StringBuilder sb = new StringBuilder(2048);
+        toFIXString(sb);
+        return sb;
+    }
+
     public void toFIXString(StringBuilder sb) {
         if (unknownTags != null) {
             for (QFField<String> unknownTag : unknownTags) {
