@@ -32,7 +32,9 @@ public class QFBooleanFieldElement extends QFFieldElement {
                 return getInstance(true);
             } else {
                 final Boolean newValue = componentValidator.invalidFieldValue(AggregatedBook.class, Boolean.class, value, null);
-                return getInstance(newValue);
+                AccountType res = getInstance(newValue, componentValidator);
+			    res.originalValue = value;
+			    return res;
             }
         }
         */
@@ -45,8 +47,10 @@ public class QFBooleanFieldElement extends QFFieldElement {
                     .append("\t\tif(value.length() == 1 && (value.charAt(0) == 'Y' || value.charAt(0) == 'y')) {\n")
                     .append("\t\t\treturn getInstance(true);\n")
                     .append("\t\t} else {\n")
-                    .append("\t\t\tfinal Boolean newValue = componentValidator.invalidFieldValue(").append(name).append(".class, Boolean.class, value, null);")
-                    .append("\t\t\treturn getInstance(newValue, componentValidator);\n")
+                    .append("\t\t\tfinal Boolean newValue = componentValidator.invalidFieldValue(").append(name).append(".class, Boolean.class, value, null);\n")
+                    .append("\t\t\t").append(name).append(" res = getInstance(newValue, componentValidator);\n")
+                    .append("\t\t\tres.originalValue = value;\n")
+                    .append("\t\t\treturn res;\n")
                     .append("\t\t}\n")
                     .append("\t}\n\n");
         }

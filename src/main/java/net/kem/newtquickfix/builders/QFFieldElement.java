@@ -184,7 +184,9 @@ public class QFFieldElement extends QFElement {
 			return getInstance(Integer.parseInt(value), componentValidator);
 		} catch (Exception e) {
 			final Integer newValue = componentValidator.invalidFieldValue(AccountType.class, Integer.class, value, e);
-			return getInstance(newValue);
+			AccountType res = getInstance(newValue, componentValidator);
+			res.originalValue = value;
+			return res;
 		}
 	}
     */
@@ -200,9 +202,11 @@ public class QFFieldElement extends QFElement {
                     .append("\t\t\treturn getInstance(").append(def.typeToStringConversion).append(", componentValidator);\n") //"Integer.parseInt(value)"
                     .append("\t\t} catch (Exception e) {\n")
                     .append("\t\t\tfinal ").append(typeClassName)
-                        .append(" newValue = componentValidator.invalidFieldValue(")
-                        .append(name).append(".class, ").append(typeClassName).append(".class, value, e);\n")
-                    .append("\t\t\treturn getInstance(newValue, componentValidator);\n")
+                    .append(" newValue = componentValidator.invalidFieldValue(")
+                    .append(name).append(".class, ").append(typeClassName).append(".class, value, e);\n")
+                    .append("\t\t\t").append(name).append(" res = getInstance(newValue, componentValidator);\n")
+                    .append("\t\t\tres.originalValue = value;\n")
+                    .append("\t\t\treturn res;\n")
                     .append("\t\t}\n")
             .append("\t}\n\n");
         }

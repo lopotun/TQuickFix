@@ -305,10 +305,10 @@ public class QFUtils {
 
 	public static QFField lookupField(CharSequence fixVersion, QFTag tag, QFComponentValidator componentValidator) {
 		QFField res = null;
-		Method getInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, tag.getTagKey());
-		if(getInstance != null) {
+		Method methodGetInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, tag.getTagKey());
+		if(methodGetInstance != null) {
 			try {
-				res = (QFField) getInstance.invoke(null, tag.getTagValue(), componentValidator);
+				res = (QFField) methodGetInstance.invoke(null, tag.getTagValue(), componentValidator);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

@@ -23,6 +23,11 @@ public class QFDateFieldElement extends QFFieldElement {
         return getInstance(LocalDateTime.parse(value, getDateFormat()), LiteFixMessageParser.getComponentValidator());
         } catch (Exception e) {
             final java.time.LocalDateTime newValue = componentValidator.invalidFieldValue(MDEntryDate.class, LocalDate.class, value, e);
+
+            TradeDate res = getInstance(newValue, componentValidator);
+			res.originalValue = value;
+			return res;
+
             return getInstance(newValue);
         }
 	}
@@ -39,9 +44,11 @@ public class QFDateFieldElement extends QFFieldElement {
                     .append("\t\t\treturn getInstance(").append(def.typeClass.getSimpleName()).append(".parse(value, getDateFormat()), componentValidator);\n")
                     .append("\t\t} catch (Exception e) {\n")
                     .append("\t\t\tfinal ").append(def.typeClass.getSimpleName())
-                        .append(" newValue = componentValidator.invalidFieldValue(")
-                        .append(name).append(".class, ").append(def.typeClass.getSimpleName()).append(".class, value, e);\n")
-                    .append("\t\t\treturn getInstance(newValue, componentValidator);\n")
+                    .append(" newValue = componentValidator.invalidFieldValue(")
+                    .append(name).append(".class, ").append(def.typeClass.getSimpleName()).append(".class, value, e);\n")
+                    .append("\t\t\t").append(name).append(" res = getInstance(newValue, componentValidator);\n")
+                    .append("\t\t\tres.originalValue = value;\n")
+                    .append("\t\t\treturn res;\n")
                     .append("\t\t}\n")
                     .append("\t}\n\n");
         }

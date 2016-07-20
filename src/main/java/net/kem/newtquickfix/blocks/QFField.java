@@ -4,6 +4,7 @@ import net.kem.newtquickfix.LiteFixMessageParser;
 import net.kem.newtquickfix.QFComponentValidator;
 
 import java.io.Serializable;
+import java.util.Optional;
 
 /**
  * Created with IntelliJ IDEA.
@@ -24,7 +25,7 @@ public abstract class QFField<V> implements Serializable {
 	private transient int $hashCode;
 	protected transient String $fixString;
 	protected QFComponentValidator componentValidator;
-
+	protected CharSequence originalValue;
 	protected V value;
 
 	public abstract int getTag();
@@ -53,7 +54,9 @@ public abstract class QFField<V> implements Serializable {
 
 	public void toFIXString(StringBuilder sb) {
 		if($fixString == null) {
-			$fixString = getTag() + "=" + (value==null? "": value) + QFFieldUtils.FIELD_SEPARATOR;
+			$fixString = getTag() + "=" +
+					(originalValue==null? value==null? "": value: originalValue) +
+					QFFieldUtils.FIELD_SEPARATOR;
 		}
 		sb.append($fixString);
 	}
@@ -64,6 +67,10 @@ public abstract class QFField<V> implements Serializable {
 			toFIXString(sb);
 		}
 		return $fixString;
+	}
+
+	public Optional<CharSequence> getOriginalValue() {
+		return Optional.of(originalValue);
 	}
 
 	@Override
