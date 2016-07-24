@@ -79,7 +79,7 @@ public class QFGroupBrick extends QFRequirable {
         private GroupA() {
         }
 
-        public static GroupA getInstance(Stack<QFField> tags, GroupA instance) {
+        public static GroupA getInstance(Deque<QFField> tags, GroupA instance) {
             return getInstance(tags, instance, GroupA.class);
         }
 

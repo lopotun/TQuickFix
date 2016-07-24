@@ -8,8 +8,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,10 +54,10 @@ public abstract class QFComponent {
         return getClass().getSimpleName();
     }
 
-    protected static <QFComp extends QFComponent> QFComp getInstance(CharSequence fixVersion, Stack<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
+    protected static <QFComp extends QFComponent> QFComp getInstance(CharSequence fixVersion, Deque<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
         return getInstance(fixVersion, tags, thisInstance, compClass, 0, componentValidator);
     }
-    protected static <QFComp extends QFComponent> QFComp getInstance(CharSequence fixVersion, Stack<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, int groupDelimiterTag, QFComponentValidator componentValidator) {
+    protected static <QFComp extends QFComponent> QFComp getInstance(CharSequence fixVersion, Deque<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, int groupDelimiterTag, QFComponentValidator componentValidator) {
         NEXT_TAG:
         while (true) {
             if (tags.isEmpty()) {

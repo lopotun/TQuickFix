@@ -28,15 +28,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDate;
 import java.util.regex.Pattern;
 
-//import net.kem.newtquickfix.v50sp2.components.StandardHeader;
-//import net.kem.newtquickfix.v50sp2.components.StandardTrailer;
-//import net.kem.newtquickfix.v50sp2.fields.AllocStatus;
-//import net.kem.newtquickfix.v50sp2.fields.BeginString;
-//import net.kem.newtquickfix.v50sp2.fields.MsgType;
-//import net.kem.newtquickfix.v50sp2.fields.SendingTime;
-//import net.kem.newtquickfix.v50sp2.fields.TradeDate;
-//import net.kem.newtquickfix.v50sp2.messages.AllocationReportAck;
-
 /**
  * Created by Evgeny Kurtser on 12/22/2015 at 12:46 PM.
  * <a href=mailto:EvgenyK@traiana.com>EvgenyK@traiana.com</a>
@@ -49,9 +40,9 @@ public class ParseMessages {
 //        final CharSequence src = "8=FIX.5.0\u00019=0\u000135=J\u000152=20120325-07:45:05.364\u000170=1234\u000171=0\u000172=1234\u0001626=2\u0001857=1\u000154=2\u000155=\u000148=IBM.TH\u000122=5\u000153=1220\u00016=10.01\u000115=USD\u0001453=2\u0001448=default_test_client\u0001447=D\u0001452=3\u0001448=default_test_eb\u0001447=D\u0001452=1\u0001207=J_EXCHANGE\u000175=20120325\u000173=1\u000137=\u000163=4\u000164=20120325\u000178=2\u000179=default_test_giveup_account\u000180=1210\u0001467=5678\u000181=3\u0001539=1\u0001524=default_test_cb\u0001525=C\u0001538=4\u0001161=Electronic\u0001153=10.01\u0001155=1\u0001156=M\u0001120=USD\u000110251=10251.111111111\u000110252=10252.111111111\u000112=5\u000113=1\u0001479=USD\u000179=GIVEUP ACCOUNT_1\u000180=10\u0001467=1234\u000181=3\u0001539=1\u0001524=default_test_cb\u0001525=C\u0001538=4\u0001161=Electronic\u0001153=10.01\u0001155=1\u0001156=M\u0001120=USD\u000110251=10251.222222222\u000110252=10252.22222222\u000112=5\u000113=1\u0001479=USD\u000160=20120325-07:45:05.364\u000110351=10351.123456789\u000110352=10352.123456789\u000110=0\u0001";
 
 		ParseMessages theRabbit = new ParseMessages();
-//		theRabbit.init();
-//		theRabbit.testParseMessages();
-		theRabbit.testJSONParseMessages();
+		theRabbit.init();
+		theRabbit.testParseMessages();
+//		theRabbit.testJSONParseMessages();
 //        theRabbit.testParseMessage(src);
 //        theRabbit.testCreateMessage();
 		theRabbit.shutdown();
@@ -178,7 +169,7 @@ public class ParseMessages {
 		msgJ.setInstrument(instrument);
 
 		// Now, let's validate our Message.
-		System.out.println("Our " + msgJ.getMessageType().getValue() + " message is " + (msgJ.validate()? "valid :-)": "invalid :-("));
+		System.out.println("Our " + msgJ.getMessageType().getValue() + " message is " + (msgJ.validate() ? "valid :-)": "invalid :-("));
 		// Well, if you want to get more details about validation failures, you can either
 		// implement more sophisticated QFComponentValidator or just take a look at log :-)
 

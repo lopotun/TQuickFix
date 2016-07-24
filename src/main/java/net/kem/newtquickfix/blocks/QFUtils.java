@@ -22,13 +22,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.stream.Collectors;
 
 //import net.kem.newtquickfix.components.StandardHeader;
@@ -293,9 +293,9 @@ public class QFUtils {
 		return fields;
 	}
 
-	public static Class<? extends QFMessage> getMessageClass(Stack<QFField> tags) {
-		final QFField<String> beginString = (QFField<String>) tags.get(tags.size() - 1);
-		final QFField<String> msgType = (QFField<String>) tags.get(tags.size() - 3);
+	public static Class<? extends QFMessage> getMessageClass(Deque<QFField> tags) {
+		final QFField beginString = tags.peek();
+		final QFField msgType = ((LinkedList<QFField>)tags).get(2);
 		Class<? extends QFMessage> res = MESSAGE_TYPES.get(beginString.getValue(), msgType);
 		if(res == null) {
 			throw new UnsupportedOperationException("Message type " + msgType.toString() + " is not defined in FIX version " + beginString.getValue());
@@ -303,18 +303,35 @@ public class QFUtils {
 		return res;
 	}
 
-	public static QFField lookupField(CharSequence fixVersion, QFTag tag, QFComponentValidator componentValidator) {
+//	public static QFField lookupField(CharSequence fixVersion, QFTag tag, QFComponentValidator componentValidator) {
+//		QFField res = null;
+//		Method methodGetInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, tag.getTagKey());
+//		if(methodGetInstance != null) {
+//			try {
+//				res = (QFField) methodGetInstance.invoke(null, tag.getTagValue(), componentValidator);
+//			} catch (Exception e) {
+//				e.printStackTrace();
+//			}
+//		} else {
+//			// Unknown tag.
+//			res = new UnknownTag(tag);
+//		}
+//		return res;
+//	}
+
+	public static QFField lookupField(CharSequence fixVersion, String tagKey, String tagValue, QFComponentValidator componentValidator) {
 		QFField res = null;
-		Method methodGetInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, tag.getTagKey());
+		int iTagKey = Integer.parseInt(tagKey);
+		Method methodGetInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, iTagKey);
 		if(methodGetInstance != null) {
 			try {
-				res = (QFField) methodGetInstance.invoke(null, tag.getTagValue(), componentValidator);
+				res = (QFField) methodGetInstance.invoke(null, tagValue, componentValidator);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		} else {
 			// Unknown tag.
-			res = new UnknownTag(tag);
+			res = new UnknownTag(iTagKey, tagValue);
 		}
 		return res;
 	}
@@ -446,6 +463,11 @@ public class QFUtils {
 
 	public static class UnknownTag extends QFField<String> {
 		private int number;
+
+		public UnknownTag(int tagKey, String tagValue) {
+			this.value = tagValue;
+			this.number = tagKey;
+		}
 
 		public UnknownTag(QFTag tag) {
 			this.value = tag.getTagValue();

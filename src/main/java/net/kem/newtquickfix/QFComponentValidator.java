@@ -127,6 +127,13 @@ public interface QFComponentValidator {
         throw new UnsupportedOperationException("Value " + problematicValue + " is not pre-defined in field " + fieldClass.getSimpleName());
     }
 
+    default <V> String toFIXString(QFField vqfField, StringBuilder sb) {
+//        $fixString = getTag() + "=" +
+//                (value==null? "": value) +
+//                QFFieldUtils.FIELD_SEPARATOR;
+        return null;
+    }
+
     /**
      * This method is called while FIX data parsing when the given tag is recognized neither by LiteFix Message (misplaced tag) nor by any of its components (unknown tag).
      *

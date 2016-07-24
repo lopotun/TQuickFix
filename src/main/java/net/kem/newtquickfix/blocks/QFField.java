@@ -25,7 +25,7 @@ public abstract class QFField<V> implements Serializable {
 	private transient int $hashCode;
 	protected transient String $fixString;
 	protected QFComponentValidator componentValidator;
-	protected CharSequence originalValue;
+	protected String originalValue;
 	protected V value;
 
 	public abstract int getTag();
@@ -54,9 +54,13 @@ public abstract class QFField<V> implements Serializable {
 
 	public void toFIXString(StringBuilder sb) {
 		if($fixString == null) {
-			$fixString = getTag() + "=" +
-					(originalValue==null? value==null? "": value: originalValue) +
-					QFFieldUtils.FIELD_SEPARATOR;
+			if(originalValue != null) {
+				$fixString = getComponentValidator().toFIXString(this, sb);
+			} else {
+				$fixString = getTag() + "=" +
+						(value==null? "": value) +
+						QFFieldUtils.FIELD_SEPARATOR;
+			}
 		}
 		sb.append($fixString);
 	}
