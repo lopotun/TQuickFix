@@ -58,7 +58,7 @@ public class QFGroupBrick extends QFRequirable {
     }
 
     /*
-    @QFGroupDef(count = FieldIntegerGroupCount.TAG, delimiter = FieldStringGroupDelimiter.TAG)
+    @QFGroupDef(countField = FieldIntegerGroupCount.class, count = FieldIntegerGroupCount.TAG, delimiterField = FieldStringGroupDelimiter.class, delimiter = FieldStringGroupDelimiter.TAG)
     public static class GroupA extends QFComponent {
         private static final int $GROUP_COUNT;
         static {

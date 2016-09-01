@@ -75,6 +75,10 @@ public class ParseMessages {
 		String src;
 		while ((src = br.readLine()) != null) {
 			try {
+				src = src.trim();
+				if(src.length() == 0 || src.startsWith("#")) {
+					continue;
+				}
 				QFMessage msg = messageParser.parse(src);
 				msg.toFIXString(sb);
 				System.out.println(String.valueOf(count++) + '\t' + sb.toString());

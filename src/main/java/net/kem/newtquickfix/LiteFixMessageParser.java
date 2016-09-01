@@ -1,14 +1,20 @@
 package net.kem.newtquickfix;
 
+import net.kem.newtquickfix.blocks.GroupPopulator;
+import net.kem.newtquickfix.blocks.Populator;
+import net.kem.newtquickfix.blocks.QFComponent;
 import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMessage;
 import net.kem.newtquickfix.blocks.QFUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,9 +61,44 @@ public class LiteFixMessageParser {
             throw new UnsupportedOperationException("Too few recognized tags in message " + src);
         }
         try {
-            final Class<? extends QFMessage> messageClass = QFUtils.getMessageClass(tags);
-            final Method getInstanceMethod = messageClass.getMethod("getInstance", Deque.class, QFComponentValidator.class);
-            return (QFMessage) getInstanceMethod.invoke(null, tags, componentValidator);
+            final Class<QFMessage> messageClass = QFUtils.getMessageClass(tags);
+
+	        QFUtils.insureMessageStructureCache(messageClass);
+
+	        List<QFUtils.UnknownTag> unknownTags = null;
+	        final Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE = new HashMap<>();
+
+	        for (QFField tag : tags) {
+		        Optional<Populator> parent = QFUtils.getParentSetter(messageClass, tag);
+//		        parent.ifPresent(System.out::println);
+		        Populator populator = parent.orElse(null);
+		        if(populator == null) {
+			        if(unknownTags == null) {
+				        unknownTags = new LinkedList<>();
+			        }
+			        unknownTags.add(new QFUtils.UnknownTag(tag));
+		        } else {
+			        QFUtils.assignToComponent(messageClass, tag, populator, COMPONENT_CLASS_TO_INSTANCE);
+		        }
+	        }
+	        final QFMessage message = (QFMessage) COMPONENT_CLASS_TO_INSTANCE.get(messageClass);
+	        for (Map.Entry<Class, QFComponent> componentEntry : COMPONENT_CLASS_TO_INSTANCE.entrySet()) {
+	        	if(componentEntry.getValue() != message) {
+			        Optional<Populator> parent = QFUtils.getParentSetter(messageClass, componentEntry.getValue());
+			        Populator populator = parent.orElse(null);
+			        if(!(populator instanceof GroupPopulator)) {
+				        QFUtils.assignToComponent(messageClass, componentEntry.getValue(), populator, COMPONENT_CLASS_TO_INSTANCE);
+			        }
+		        }
+	        }
+
+	        if(unknownTags != null) {
+		        message.setUnknownTag(unknownTags);
+	        }
+
+//            final Method ownerGetInstanceMethod = messageClass.getMethod("getInstance", Deque.class, QFComponentValidator.class);
+//            return (QFMessage) ownerGetInstanceMethod.invoke(null, tags, componentValidator);
+	        return message;
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new UnsupportedOperationException("Internal error", e);
         }

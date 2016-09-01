@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -48,7 +50,7 @@ public class QFUtils {
 	private static Table<CharSequence, Class<? extends QFField>, Map<Class<? extends QFComponent>, ChildGetterSetter>> FIELD_OWNERS = HashBasedTable.create(5, 1350);
 	private static Table<CharSequence, Class<? extends QFComponent>, List<ChildGetterSetter<? extends QFComponent>>> COMPONENT_CHILDREN = HashBasedTable.create(5, 240);
 	private static Table<CharSequence, Class<? extends QFComponent>, List<ChildGetterSetterGroup<? extends QFComponent>>> GROUP_CHILDREN = HashBasedTable.create(5, 150);
-	private static Table<CharSequence, QFField<String>, Class<? extends QFMessage>> MESSAGE_TYPES = HashBasedTable.create(5, 120);
+	private static Table<CharSequence, QFField<String>, Class<QFMessage>> MESSAGE_TYPES = HashBasedTable.create(5, 120);
 
 	static void init() throws IOException {
 		if(classPath == null) {
@@ -152,7 +154,7 @@ public class QFUtils {
 
 		boolean isMESSAGE_TYPESLoaded = false;
 		try {
-			MESSAGE_TYPES = (Table<CharSequence, QFField<String>, Class<? extends QFMessage>>) loadStaticResource("MESSAGE_TYPES.dat");
+			MESSAGE_TYPES = (Table<CharSequence, QFField<String>, Class<QFMessage>>) loadStaticResource("MESSAGE_TYPES.dat");
 			isMESSAGE_TYPESLoaded = true;
 			LoggerUtil.getLogger().fine("MESSAGE_TYPES has been restored.");
 		} catch (IOException | ClassNotFoundException e) {
@@ -206,7 +208,7 @@ public class QFUtils {
 				}
 				// Create Message type mapping.
 				for (ClassPath.ClassInfo messageClass : messagesClasses) {
-					final Class<? extends QFMessage> load = (Class<? extends QFMessage>) messageClass.load();
+					final Class<QFMessage> load = (Class<QFMessage>) messageClass.load();
 					if(!load.isInterface() && !load.getSimpleName().equals("AMessage") && QFMessage.class.isAssignableFrom(load)) {
 						final Method getMsgType = load.getDeclaredMethod("getMsgType");
 						final QFField<String> msgType = (QFField<String>) getMsgType.invoke(null);
@@ -283,41 +285,143 @@ public class QFUtils {
 	private static Set<Field> getAllFields(Class<?> type) {
 		Set<Field> fields = new HashSet<>(Arrays.asList(type.getDeclaredFields()));
 		final Class<?> superclass = type.getSuperclass();
-		if (superclass != null && QFMessage.class.isAssignableFrom(superclass)) {
+		if(superclass != null && QFMessage.class.isAssignableFrom(superclass)) {
 			final Set<Field> headerTrailer =
 					Sets.newHashSet(superclass.getDeclaredFields()).parallelStream().
-					filter(field -> (field.getName().equals("standardHeader") || field.getName().equals("standardTrailer")))
-					.collect(Collectors.toSet());
+							filter(field -> (field.getName().equals("standardHeader") || field.getName().equals("standardTrailer")))
+							.collect(Collectors.toSet());
 			fields.addAll(headerTrailer);
 		}
 		return fields;
 	}
 
-	public static Class<? extends QFMessage> getMessageClass(Deque<QFField> tags) {
+	public static Class<QFMessage> getMessageClass(Deque<QFField> tags) {
 		final QFField beginString = tags.peek();
-		final QFField msgType = ((LinkedList<QFField>)tags).get(2);
-		Class<? extends QFMessage> res = MESSAGE_TYPES.get(beginString.getValue(), msgType);
+		final QFField msgType = ((LinkedList<QFField>) tags).get(2);
+		Class<QFMessage> res = MESSAGE_TYPES.get(beginString.getValue(), msgType);
 		if(res == null) {
 			throw new UnsupportedOperationException("Message type " + msgType.toString() + " is not defined in FIX version " + beginString.getValue());
 		}
 		return res;
 	}
 
-//	public static QFField lookupField(CharSequence fixVersion, QFTag tag, QFComponentValidator componentValidator) {
-//		QFField res = null;
-//		Method methodGetInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, tag.getTagKey());
-//		if(methodGetInstance != null) {
-//			try {
-//				res = (QFField) methodGetInstance.invoke(null, tag.getTagValue(), componentValidator);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//		} else {
-//			// Unknown tag.
-//			res = new UnknownTag(tag);
-//		}
-//		return res;
-//	}
+	/**
+	 * This table contains mapping between a message(of specific version) and a QFField or a QFComponent to its Populator.
+	 */
+	private static final Table<Class<? extends QFMessage>, Object, Populator> MESSAGE_FIELD_POPULATOR = HashBasedTable.create();
+	private static final Table<Class<QFMessage>, Class<? extends QFField>, GroupPopulator> DELIMETER_GROUPPOPULATOR = HashBasedTable.create();
+
+	/**
+	 * Builds message tree structure for the given message.
+	 * @param messageClass    top-level message class
+	 * @throws NoSuchMethodException
+	 */
+	public static void buildFieldParentSetters(final Class<QFMessage> messageClass) throws NoSuchMethodException {
+		buildFieldParentSetters(messageClass, messageClass);
+		final Class<QFComponent> superClass = (Class<QFComponent>) messageClass.getSuperclass();
+		buildFieldParentSetters(messageClass, superClass);
+	}
+
+	/**
+	 * Builds message tree structure baked by {@linkplain #MESSAGE_FIELD_POPULATOR}.
+	 * @param message           top-level message class
+	 * @param componentClass    component class that belongs to this message
+	 * @throws NoSuchElementException
+	 * @throws NoSuchMethodException
+	 */
+	private static void buildFieldParentSetters(Class<QFMessage> message, Class<? extends QFComponent> componentClass) throws NoSuchElementException, NoSuchMethodException {
+		final Method[] componentMethods = componentClass.getDeclaredMethods(); // All public non-inherited methods of this component.
+		for (Method setterMethod : componentMethods) {
+			// Filter methods: allow single-parameter setters only.
+			if(setterMethod.getParameterCount() != 1 || !setterMethod.getName().startsWith("set")) {
+				continue;
+			}
+			final Class setterParameterClass = setterMethod.getParameterTypes()[0];  // setter parameter class.
+			// This is a QFField setter.
+			if(QFField.class.isAssignableFrom(setterParameterClass)) {
+				final Populator populator = new Populator(setterMethod);    // Create Populator.
+				// Check whether there is Group Populator is already defined to this QFField.
+				final Populator groupPopulator = MESSAGE_FIELD_POPULATOR.get(message, setterParameterClass);
+				if(groupPopulator != null) {
+					if(groupPopulator instanceof GroupPopulator) {
+//						// Indicate that the current QFFiled belongs to a QFGroup as well (e.g. in case of group count field).
+//						((GroupPopulator) groupPopulator).belongsToGroupMember(populator);
+//						MESSAGE_FIELD_POPULATOR.put(message, setterParameterClass, groupPopulator);
+					} else {
+						System.out.println("There is " + groupPopulator);
+					}
+				} else {
+					MESSAGE_FIELD_POPULATOR.put(message, setterParameterClass, populator);
+				}
+				continue;
+			}
+			// This is a QFComponent setter.
+			if(QFComponent.class.isAssignableFrom(setterParameterClass)) {
+				// Create Populator. Some methods (like Header/Trailer setters) come from super class. In this case Populator should declaring class not from the setter method but from supplied current message class.
+				final Populator populator = componentClass.getSimpleName().equals("AMessage")? new Populator(setterMethod, message): new Populator(setterMethod);
+				final Populator putResult = MESSAGE_FIELD_POPULATOR.put(message, setterParameterClass, populator);
+				if(putResult != null) {
+					System.out.println("There is " + putResult);
+				}
+				buildFieldParentSetters(message, (Class<QFComponent>) setterParameterClass);
+				continue;
+			}
+			// This is a group setter. E.g.: public void setNoSecurityAltID(List<NoSecurityAltID> noSecurityAltID)
+			if(List.class.isAssignableFrom(setterParameterClass)) {
+				final GroupPopulator groupPopulator = new GroupPopulator(message, setterMethod, componentClass);
+				MESSAGE_FIELD_POPULATOR.put(message, groupPopulator.getGroupCountField(), groupPopulator);
+//				MESSAGE_FIELD_POPULATOR.put(message, groupPopulator.getGroupDelimiterField(), groupPopulator);
+				MESSAGE_FIELD_POPULATOR.put(message, groupPopulator.getGroupClass(), groupPopulator);
+				DELIMETER_GROUPPOPULATOR.put(message, groupPopulator.getGroupDelimiterField(), groupPopulator);
+				buildFieldParentSetters(message, groupPopulator.getGroupClass());
+			}
+		}
+	}
+
+	public static void insureMessageStructureCache(@NotNull Class<QFMessage> messageClass) throws NoSuchMethodException {
+		if(!MESSAGE_FIELD_POPULATOR.containsRow(messageClass)) {
+			synchronized (MESSAGE_FIELD_POPULATOR) {
+				if(!MESSAGE_FIELD_POPULATOR.containsRow(messageClass)) {
+					buildFieldParentSetters(messageClass);
+				}
+			}
+		}
+	}
+
+	@NotNull
+	public static Optional<Populator> getParentSetter(@NotNull Class<? extends QFMessage> messageClass, @NotNull Object tag) {
+		Populator populator = MESSAGE_FIELD_POPULATOR.get(messageClass, tag.getClass());
+		if(populator == null) {
+			if(MESSAGE_FIELD_POPULATOR.containsRow(messageClass)) {
+				System.err.println(tag + " does not belong to Message " + messageClass.getSimpleName());
+			}
+		}
+		return Optional.ofNullable(populator);
+	}
+
+	public static void assignToComponent(@NotNull Class<? extends QFMessage> messageClass, @NotNull QFField tag, Populator populator, Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		assignToComponent(messageClass, (Object) tag, populator, COMPONENT_CLASS_TO_INSTANCE);
+	}
+
+	public static void assignToComponent(@NotNull Class<? extends QFMessage> messageClass, @NotNull QFComponent component, Populator populator, Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		assignToComponent(messageClass, (Object) component, populator, COMPONENT_CLASS_TO_INSTANCE);
+	}
+
+	private static void assignToComponent(@NotNull Class<? extends QFMessage> messageClass, @NotNull Object child, @NotNull Populator populator, Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		final Class<?> declaringClass = populator.getOwnerClass();
+		QFComponent qfComponent = COMPONENT_CLASS_TO_INSTANCE.get(declaringClass);
+		if(qfComponent == null) {
+			final Method getInstanceMethod = populator.getOwnerGetInstanceMethod();
+			qfComponent = (QFComponent) getInstanceMethod.invoke(null);
+			COMPONENT_CLASS_TO_INSTANCE.put(declaringClass, qfComponent);
+		}
+		populator.populate(qfComponent, child, COMPONENT_CLASS_TO_INSTANCE);
+
+		final GroupPopulator groupPopulator = DELIMETER_GROUPPOPULATOR.get(messageClass, child.getClass());
+		if(groupPopulator != null) {
+			groupPopulator.addGroupMember(qfComponent, COMPONENT_CLASS_TO_INSTANCE);
+		}
+	}
 
 	public static QFField lookupField(CharSequence fixVersion, String tagKey, String tagValue, QFComponentValidator componentValidator) {
 		QFField res = null;
@@ -475,7 +579,7 @@ public class QFUtils {
 		}
 
 		public UnknownTag(QFField field) {
-			this.value = field.getValue()==null? null: field.getValue().toString();
+			this.value = field.getValue() == null ? null: field.getValue().toString();
 			this.number = field.getTag();
 		}
 
@@ -498,9 +602,11 @@ public class QFUtils {
 
 	public static int calculateCheckSum(CharSequence sb) {
 		int total = 0;
-		for(int i=0; i<sb.length(); i++) {
+		for (int i = 0; i < sb.length(); i++) {
 			total += sb.charAt(i);
 		}
 		return total % 256;
 	}
 }
+
+

@@ -25,7 +25,7 @@ public class QFGroupElement extends QFComponentElement {
     }
 
     /*
-    @QFGroupDef(count = net.kem.newtquickfix.fields.GroupA.TAG, delimiter = FieldStringGroupDelimiter.TAG)
+    @QFGroupDef(countField = net.kem.newtquickfix.fields.GroupA.class, count = net.kem.newtquickfix.fields.GroupA.TAG, delimiterField = FieldStringGroupDelimiter.class, delimiter = FieldStringGroupDelimiter.TAG)
     public static class GroupA extends QFComponent {
         private static final int $GROUP_COUNT;
         static {
@@ -96,11 +96,17 @@ public class QFGroupElement extends QFComponentElement {
         sb.append('\n');
     }
 
-    // @QFGroupDef(count = net.kem.newtquickfix.fields.GroupA.TAG, delimiter = FieldStringGroupDelimiter.TAG)
+    // @QFGroupDef(countField = net.kem.newtquickfix.fields.GroupA.class, count = net.kem.newtquickfix.fields.GroupA.TAG, delimiterField = FieldStringGroupDelimiter.class, delimiter = FieldStringGroupDelimiter.TAG)
     // public static class GroupA extends QFComponent {
     @Override
     protected void getClassTitle() {
-        sb.append(ident).append("@QFGroupDef(count = ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(name).append(".TAG, delimiter = ").append(getFirstFiledName()).append(".TAG)\n")
+        sb.append(ident)
+                .append("@QFGroupDef(")
+                .append("countField = ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(name).append(".class")
+                .append(", count = ").append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(name).append(".TAG")
+                .append(", delimiterField = ").append(getFirstFiledName()).append(".class")
+                .append(", delimiter = ").append(getFirstFiledName()).append(".TAG")
+                .append(")\n")
                 .append(ident).append("@SuppressWarnings(\"unused\")\n")
                 .append(ident).append("public static class ").append(name).append(" extends QFComponent {\n");
     }

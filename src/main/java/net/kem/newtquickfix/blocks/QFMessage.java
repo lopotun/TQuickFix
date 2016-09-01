@@ -42,6 +42,10 @@ public abstract class QFMessage extends QFComponent {
         return thisInstance;
     }
 
+    public void setUnknownTag(List<QFUtils.UnknownTag> unknownTags) {
+        this.unknownTags = unknownTags;
+    }
+
     public StringBuilder toFIXString() {
         StringBuilder sb = new StringBuilder(2048);
         toFIXString(sb);

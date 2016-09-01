@@ -12,7 +12,8 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE) //on class level
 public @interface QFGroupDef {
+    Class<? extends QFField> countField();
+    Class<? extends QFField> delimiterField();
     int count();
-
     int delimiter();
 }
