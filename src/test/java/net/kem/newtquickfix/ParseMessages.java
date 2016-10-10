@@ -81,7 +81,8 @@ public class ParseMessages {
 				}
 				QFMessage msg = messageParser.parse(src);
 				msg.toFIXString(sb);
-				System.out.println(String.valueOf(count++) + '\t' + sb.toString());
+				count++;
+//				System.out.println(String.valueOf(count) + '\t' + sb.toString());
 			} catch (UnsupportedOperationException e) {
 				e.printStackTrace();
 			} catch (Exception e) {

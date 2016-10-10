@@ -16,4 +16,5 @@ public @interface QFGroupDef {
     Class<? extends QFField> delimiterField();
     int count();
     int delimiter();
+    Class<? extends QFComponent> delimiterContainer() default QFComponent.class; //TODO Not in use. Remove later.
 }

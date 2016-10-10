@@ -1,7 +1,6 @@
 package net.kem.newtquickfix;
 
-import net.kem.newtquickfix.blocks.GroupPopulator;
-import net.kem.newtquickfix.blocks.Populator;
+import net.kem.newtquickfix.blocks.Assigner;
 import net.kem.newtquickfix.blocks.QFComponent;
 import net.kem.newtquickfix.blocks.QFField;
 import net.kem.newtquickfix.blocks.QFMessage;
@@ -69,35 +68,23 @@ public class LiteFixMessageParser {
 	        final Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE = new HashMap<>();
 
 	        for (QFField tag : tags) {
-		        Optional<Populator> parent = QFUtils.getParentSetter(messageClass, tag);
+		        Optional<Assigner> parent = QFUtils.getParentSetter(messageClass, tag);
 //		        parent.ifPresent(System.out::println);
-		        Populator populator = parent.orElse(null);
+		        Assigner populator = parent.orElse(null);
 		        if(populator == null) {
 			        if(unknownTags == null) {
 				        unknownTags = new LinkedList<>();
 			        }
 			        unknownTags.add(new QFUtils.UnknownTag(tag));
 		        } else {
-			        QFUtils.assignToComponent(messageClass, tag, populator, COMPONENT_CLASS_TO_INSTANCE);
+			        QFUtils.assignToComponent(tag, populator, COMPONENT_CLASS_TO_INSTANCE, componentValidator);
 		        }
 	        }
 	        final QFMessage message = (QFMessage) COMPONENT_CLASS_TO_INSTANCE.get(messageClass);
-	        for (Map.Entry<Class, QFComponent> componentEntry : COMPONENT_CLASS_TO_INSTANCE.entrySet()) {
-	        	if(componentEntry.getValue() != message) {
-			        Optional<Populator> parent = QFUtils.getParentSetter(messageClass, componentEntry.getValue());
-			        Populator populator = parent.orElse(null);
-			        if(!(populator instanceof GroupPopulator)) {
-				        QFUtils.assignToComponent(messageClass, componentEntry.getValue(), populator, COMPONENT_CLASS_TO_INSTANCE);
-			        }
-		        }
-	        }
 
 	        if(unknownTags != null) {
 		        message.setUnknownTag(unknownTags);
 	        }
-
-//            final Method ownerGetInstanceMethod = messageClass.getMethod("getInstance", Deque.class, QFComponentValidator.class);
-//            return (QFMessage) ownerGetInstanceMethod.invoke(null, tags, componentValidator);
 	        return message;
         } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
             throw new UnsupportedOperationException("Internal error", e);

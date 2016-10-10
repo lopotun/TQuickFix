@@ -4,6 +4,7 @@ import com.sun.istack.internal.Nullable;
 import net.kem.newtquickfix.LiteFixMessageParser;
 import net.kem.newtquickfix.QFComponentValidator;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,7 +48,7 @@ import java.util.List;
  */
 public abstract class QFComponent {
 
-    protected transient QFComponent parent;
+    protected transient WeakReference<QFComponent> _parent;
     protected transient QFComponentValidator componentValidator;
 
     public String getName() {
@@ -125,7 +126,7 @@ public abstract class QFComponent {
                                 // Assign the value of the newly created child component.
                                 componentChildrenGS.getSetter().invoke(thisInstance, componentChildInstance);
                                 // Set parent reference.
-                                componentChildInstance.parent = thisInstance;
+                                componentChildInstance._parent = new WeakReference<>(thisInstance);
                             } else {
                                 // The value has been already assigned to this member.
                                 //componentValidator.duplicatedComponent(componentChildInstance, thisInstance); //TODO warn about wrong placement of the current field.
@@ -173,7 +174,7 @@ public abstract class QFComponent {
                                 componentGroupGS.getSetter().invoke(thisInstance, groupInstances);
                                 // Set parent reference.
                                 for (QFComp groupInstance : groupInstances) {
-                                    groupInstance.parent = thisInstance;
+                                    groupInstance._parent = new WeakReference<>(thisInstance);
                                 }
 
                                 // I'll need to know whether the current component is an ordinal component or a group.

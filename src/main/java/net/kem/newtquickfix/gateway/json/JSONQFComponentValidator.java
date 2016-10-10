@@ -89,6 +89,22 @@ public class JSONQFComponentValidator implements QFComponentValidator {
 	}
 
 	@Override
+	public void brokenGroup(QFComponent groupOwner, Object groupField, BrokenGroupReason brokenGroupReason) {
+		String out;
+		switch (brokenGroupReason) {
+			case NO_DELIMITER:
+				out = "Error while processing field \"" + groupField + "\". Its parent group \"" + groupOwner.getName() + "\" is either without group delimiter OR there is group delimiter without group counter.";
+				break;
+			case ALREADY_EXIST:
+				out = "Error while processing field \"" + groupField + "\". Its parent group \"" + groupOwner.getName() + "\" has been already defined.";
+				break;
+			default:
+				out = "Error while processing field \"" + groupField + "\" with its parent group \"" + groupOwner.getName() + "\"";
+		}
+		failures.put(Failures.INVALID_GROUP_COUNT, out);
+	}
+
+	@Override
 	public <V> V invalidFieldValue(@NotNull Class<?> fieldClass, @NotNull Class<V> typeClass, @NotNull CharSequence problematicValue, @Nullable Throwable t) throws UnsupportedOperationException {
 		String out;
 		if(t == null) {

@@ -99,6 +99,18 @@ public interface QFComponentValidator {
     default void invalidGroupCount(QFField numOfElementsField, List<? extends QFComponent> groupInstances, Class<? extends QFComponent> ownerClass) {
     }
 
+    enum BrokenGroupReason {NO_DELIMITER, ALREADY_EXIST}
+    /**
+     * This method is called while FIX data parsing when there is group member WITHOUT group delimiter or
+     * there is group delimiter WITHOUT group counter.
+     * This group has been already defined.
+     *
+     * @param groupOwner     element that contains this group.
+     * @param groupField     group member being parsed.
+     */
+    default void brokenGroup(QFComponent groupOwner, Object groupField, BrokenGroupReason brokenGroupReason) {
+    }
+
     /**
      * This method is called while FIX data parsing (or while new LiteFix Message creation) when value of LiteFix Field field cannot be parsed to field type (e.g. when value "abcd" is given to an Integer or a Date/Time field).
      *

@@ -45,6 +45,18 @@ public class DefaultQFComponentValidator implements QFComponentValidator {
     }
 
     @Override
+    public void brokenGroup(QFComponent groupOwner, Object groupField, BrokenGroupReason brokenGroupReason) {
+        switch (brokenGroupReason) {
+            case NO_DELIMITER:
+                System.err.println("Error while processing field \"" + groupField + "\". Its parent group \"" + groupOwner.getName() + "\" is either without group delimiter OR there is group delimiter without group counter.");
+                break;
+            case ALREADY_EXIST:
+                System.err.println("Error while processing field \"" + groupField + "\". Its parent group \"" + groupOwner.getName() + "\" has been already defined.");
+                break;
+        }
+    }
+
+    @Override
     public <V> V invalidFieldValue(@NotNull Class<?> fieldClass, @NotNull Class<V> typeClass, @NotNull CharSequence problematicValue, @Nullable Throwable t) throws UnsupportedOperationException {
         if (t == null) {
             System.err.println("\"" + problematicValue + "\" should not be used as value of FIX tag " + fieldClass.getSimpleName());

@@ -305,10 +305,7 @@ public class QFUtils {
 		return res;
 	}
 
-	/**
-	 * This table contains mapping between a message(of specific version) and a QFField or a QFComponent to its Populator.
-	 */
-	private static final Table<Class<? extends QFMessage>, Object, Populator> MESSAGE_FIELD_POPULATOR = HashBasedTable.create();
+	private static final Table<Class<? extends QFMessage>, Object, Assigner> MESSAGE_FIELD_ASSIGNER = HashBasedTable.create();
 	private static final Table<Class<QFMessage>, Class<? extends QFField>, GroupPopulator> DELIMETER_GROUPPOPULATOR = HashBasedTable.create();
 
 	/**
@@ -317,19 +314,22 @@ public class QFUtils {
 	 * @throws NoSuchMethodException
 	 */
 	public static void buildFieldParentSetters(final Class<QFMessage> messageClass) throws NoSuchMethodException {
-		buildFieldParentSetters(messageClass, messageClass);
+		ComponentAssigner messageAssigner = new MessageAssigner(messageClass);
+		MESSAGE_FIELD_ASSIGNER.put(messageClass, messageClass, messageAssigner);
+
+		buildFieldParentSetters(messageClass, messageClass, messageAssigner);
 		final Class<QFComponent> superClass = (Class<QFComponent>) messageClass.getSuperclass();
-		buildFieldParentSetters(messageClass, superClass);
+		buildFieldParentSetters(messageClass, superClass, messageAssigner);
 	}
 
 	/**
-	 * Builds message tree structure baked by {@linkplain #MESSAGE_FIELD_POPULATOR}.
+	 * Builds message tree structure baked by {@linkplain #MESSAGE_FIELD_ASSIGNER}.
 	 * @param message           top-level message class
 	 * @param componentClass    component class that belongs to this message
 	 * @throws NoSuchElementException
 	 * @throws NoSuchMethodException
 	 */
-	private static void buildFieldParentSetters(Class<QFMessage> message, Class<? extends QFComponent> componentClass) throws NoSuchElementException, NoSuchMethodException {
+	private static void buildFieldParentSetters(Class<QFMessage> message, Class<? extends QFComponent> componentClass, ComponentAssigner ownerAssigner) throws NoSuchElementException, NoSuchMethodException {
 		final Method[] componentMethods = componentClass.getDeclaredMethods(); // All public non-inherited methods of this component.
 		for (Method setterMethod : componentMethods) {
 			// Filter methods: allow single-parameter setters only.
@@ -339,49 +339,39 @@ public class QFUtils {
 			final Class setterParameterClass = setterMethod.getParameterTypes()[0];  // setter parameter class.
 			// This is a QFField setter.
 			if(QFField.class.isAssignableFrom(setterParameterClass)) {
-				final Populator populator = new Populator(setterMethod);    // Create Populator.
+				Assigner fieldAssigner = new Assigner(setterMethod, ownerAssigner);
 				// Check whether there is Group Populator is already defined to this QFField.
-				final Populator groupPopulator = MESSAGE_FIELD_POPULATOR.get(message, setterParameterClass);
+				final Assigner groupPopulator = MESSAGE_FIELD_ASSIGNER.put(message, setterParameterClass, fieldAssigner);
 				if(groupPopulator != null) {
-					if(groupPopulator instanceof GroupPopulator) {
-//						// Indicate that the current QFFiled belongs to a QFGroup as well (e.g. in case of group count field).
-//						((GroupPopulator) groupPopulator).belongsToGroupMember(populator);
-//						MESSAGE_FIELD_POPULATOR.put(message, setterParameterClass, groupPopulator);
-					} else {
+					if(!(groupPopulator instanceof GroupAssigner)) {
 						System.out.println("There is " + groupPopulator);
 					}
 				} else {
-					MESSAGE_FIELD_POPULATOR.put(message, setterParameterClass, populator);
+					MESSAGE_FIELD_ASSIGNER.put(message, setterParameterClass, fieldAssigner);
 				}
 				continue;
 			}
 			// This is a QFComponent setter.
 			if(QFComponent.class.isAssignableFrom(setterParameterClass)) {
-				// Create Populator. Some methods (like Header/Trailer setters) come from super class. In this case Populator should declaring class not from the setter method but from supplied current message class.
-				final Populator populator = componentClass.getSimpleName().equals("AMessage")? new Populator(setterMethod, message): new Populator(setterMethod);
-				final Populator putResult = MESSAGE_FIELD_POPULATOR.put(message, setterParameterClass, populator);
-				if(putResult != null) {
-					System.out.println("There is " + putResult);
-				}
-				buildFieldParentSetters(message, (Class<QFComponent>) setterParameterClass);
+				ComponentAssigner componentAssigner = new ComponentAssigner(setterMethod, ownerAssigner);
+				MESSAGE_FIELD_ASSIGNER.put(message, setterParameterClass, componentAssigner);
+				buildFieldParentSetters(message, (Class<QFComponent>) setterParameterClass, componentAssigner);
 				continue;
 			}
 			// This is a group setter. E.g.: public void setNoSecurityAltID(List<NoSecurityAltID> noSecurityAltID)
 			if(List.class.isAssignableFrom(setterParameterClass)) {
-				final GroupPopulator groupPopulator = new GroupPopulator(message, setterMethod, componentClass);
-				MESSAGE_FIELD_POPULATOR.put(message, groupPopulator.getGroupCountField(), groupPopulator);
-//				MESSAGE_FIELD_POPULATOR.put(message, groupPopulator.getGroupDelimiterField(), groupPopulator);
-				MESSAGE_FIELD_POPULATOR.put(message, groupPopulator.getGroupClass(), groupPopulator);
-				DELIMETER_GROUPPOPULATOR.put(message, groupPopulator.getGroupDelimiterField(), groupPopulator);
-				buildFieldParentSetters(message, groupPopulator.getGroupClass());
+				GroupAssigner groupAssigner = new GroupAssigner(setterMethod, ownerAssigner);
+				MESSAGE_FIELD_ASSIGNER.put(message, groupAssigner.getGroupCountField(), groupAssigner);
+				MESSAGE_FIELD_ASSIGNER.put(message, groupAssigner.getGroupDelimiterField(), groupAssigner);
+				buildFieldParentSetters(message, (Class<? extends QFComponent>)groupAssigner.myClass, groupAssigner);
 			}
 		}
 	}
 
 	public static void insureMessageStructureCache(@NotNull Class<QFMessage> messageClass) throws NoSuchMethodException {
-		if(!MESSAGE_FIELD_POPULATOR.containsRow(messageClass)) {
-			synchronized (MESSAGE_FIELD_POPULATOR) {
-				if(!MESSAGE_FIELD_POPULATOR.containsRow(messageClass)) {
+		if(!MESSAGE_FIELD_ASSIGNER.containsRow(messageClass)) {
+			synchronized (MESSAGE_FIELD_ASSIGNER) {
+				if(!MESSAGE_FIELD_ASSIGNER.containsRow(messageClass)) {
 					buildFieldParentSetters(messageClass);
 				}
 			}
@@ -389,38 +379,18 @@ public class QFUtils {
 	}
 
 	@NotNull
-	public static Optional<Populator> getParentSetter(@NotNull Class<? extends QFMessage> messageClass, @NotNull Object tag) {
-		Populator populator = MESSAGE_FIELD_POPULATOR.get(messageClass, tag.getClass());
+	public static Optional<Assigner> getParentSetter(@NotNull Class<? extends QFMessage> messageClass, @NotNull Object tag) {
+		Assigner populator = MESSAGE_FIELD_ASSIGNER.get(messageClass, tag.getClass());
 		if(populator == null) {
-			if(MESSAGE_FIELD_POPULATOR.containsRow(messageClass)) {
+			if(MESSAGE_FIELD_ASSIGNER.containsRow(messageClass)) {
 				System.err.println(tag + " does not belong to Message " + messageClass.getSimpleName());
 			}
 		}
 		return Optional.ofNullable(populator);
 	}
 
-	public static void assignToComponent(@NotNull Class<? extends QFMessage> messageClass, @NotNull QFField tag, Populator populator, Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-		assignToComponent(messageClass, (Object) tag, populator, COMPONENT_CLASS_TO_INSTANCE);
-	}
-
-	public static void assignToComponent(@NotNull Class<? extends QFMessage> messageClass, @NotNull QFComponent component, Populator populator, Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-		assignToComponent(messageClass, (Object) component, populator, COMPONENT_CLASS_TO_INSTANCE);
-	}
-
-	private static void assignToComponent(@NotNull Class<? extends QFMessage> messageClass, @NotNull Object child, @NotNull Populator populator, Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
-		final Class<?> declaringClass = populator.getOwnerClass();
-		QFComponent qfComponent = COMPONENT_CLASS_TO_INSTANCE.get(declaringClass);
-		if(qfComponent == null) {
-			final Method getInstanceMethod = populator.getOwnerGetInstanceMethod();
-			qfComponent = (QFComponent) getInstanceMethod.invoke(null);
-			COMPONENT_CLASS_TO_INSTANCE.put(declaringClass, qfComponent);
-		}
-		populator.populate(qfComponent, child, COMPONENT_CLASS_TO_INSTANCE);
-
-		final GroupPopulator groupPopulator = DELIMETER_GROUPPOPULATOR.get(messageClass, child.getClass());
-		if(groupPopulator != null) {
-			groupPopulator.addGroupMember(qfComponent, COMPONENT_CLASS_TO_INSTANCE);
-		}
+	public static void assignToComponent(@NotNull QFField tag, Assigner populator, Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE, @NotNull QFComponentValidator componentValidator) throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+		populator.assignMeToParent(tag, COMPONENT_CLASS_TO_INSTANCE, componentValidator);
 	}
 
 	public static QFField lookupField(CharSequence fixVersion, String tagKey, String tagValue, QFComponentValidator componentValidator) {
