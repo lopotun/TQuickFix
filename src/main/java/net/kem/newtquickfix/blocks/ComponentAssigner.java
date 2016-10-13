@@ -17,7 +17,7 @@ class ComponentAssigner extends Assigner {
 
 	ComponentAssigner(@NotNull Method setter, @Nullable ComponentAssigner ownerAssigner) throws NoSuchMethodException {
 		super(setter, ownerAssigner);
-		myGetInstanceMethod = myClass==null? null: myClass.getDeclaredMethod("getInstance");
+		myGetInstanceMethod = myClass==null? null: myClass.getDeclaredMethod("of");
 	}
 
 	@NotNull

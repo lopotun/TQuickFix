@@ -46,8 +46,8 @@ public class QFGroupElement extends QFComponentElement {
         private GroupA() {
         }
 
-        public static GroupA getInstance(Deque<QFField> tags, GroupA instance) {
-            return getInstance(tags, instance, GroupA.class);
+        public static GroupA of(Deque<QFField> tags, GroupA instance) {
+            return of(tags, instance, GroupA.class);
         }
 
         @Override

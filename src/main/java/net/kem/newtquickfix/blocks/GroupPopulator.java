@@ -21,7 +21,7 @@ public class GroupPopulator extends Populator {
 	private Class<? extends QFField> groupCountField; // fields.NoSecurityAltID
 	private Class<? extends QFField> groupDelimiterField; // fields.SecurityAltID
 	private Class<? extends QFComponent> groupClass; // NoSecurityAltID
-	private Method groupMemberCtor;// NoSecurityAltID.getInstance();
+	private Method groupMemberCtor;// NoSecurityAltID.of();
 	private Method groupGetter; // List<NoSecurityAltID> = getNoSecurityAltID();
 	private Populator groupMemberPopulator;
 
@@ -46,7 +46,7 @@ public class GroupPopulator extends Populator {
 				// public static class NoSecurityAltID extends QFComponent
 				groupCountField = groupClass.getAnnotation(QFGroupDef.class).countField(); // countField = net.kem.newtquickfix.v50sp2.fields.NoSecurityAltID.class
 				groupDelimiterField = groupClass.getAnnotation(QFGroupDef.class).delimiterField(); // countField = net.kem.newtquickfix.v50sp2.fields.NoSecurityAltID.class
-				groupMemberCtor = groupClass.getDeclaredMethod("getInstance");// NoSecurityAltID.getInstance();
+				groupMemberCtor = groupClass.getDeclaredMethod("of");// NoSecurityAltID.of();
 //					final Method putResult = MESSAGE_FIELD_PARENTSETTER.put(message, (Class<QFField>) groupCountField, possibleSetterMethod);
 //					buildFieldParentSetters(message, groupClass);
 			} else {
@@ -76,7 +76,7 @@ public class GroupPopulator extends Populator {
 			return;
 		}
 //		if(groupFieldClass.equals(groupDelimiterField)) {
-//			final QFComponent groupMember = (QFComponent) groupMemberCtor.invoke(null);// NoSecurityAltID.getInstance();
+//			final QFComponent groupMember = (QFComponent) groupMemberCtor.invoke(null);// NoSecurityAltID.of();
 //			final List<QFComponent> groupMembers = (List<QFComponent>) groupGetter.invoke(owner); // List<NoSecurityAltID> = getNoSecurityAltID();
 //			groupMembers.add(groupMember);
 //			if(groupMemberPopulator != null) {
@@ -88,7 +88,7 @@ public class GroupPopulator extends Populator {
 	}
 
 	void addGroupMember(@NotNull QFComponent owner, @NotNull Map<Class, QFComponent> COMPONENT_CLASS_TO_INSTANCE) throws InvocationTargetException, IllegalAccessException {
-		final QFComponent groupMember = (QFComponent) groupMemberCtor.invoke(null);// NoSecurityAltID.getInstance();
+		final QFComponent groupMember = (QFComponent) groupMemberCtor.invoke(null);// NoSecurityAltID.of();
 		owner = COMPONENT_CLASS_TO_INSTANCE.get(ownerClass);
 		final List<QFComponent> groupMembers = (List<QFComponent>) groupGetter.invoke(owner); // List<NoSecurityAltID> = getNoSecurityAltID();
 		groupMembers.add(groupMember);

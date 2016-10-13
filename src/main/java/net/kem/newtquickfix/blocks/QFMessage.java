@@ -22,10 +22,10 @@ public abstract class QFMessage extends QFComponent {
 //    public abstract QFComponent getStandardTrailer();
 //    public abstract void setStandardTrailer(QFComponent standardTrailer);
 
-    protected static <QFComp extends QFMessage> QFComp getInstance(Deque<QFField> tags, QFComp thisInstance, Class<? extends QFMessage> compClass, QFComponentValidator componentValidator) {
+    protected static <QFComp extends QFMessage> QFComp of(Deque<QFField> tags, QFComp thisInstance, Class<? extends QFMessage> compClass, QFComponentValidator componentValidator) {
         CharSequence fixVersion = (CharSequence) tags.peek().getValue();
         while(true) {
-            thisInstance = QFComponent.getInstance(fixVersion, tags, thisInstance, compClass, componentValidator);
+            thisInstance = QFComponent.of(fixVersion, tags, thisInstance, compClass, componentValidator);
             if (tags.isEmpty()) {
                 // All the tags were consumed. Stop the loop.
                 break;

@@ -87,7 +87,7 @@ public class QFMessageElement extends QFComponentElement {
         // //	---- Message-specific methods BEGIN
         /*
         public static MsgType getMsgType() {
-            return MsgType.getInstance("BL", null);
+            return MsgType.of("BL", null);
         }
 
         @Override
@@ -97,7 +97,7 @@ public class QFMessageElement extends QFComponentElement {
         */
         sb.append(ident).append("\t//\t---- Message-specific methods BEGIN\n");
         sb.append(ident).append("\tpublic static MsgType getMsgType() {\n")
-                .append(ident).append("\t\treturn MsgType.getInstance(\"").append(startElement.getAttribute("msgtype")).append("\", null);\n")
+                .append(ident).append("\t\treturn MsgType.of(\"").append(startElement.getAttribute("msgtype")).append("\", null);\n")
                 .append(ident).append("\t}\n\n");
 
         sb.append(ident).append("\t@Override\n")
@@ -126,28 +126,28 @@ public class QFMessageElement extends QFComponentElement {
     }
 
     protected void getMethodGetInstance() {
-        // public static ComponentMain getInstance() {
+        // public static ComponentMain of() {
         //  return new ComponentMain();
         // }
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance() {\n")
+        sb.append(ident).append("\tpublic static ").append(name).append(" of() {\n")
                 .append(ident).append("\t\treturn new ").append(name).append("();\n")
                 .append(ident).append("\t}\n\n");
 
         /*
-//        public static AllocationReportAck getInstance(QFComponentValidator componentValidator) {
+//        public static AllocationReportAck of(QFComponentValidator componentValidator) {
 //            return new AllocationReportAck(componentValidator);
 //        }
 
-        public static AllocationReportAck getInstance(Deque<QFField> tags, QFComponentValidator componentValidator) {
-            return tags==null? new AllocationReportAck(componentValidator): getInstance(tags, null, AllocationReportAck.class, componentValidator);
+        public static AllocationReportAck of(Deque<QFField> tags, QFComponentValidator componentValidator) {
+            return tags==null? new AllocationReportAck(componentValidator): of(tags, null, AllocationReportAck.class, componentValidator);
         }
          */
-//        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(QFComponentValidator componentValidator) {\n")
+//        sb.append(ident).append("\tpublic static ").append(name).append(" of(QFComponentValidator componentValidator) {\n")
 //                .append(ident).append("\t\treturn new ").append(name).append("(componentValidator);\n")
 //                .append(ident).append("\t}\n\n");
 
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(Deque<QFField> tags, QFComponentValidator componentValidator) {\n")
-                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): getInstance(tags, null, ").append(name).append(".class, componentValidator);\n")
+        sb.append(ident).append("\tpublic static ").append(name).append(" of(Deque<QFField> tags, QFComponentValidator componentValidator) {\n")
+                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): of(tags, null, ").append(name).append(".class, componentValidator);\n")
                 .append(ident).append("\t}\n\n");
     }
 

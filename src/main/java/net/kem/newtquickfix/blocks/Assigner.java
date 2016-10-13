@@ -40,7 +40,7 @@ public class Assigner {
 				ownerComponentAssigner.getInstance(whoAsks, COMPONENT_CLASS_TO_INSTANCE, componentValidator);
 	}
 
-	protected void setParent(@NotNull Object fieldOrComponent, QFComponent owner) {
+	void setParent(@NotNull Object fieldOrComponent, QFComponent owner) {
 		if(fieldOrComponent instanceof QFComponent) {
 			QFComponent qfComponent = (QFComponent) fieldOrComponent;
 			qfComponent._parent = new WeakReference<>(owner);

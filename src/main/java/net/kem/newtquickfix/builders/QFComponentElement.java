@@ -220,18 +220,18 @@ public class QFComponentElement extends QFElement {
 
 
     protected void getMethodGetInstance() {
-        // public static ComponentMain getInstance() {
+        // public static ComponentMain of() {
         //  return new ComponentMain();
         // }
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance() {\n")
+        sb.append(ident).append("\tpublic static ").append(name).append(" of() {\n")
                 .append(ident).append("\t\treturn new ").append(name).append("();\n")
                 .append(ident).append("\t}\n\n");
 
-        // public static ComponentMain getInstance(CharSequence fixVersion, Deque<QFField> tags, QFComponentValidator componentValidator) {
-        //  return tags==null? new ComponentMain(): getInstance(fixVersion, tags, null, ComponentMain.class, QFComponentValidator componentValidator);
+        // public static ComponentMain of(CharSequence fixVersion, Deque<QFField> tags, QFComponentValidator componentValidator) {
+        //  return tags==null? new ComponentMain(): of(fixVersion, tags, null, ComponentMain.class, QFComponentValidator componentValidator);
         // }
-        sb.append(ident).append("\tpublic static ").append(name).append(" getInstance(CharSequence fixVersion, Deque<QFField> tags, QFComponentValidator componentValidator").append(") {\n")
-                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): getInstance(fixVersion, tags, null, ").append(name).append(".class, componentValidator);\n")
+        sb.append(ident).append("\tpublic static ").append(name).append(" of(CharSequence fixVersion, Deque<QFField> tags, QFComponentValidator componentValidator").append(") {\n")
+                .append(ident).append("\t\treturn tags==null? new ").append(name).append("(): of(fixVersion, tags, null, ").append(name).append(".class, componentValidator);\n")
                 .append(ident).append("\t}\n\n");
     }
 

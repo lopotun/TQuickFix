@@ -77,7 +77,7 @@ public abstract class AMessage extends QFMessage {
     	public abstract MsgType getMessageType();
 
     	public static BeginString getVersion() {
-    		return BeginString.getInstance("FIX50SP2");
+    		return BeginString.of("FIX50SP2");
     	}
 
     	public String getMessageCategory() {
@@ -87,12 +87,12 @@ public abstract class AMessage extends QFMessage {
 
     	private void addHeaderTrailer() {
     		if(standardHeader == null) {
-    			standardHeader = StandardHeader.getInstance();
+    			standardHeader = StandardHeader.of();
     			standardHeader.setBeginString(getVersion());
     			standardHeader.setMsgType(getMessageType());
     		}
     		if(standardTrailer == null) {
-    			standardTrailer = StandardTrailer.getInstance();
+    			standardTrailer = StandardTrailer.of();
     		}
     	}
 
@@ -109,15 +109,15 @@ public abstract class AMessage extends QFMessage {
     		if(target != null) {
     			standardHeader.setTargetCompID(target);
     		}
-    		standardHeader.setMsgSeqNum(MsgSeqNum.getInstance(MESSAGE_COUNTER.getAndIncrement() % Integer.MAX_VALUE));
-    		standardHeader.setSendingTime(SendingTime.getInstance());
+    		standardHeader.setMsgSeqNum(MsgSeqNum.of(MESSAGE_COUNTER.getAndIncrement() % Integer.MAX_VALUE));
+    		standardHeader.setSendingTime(SendingTime.of());
 
     		StringBuilder sb = new StringBuilder(1024);
     		toFIXString(sb);
-    		standardHeader.setBodyLength(BodyLength.getInstance(sb.length()));
+    		standardHeader.setBodyLength(BodyLength.of(sb.length()));
 
     		int checksum = QFUtils.calculateCheckSum(sb);
-    		standardTrailer.setCheckSum(CheckSum.getInstance(String.valueOf(checksum)));
+    		standardTrailer.setCheckSum(CheckSum.of(String.valueOf(checksum)));
     		standardTrailer.toFIXString(sb);
 
     		return sb;

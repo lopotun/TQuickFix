@@ -55,10 +55,10 @@ public abstract class QFComponent {
         return getClass().getSimpleName();
     }
 
-    protected static <QFComp extends QFComponent> QFComp getInstance(CharSequence fixVersion, Deque<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
-        return getInstance(fixVersion, tags, thisInstance, compClass, 0, componentValidator);
+    protected static <QFComp extends QFComponent> QFComp of(CharSequence fixVersion, Deque<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, QFComponentValidator componentValidator) {
+        return of(fixVersion, tags, thisInstance, compClass, 0, componentValidator);
     }
-    protected static <QFComp extends QFComponent> QFComp getInstance(CharSequence fixVersion, Deque<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, int groupDelimiterTag, QFComponentValidator componentValidator) {
+    protected static <QFComp extends QFComponent> QFComp of(CharSequence fixVersion, Deque<QFField> tags, QFComp thisInstance, Class<? extends QFComponent> compClass, int groupDelimiterTag, QFComponentValidator componentValidator) {
         NEXT_TAG:
         while (true) {
             if (tags.isEmpty()) {
@@ -114,7 +114,7 @@ public abstract class QFComponent {
                 for (QFUtils.ChildGetterSetter<? extends QFComponent> componentChildrenGS : componentChildrenGSs) {
                     try {
                         // Try to create (recursively) child component's instance.
-                        QFComp componentChildInstance = getInstance(fixVersion, tags, null, componentChildrenGS.getChildClass(), groupDelimiterTag, componentValidator);
+                        QFComp componentChildInstance = of(fixVersion, tags, null, componentChildrenGS.getChildClass(), groupDelimiterTag, componentValidator);
                         if (componentChildInstance != null) {
                             // Child component instance has been created (that means that the current filed belongs to this child component (or to one of its descenders)).
                             // Create instance of this component if needed.
@@ -163,7 +163,7 @@ public abstract class QFComponent {
                             List<QFComp> groupInstances = new ArrayList<>(numberOfGroupMembers);
                             for (int i=0; i<numberOfGroupMembers; i++) {
                                 // Try to create group instance.
-                                QFComp groupChildInstance = getInstance(fixVersion, tags, null, componentGroupGS.getChildClass(), groupDelimiterTag, componentValidator);
+                                QFComp groupChildInstance = of(fixVersion, tags, null, componentGroupGS.getChildClass(), groupDelimiterTag, componentValidator);
                                 if (groupChildInstance != null) {
                                     groupInstances.add(groupChildInstance);
                                 }
@@ -226,8 +226,8 @@ public abstract class QFComponent {
         if (instance == null) {
             try {
                 if(QFMessage.class.isAssignableFrom(compClass)) {
-                    Method getInstance = compClass.getDeclaredMethod("getInstance");//TODO call getInstance that won't initialize header and trailer.
-                    instance = (QFComp) getInstance.invoke(null);
+                    Method of = compClass.getDeclaredMethod("of");//TODO call "of" that won't initialize header and trailer.
+                    instance = (QFComp) of.invoke(null);
                 } else {
                     final Constructor<? extends QFComponent> constructor = compClass.getDeclaredConstructor();
                     constructor.setAccessible(true);

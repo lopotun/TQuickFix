@@ -23,32 +23,32 @@ public class QFBooleanFieldElement extends QFFieldElement {
     @Override
     protected void generateMethodGetInstanceString() {
         /*
-        public static AggregatedBook getInstance(String value) {
-		    return getInstance(value, LiteFixMessageParser.getComponentValidator()););
+        public static AggregatedBook of(String value) {
+		    return of(value, LiteFixMessageParser.getComponentValidator()););
         }
 
-        public static AggregatedBook getInstance(String value, QFComponentValidator componentValidator) {
+        public static AggregatedBook of(String value, QFComponentValidator componentValidator) {
             if(value.length() == 1 && (value.charAt(0) == 'Y' || value.charAt(0) == 'y')) {
-                return getInstance(true);
+                return of(true);
             } else {
                 final Boolean newValue = componentValidator.invalidFieldValue(AggregatedBook.class, Boolean.class, value, null);
-                AccountType res = getInstance(newValue, componentValidator);
+                AccountType res = of(newValue, componentValidator);
 			    res.originalValue = value;
 			    return res;
             }
         }
         */
         if (def.typeToStringConversion != null) {
-            sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
-                    .append("\t\treturn getInstance(value, LiteFixMessageParser.getComponentValidator());\n")
+            sb.append("\tpublic static ").append(name).append(" of(String value) {\n")
+                    .append("\t\treturn of(value, LiteFixMessageParser.getComponentValidator());\n")
                     .append("\t}\n\n");
 
-            sb.append("\tpublic static ").append(name).append(" getInstance(String value, QFComponentValidator componentValidator) {\n")
+            sb.append("\tpublic static ").append(name).append(" of(String value, QFComponentValidator componentValidator) {\n")
                     .append("\t\tif(value.length() == 1 && (value.charAt(0) == 'Y' || value.charAt(0) == 'y')) {\n")
-                    .append("\t\t\treturn getInstance(true);\n")
+                    .append("\t\t\treturn of(true);\n")
                     .append("\t\t} else {\n")
                     .append("\t\t\tfinal Boolean newValue = componentValidator.invalidFieldValue(").append(name).append(".class, Boolean.class, value, null);\n")
-                    .append("\t\t\t").append(name).append(" res = getInstance(newValue, componentValidator);\n")
+                    .append("\t\t\t").append(name).append(" res = of(newValue, componentValidator);\n")
                     .append("\t\t\tres.originalValue = value;\n")
                     .append("\t\t\treturn res;\n")
                     .append("\t\t}\n")

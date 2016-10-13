@@ -24,7 +24,7 @@ public class QFGroupBrick extends QFRequirable {
         this.parent = parent;
     }
 
-    // net.kem.newtquickfix.v50.fields.NoAllocs groupCount = net.kem.newtquickfix.v50.fields.NoAllocs.getInstance(noAllocs.size(), null);
+    // net.kem.newtquickfix.v50.fields.NoAllocs groupCount = net.kem.newtquickfix.v50.fields.NoAllocs.of(noAllocs.size(), null);
     // groupCount.toFIXString(sb);
     // for (NoAffectedOrders item: noAffectedOrders) {
     //  item.toFIXString(sb);
@@ -35,7 +35,7 @@ public class QFGroupBrick extends QFRequirable {
         sb.append(ident).append("\t\t\t// Lazy group count initialization. It does not use QFComponentValidator since it's always get integer parameter.\n")
         .append(ident).append("\t\t\t")
                 .append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(groupBlock.name).append(" groupCount = ")
-                .append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(groupBlock.name).append(".getInstance(").append(memberVarName).append(".size(), null);\n");
+                .append(BuilderUtils.PACKAGE_NAME_FIELDS).append('.').append(groupBlock.name).append(".of(").append(memberVarName).append(".size(), null);\n");
         sb.append(ident).append("\t\t\t").append("groupCount.toFIXString(sb);\n");
 
         sb.append(ident).append("\t\t\tfor (").append(name).append(" item: ").append(memberVarName).append(") {\n");
@@ -79,8 +79,8 @@ public class QFGroupBrick extends QFRequirable {
         private GroupA() {
         }
 
-        public static GroupA getInstance(Deque<QFField> tags, GroupA instance) {
-            return getInstance(tags, instance, GroupA.class);
+        public static GroupA of(Deque<QFField> tags, GroupA instance) {
+            return of(tags, instance, GroupA.class);
         }
 
         @Override

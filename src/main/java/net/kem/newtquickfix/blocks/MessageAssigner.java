@@ -16,7 +16,7 @@ class MessageAssigner extends ComponentAssigner {
 	MessageAssigner(Class<QFMessage> myClass) throws NoSuchMethodException {
 		super(null, null);
 		this.myClass = myClass;
-		myGetInstanceMethod = myClass.getDeclaredMethod("getInstance");
+		myGetInstanceMethod = myClass.getDeclaredMethod("of");
 	}
 	void myClass() {}
 

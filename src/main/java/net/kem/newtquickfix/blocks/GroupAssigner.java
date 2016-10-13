@@ -47,7 +47,7 @@ public class GroupAssigner extends ComponentAssigner {
 				// public static class NoSecurityAltID extends QFComponent
 				groupCountField = myClass.getAnnotation(QFGroupDef.class).countField(); // countField = net.kem.newtquickfix.v50sp2.fields.NoSecurityAltID.class
 				groupDelimiterField = myClass.getAnnotation(QFGroupDef.class).delimiterField(); // countField = net.kem.newtquickfix.v50sp2.fields.NoSecurityAltID.class
-				myGetInstanceMethod = myClass.getDeclaredMethod("getInstance");// NoSecurityAltID.getInstance();
+				myGetInstanceMethod = myClass.getDeclaredMethod("of");// NoSecurityAltID.of();
 
 				// Create assigner for Group Delimiter Field.
 
@@ -84,7 +84,7 @@ public class GroupAssigner extends ComponentAssigner {
 
 			QFComponent owner = getOwner(whoAsks, COMPONENT_CLASS_TO_INSTANCE, componentValidator);
 			if(owner != null) {
-				myInstance = createInstance(COMPONENT_CLASS_TO_INSTANCE, owner);// NoSecurityAltID.getInstance();
+				myInstance = createInstance(COMPONENT_CLASS_TO_INSTANCE, owner);// NoSecurityAltID.of();
 				List<QFComponent> groupMembers = buildGroupList(owner, -1, (QFField) whoAsks, componentValidator);
 				groupMembers.add(myInstance);
 			} else {

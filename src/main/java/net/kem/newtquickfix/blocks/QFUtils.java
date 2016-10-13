@@ -184,7 +184,7 @@ public class QFUtils {
 				for (ClassPath.ClassInfo fieldClass : fieldClasses) {
 					Class<?> qfFieldClass = fieldClass.load();
 					int tagValue = qfFieldClass.getField("TAG").getInt(null);
-					Method instantiatorByString = qfFieldClass.getDeclaredMethod("getInstance", String.class, QFComponentValidator.class);
+					Method instantiatorByString = qfFieldClass.getDeclaredMethod("of", String.class, QFComponentValidator.class);
 					FIX_VERSION_AND_TAG_TO_GETINSTANCE.put(liteFixVersion, tagValue, instantiatorByString);
 				}
 			}
@@ -393,20 +393,25 @@ public class QFUtils {
 		populator.assignMeToParent(tag, COMPONENT_CLASS_TO_INSTANCE, componentValidator);
 	}
 
-	public static QFField lookupField(CharSequence fixVersion, String tagKey, String tagValue, QFComponentValidator componentValidator) {
+	public static QFField lookupField(CharSequence fixVersion, CharSequence messageType, String tagKey, String tagValue, QFComponentValidator componentValidator) {
 		QFField res = null;
 		int iTagKey = Integer.parseInt(tagKey);
-		Method methodGetInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, iTagKey);
-		if(methodGetInstance != null) {
-			try {
-				res = (QFField) methodGetInstance.invoke(null, tagValue, componentValidator);
-			} catch (Exception e) {
-				e.printStackTrace();
+
+		res = componentValidator.beforeFieldParse(fixVersion, messageType, iTagKey, tagValue);
+		if(res == null) {
+			Method methodGetInstance = FIX_VERSION_AND_TAG_TO_GETINSTANCE.get(fixVersion, iTagKey);
+			if(methodGetInstance != null) {
+				try {
+					res = (QFField) methodGetInstance.invoke(null, tagValue, componentValidator);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			} else {
+				// Unknown tag.
+				res = new UnknownTag(iTagKey, tagValue);
 			}
-		} else {
-			// Unknown tag.
-			res = new UnknownTag(iTagKey, tagValue);
 		}
+		res = componentValidator.afterFieldParse(fixVersion, messageType, res);
 		return res;
 	}
 

@@ -157,19 +157,19 @@ public class ParseMessages {
 //		 LiteFixMessageParser.setComponentValidator(componentValidator);
 
 		// Create message.
-		AllocationInstruction msgJ = AllocationInstruction.getInstance();
+		AllocationInstruction msgJ = AllocationInstruction.of();
 		// Fill it with some fields.
 		msgJ.setSide(Side.BUY);
-		msgJ.setTradeDate(TradeDate.getInstance()); // This will set current date.
-		msgJ.setTradeDate(TradeDate.getInstance(LocalDate.of(2015, 11, 23))); // Alternatively, the date can be set in this way.
-		msgJ.setTradeDate(TradeDate.getInstance("20151123")); // Or even in this way in "yyyyMMdd" format.
+		msgJ.setTradeDate(TradeDate.of()); // This will set current date.
+		msgJ.setTradeDate(TradeDate.of(LocalDate.of(2015, 11, 23))); // Alternatively, the date can be set in this way.
+		msgJ.setTradeDate(TradeDate.of("20151123")); // Or even in this way in "yyyyMMdd" format.
 
 		// Define and populate some Message Component (for example, "Instrument").
-		final Instrument instrument = Instrument.getInstance();
-		instrument.setSymbol(Symbol.getInstance("ACME"));
-		instrument.setSecurityID(SecurityID.getInstance("1234"));
-		instrument.setSecuritySubType(SecuritySubType.getInstance("1B2D"));
-		instrument.setMaturityDate(MaturityDate.getInstance());
+		final Instrument instrument = Instrument.of();
+		instrument.setSymbol(Symbol.of("ACME"));
+		instrument.setSecurityID(SecurityID.of("1234"));
+		instrument.setSecuritySubType(SecuritySubType.of("1B2D"));
+		instrument.setMaturityDate(MaturityDate.of());
 		// Attach it to the Massage.
 		msgJ.setInstrument(instrument);
 
@@ -185,7 +185,7 @@ public class ParseMessages {
 
 
 		// Let's create another Message.
-		TradeCaptureReport msgAE = TradeCaptureReport.getInstance();
+		TradeCaptureReport msgAE = TradeCaptureReport.of();
 
 		// Let's assume that we want to have in this Message the same Instrument as previous message has.
 		// That's simple!
@@ -195,6 +195,6 @@ public class ParseMessages {
 		msgAE.setInstrument(msgJ);
 		// (how would you implement it with QuickFix?..)
 
-		System.out.println(msgAE.seal(SenderCompID.getInstance("The Sender"), TargetCompID.getInstance("The Target")));
+		System.out.println(msgAE.seal(SenderCompID.of("The Sender"), TargetCompID.of("The Target")));
 	}
 }

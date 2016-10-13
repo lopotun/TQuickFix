@@ -175,16 +175,16 @@ public class QFFieldElement extends QFElement {
     }
 
     /*
-    public static AccountType getInstance(String value) {
-		return getInstance(value, LiteFixMessageParser.getComponentValidator());
+    public static AccountType of(String value) {
+		return of(value, LiteFixMessageParser.getComponentValidator());
 	}
 
-	public static AccountType getInstance(String value, QFComponentValidator componentValidator) {
+	public static AccountType of(String value, QFComponentValidator componentValidator) {
 		try {
-			return getInstance(Integer.parseInt(value), componentValidator);
+			return of(Integer.parseInt(value), componentValidator);
 		} catch (Exception e) {
 			final Integer newValue = componentValidator.invalidFieldValue(AccountType.class, Integer.class, value, e);
-			AccountType res = getInstance(newValue, componentValidator);
+			AccountType res = of(newValue, componentValidator);
 			res.originalValue = value;
 			return res;
 		}
@@ -192,19 +192,19 @@ public class QFFieldElement extends QFElement {
     */
     protected void generateMethodGetInstanceString() {
         if (def.typeToStringConversion != null) {
-            sb.append("\tpublic static ").append(name).append(" getInstance(String value) {\n")
-                    .append("\t\treturn getInstance(value, LiteFixMessageParser.getComponentValidator());\n")
+            sb.append("\tpublic static ").append(name).append(" of(String value) {\n")
+                    .append("\t\treturn of(value, LiteFixMessageParser.getComponentValidator());\n")
                     .append("\t}\n\n");
 
             CharSequence typeClassName = def.typeClass==java.util.Currency.class? def.typeClass.getName(): def.typeClass.getSimpleName();
-            sb.append("\tpublic static ").append(name).append(" getInstance(String value, QFComponentValidator componentValidator) {\n")
+            sb.append("\tpublic static ").append(name).append(" of(String value, QFComponentValidator componentValidator) {\n")
                     .append("\t\ttry {\n")
-                    .append("\t\t\treturn getInstance(").append(def.typeToStringConversion).append(", componentValidator);\n") //"Integer.parseInt(value)"
+                    .append("\t\t\treturn of(").append(def.typeToStringConversion).append(", componentValidator);\n") //"Integer.parseInt(value)"
                     .append("\t\t} catch (Exception e) {\n")
                     .append("\t\t\tfinal ").append(typeClassName)
                     .append(" newValue = componentValidator.invalidFieldValue(")
                     .append(name).append(".class, ").append(typeClassName).append(".class, value, e);\n")
-                    .append("\t\t\t").append(name).append(" res = getInstance(newValue, componentValidator);\n")
+                    .append("\t\t\t").append(name).append(" res = of(newValue, componentValidator);\n")
                     .append("\t\t\tres.originalValue = value;\n")
                     .append("\t\t\treturn res;\n")
                     .append("\t\t}\n")
@@ -213,7 +213,7 @@ public class QFFieldElement extends QFElement {
     }
 
     /*
-    public static FieldIntegerExample getInstance(Integer value) {
+    public static FieldIntegerExample of(Integer value) {
         FieldIntegerExample res = STATIC_VALUES_MAPPING.get(value);
         if (res == null) {
             final Integer newValue = validationErrorsHandler.invalidValue(ApplReportType.class, value, null, ValidationErrorsHandler.ErrorType.NOT_PREDEFINED);
@@ -226,11 +226,11 @@ public class QFFieldElement extends QFElement {
 
 
 
-    public static AccountType getInstance(Integer value) {
-		return getInstance(value, LiteFixMessageParser.getComponentValidator());
+    public static AccountType of(Integer value) {
+		return of(value, LiteFixMessageParser.getComponentValidator());
 	}
 
-	public static AccountType getInstance(Integer value, QFComponentValidator componentValidator) {
+	public static AccountType of(Integer value, QFComponentValidator componentValidator) {
 		AccountType res = STATIC_VALUES_MAPPING.get(value);
 		if (res == null) {
 			final Integer newValue = componentValidator.notPredefinedFieldValue(AccountType.class, Integer.class, value);
@@ -240,11 +240,11 @@ public class QFFieldElement extends QFElement {
 	}
     */
     protected void generateMethodGetInstanceType() {
-        sb.append("\tpublic static ").append(name).append(" getInstance(").append(typeClassName).append(" value) {\n")
-                .append("\t\treturn getInstance(value, LiteFixMessageParser.getComponentValidator());\n")
+        sb.append("\tpublic static ").append(name).append(" of(").append(typeClassName).append(" value) {\n")
+                .append("\t\treturn of(value, LiteFixMessageParser.getComponentValidator());\n")
                 .append("\t}\n\n");
 
-        sb.append("\tpublic static ").append(name).append(" getInstance(").append(typeClassName).append(" value, QFComponentValidator componentValidator) {\n");
+        sb.append("\tpublic static ").append(name).append(" of(").append(typeClassName).append(" value, QFComponentValidator componentValidator) {\n");
         if (defaultValues != null) {
             sb.append("\t\t").append(name).append(" res = STATIC_VALUES_MAPPING.get(value);\n")
                     .append("\t\tif (res == null) {\n")

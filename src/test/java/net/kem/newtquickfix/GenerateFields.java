@@ -28,19 +28,19 @@ import java.text.ParseException;
  */
 public class GenerateFields {
     public static void main(String[] args) throws IOException, SAXException, ParserConfigurationException, XPathExpressionException, ClassNotFoundException, ParseException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
-//        QFField testT1 = AggressorIndicator.getInstance("true");
-//        QFField testT2 = AggressorIndicator.getInstance(true);
-//        QFField testT3 = AggressorIndicator.getInstance("Y");
+//        QFField testT1 = AggressorIndicator.of("true");
+//        QFField testT2 = AggressorIndicator.of(true);
+//        QFField testT3 = AggressorIndicator.of("Y");
 //        QFField testT4 = AggressorIndicator.ORDER_INITIATOR_IS_AGGRESSOR;
-//        QFField testF1 = AggressorIndicator.getInstance("false");
-//        QFField testF2 = AggressorIndicator.getInstance(false);
-//        QFField testF3 = AggressorIndicator.getInstance("n");
+//        QFField testF1 = AggressorIndicator.of("false");
+//        QFField testF2 = AggressorIndicator.of(false);
+//        QFField testF3 = AggressorIndicator.of("n");
 //        QFField testF4 = AggressorIndicator.ORDER_INITIATOR_IS_PASSIVE;
 //        System.out.println(testF1.toFixString() + ", " + testF2.toFixString());
 //        System.out.println(testT1.toFixString() + ", " + testT2.toFixString());
 //
-//        QFField testDT1 = EffectiveTime.getInstance("20151109-14:55:07");//yyyyMMdd-HH:mm:ss
-//        QFField testDT2 = EffectiveTime.getInstance(LocalDateTime.now());
+//        QFField testDT1 = EffectiveTime.of("20151109-14:55:07");//yyyyMMdd-HH:mm:ss
+//        QFField testDT2 = EffectiveTime.of(LocalDateTime.now());
 //        System.out.println(testDT1.toFixString() + ", " + testDT2.toFixString());
 
         //Get the DOM Builder Factory

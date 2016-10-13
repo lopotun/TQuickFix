@@ -19,7 +19,7 @@ public class Populator {
 	Populator(@NotNull Method setter, @Nullable Class<?> ownerClass) throws NoSuchMethodException {
 		this.setter = setter;
 		this.ownerClass = ownerClass ==null? setter.getDeclaringClass(): ownerClass;
-		this.ownerGetInstanceMethod = this.ownerClass.getDeclaredMethod("getInstance");
+		this.ownerGetInstanceMethod = this.ownerClass.getDeclaredMethod("of");
 	}
 
 	Class<?> getOwnerClass() {
